@@ -7,10 +7,12 @@ COPY package.json bun.lock ./
 RUN bun install --frozen-lockfile --production
 
 # Copy only the necessary files
+COPY node_modules ./node_modules
 COPY drizzle ./drizzle
 COPY src ./src
 COPY drizzle.config.ts ./
 COPY graphile.config.ts ./
+
 
 USER bun
 EXPOSE 3000/tcp
