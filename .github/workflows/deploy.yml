@@ -19,7 +19,7 @@ jobs:
             - name: Set up Bun
               uses: oven-sh/setup-bun@v2
               with:
-                  bun-version: latest
+                bun-version: latest
 
             - name: Install dependencies
               run: bun install
@@ -30,9 +30,9 @@ jobs:
             - name: Log in to GitHub Container Registry
               uses: docker/login-action@v2
               with:
-                  registry: ghcr.io
-                  username: ${{ github.actor }}
-                  password: ${{ secrets.GITHUB_TOKEN }}
+                registry: ghcr.io
+                username: ${{ github.actor }}
+                password: ${{ secrets.GITHUB_TOKEN }}
 
             #- name: Build and push Docker image
             #  uses: docker/build-push-action@v4
@@ -48,5 +48,12 @@ jobs:
               run: |
                 docker build -t ghcr.io/${{ github.repository }}:latest .
                 docker push ghcr.io/${{ github.repository }}:latest
+              env:
+                NODE_ENV: production
+
+            - name: Build and push Docker image for Drizzle Kit migrations
+              run: |
+                docker build -t ghcr.io/${{ github.repository }}/migrate:latest ./drizzle-kit
+                docker push ghcr.io/${{ github.repository }}/migrate:latest
               env:
                 NODE_ENV: production
