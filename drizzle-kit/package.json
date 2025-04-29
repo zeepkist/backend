@@ -1,8 +1,0 @@
-{
-	"dependencies": {
-		"drizzle-orm": "^0.43.0"
-	},
-	"devDependencies": {
-		"drizzle-kit": "^0.31.0"
-	}
-}
