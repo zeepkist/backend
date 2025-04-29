@@ -1,0 +1,52 @@
+name: Deploy to Docker
+
+on:
+    push:
+        branches: [develop]
+
+jobs:
+    build:
+        runs-on: ubuntu-latest
+
+        permissions:
+            contents: read
+            packages: write
+
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+
+            - name: Set up Bun
+              uses: oven-sh/setup-bun@v2
+              with:
+                  bun-version: latest
+
+            - name: Install dependencies
+              run: bun install
+
+            #- name: Run Tests
+            #  run: bun test
+
+            - name: Log in to GitHub Container Registry
+              uses: docker/login-action@v2
+              with:
+                  registry: ghcr.io
+                  username: ${{ github.actor }}
+                  password: ${{ secrets.GITHUB_TOKEN }}
+
+            #- name: Build and push Docker image
+            #  uses: docker/build-push-action@v4
+            #  with:
+            #    context: .
+            #    file: Dockerfile
+            #    push: true
+            #    tags: ghcr.io/${{ github.repository_owner }}/${{ github.event.repository.name }}:latest
+            #    cache-from: type=registry,ref=ghcr.io/${{ github.repository_owner }}/${{ github.event.repository.name }}:cache
+            #    cache-to: type=registry,ref=ghcr.io/${{ github.repository_owner }}/${{ github.event.repository.name }}:cache,mode=max
+
+            - name: Build and push Docker image
+              run: |
+                docker build -t ghcr.io/${{ github.repository }}:latest .
+                docker push ghcr.io/${{ github.repository }}:latest
+              env:
+                NODE_ENV: production

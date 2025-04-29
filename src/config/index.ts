@@ -1,0 +1,44 @@
+import { parse } from '@lukeed/ms';
+
+const {
+	STEAM_APP_ID = '',
+	STEAM_API_KEY = '',
+	JWT_AUDIENCE = '',
+	JWT_ISSUER = '',
+	JWT_TOKEN = '',
+	DATABASE_URL = '',
+	PORT = 3000,
+	HOST = '0.0.0.0',
+	WASABI_ACCESSKEY = '',
+	WASABI_SECRETKEY = '',
+	WASABI_BUCKET = '',
+	WASABI_ENDPOINT = '',
+	WASABI_REGION = '',
+	GHOST_FOLDER = 'ghosts-dev',
+	THUMBNAIL_FOLDER = 'thumbnails-dev',
+} = process.env;
+
+export const STEAM_API_BASE_URL = 'https://api.steampowered.com';
+export const JWT_ALGORITHM = 'HS256';
+export const JWT_EXPIRY = parse('5m') ?? 0;
+export const JWT_REFRESH_EXPIRY = parse('7d') ?? 0;
+
+export const SERVER_PORT = Number(PORT);
+
+export {
+	STEAM_APP_ID,
+	STEAM_API_KEY,
+	JWT_AUDIENCE,
+	JWT_ISSUER,
+	JWT_TOKEN,
+	DATABASE_URL,
+	HOST,
+	SERVER_PORT as PORT,
+	WASABI_ACCESSKEY,
+	WASABI_SECRETKEY,
+	WASABI_BUCKET,
+	WASABI_ENDPOINT,
+	WASABI_REGION,
+	GHOST_FOLDER,
+	THUMBNAIL_FOLDER,
+};
