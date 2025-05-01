@@ -1,22 +1,22 @@
-import Fastify from 'fastify';
 import cors from '@fastify/cors';
 import helmet from '@fastify/helmet';
 import ratelimit from '@fastify/rate-limit';
-import swagger from '@fastify/swagger'
+import swagger from '@fastify/swagger';
 import swaggerUi from '@fastify/swagger-ui';
+import Fastify from 'fastify';
 import noFavIcon from 'fastify-no-icon';
 import JSONB from 'when-json-met-bigint';
 import { HOST, PORT } from './config';
 import { registerJobs } from './jobs';
-import { registerRoutes } from './routes';
 import { fastifyOtelInstrumentation } from './otel';
+import { registerRoutes } from './routes';
 
 const app = await Fastify({
 	logger: {
 		transport: {
-			target: '@fastify/one-line-logger'
-		}
-	}
+			target: '@fastify/one-line-logger',
+		},
+	},
 });
 
 await app.register(fastifyOtelInstrumentation.plugin());
@@ -37,9 +37,9 @@ await app.register(swagger, {
 			{
 				url: 'https://backend.zeepki.st',
 				description: 'Production server',
-			}
-		]
-	}
+			},
+		],
+	},
 });
 
 await app.register(swaggerUi, {
@@ -70,7 +70,7 @@ await app.register(swaggerUi, {
 });
 
 app.register(helmet, {
-	global: true
+	global: true,
 });
 
 app.register(noFavIcon);
@@ -83,22 +83,25 @@ await app.register(cors, {
 await app.register(ratelimit, {
 	max: 100,
 	timeWindow: '1 minute',
-	exponentialBackoff: true
+	exponentialBackoff: true,
 });
 
 // Aggresively rate limit 404 routes
-app.setNotFoundHandler({
-	preHandler: app.rateLimit({
-		max: 2,
-		timeWindow: '5 minutes',
-		exponentialBackoff: true
-	})
-}, (_, reply) => {
-	reply.status(404).send({
-		error: 'Not Found',
-		message: 'The requested resource was not found on this server.',
-	});
-});
+app.setNotFoundHandler(
+	{
+		preHandler: app.rateLimit({
+			max: 2,
+			timeWindow: '5 minutes',
+			exponentialBackoff: true,
+		}),
+	},
+	(_, reply) => {
+		reply.status(404).send({
+			error: 'Not Found',
+			message: 'The requested resource was not found on this server.',
+		});
+	},
+);
 
 // Register JSONB support for BigInt
 app.addContentTypeParser('application/json', { parseAs: 'string' }, (_, body, done) => {

@@ -111,7 +111,7 @@ export async function getAllUsersWithPersonalBests() {
 		.from(user)
 		.innerJoin(personalBestGlobal, eq(personalBestGlobal.idUser, user.id))
 		.groupBy(user.id)
-		.orderBy(user.id)
+		.orderBy(user.id);
 
 	return users;
 }

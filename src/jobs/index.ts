@@ -1,8 +1,8 @@
+import { exec, execSync } from 'node:child_process';
 import type { FastifyInstance } from 'fastify';
 import type { Task as GraphileTask } from 'graphile-worker';
 import { run } from 'graphile-worker';
 import preset from '../../graphile.config';
-import { execSync, exec } from 'node:child_process';
 
 export type Task<T> = (payload: T, helpers: any) => Promise<void>;
 

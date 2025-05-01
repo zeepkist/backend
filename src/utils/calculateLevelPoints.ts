@@ -9,7 +9,7 @@ export const calculateLevelRatingScore = (levelRating: number): number => {
 	const levelRatingScore = Math.min(1, normalizedLevelRating);
 
 	return levelRatingScore;
-}
+};
 
 export const calculateWrGapScore = (lastTime: number, wrTime: number): number => {
 	const wrGap = lastTime - wrTime;
@@ -105,17 +105,17 @@ const calculateCutPenalty = (wrTime: number, topTimes: number[]): number => {
 };
 
 interface CalculateLevelScore {
-	topTimes: number[],
-	personalBests: number,
-	totalUsers: number,
-	levelRating: number,
+	topTimes: number[];
+	personalBests: number;
+	totalUsers: number;
+	levelRating: number;
 }
 
 export const calculateLevelPoints = ({
 	topTimes,
 	personalBests,
 	totalUsers,
-	levelRating
+	levelRating,
 }: CalculateLevelScore) => {
 	const wrTime = topTimes[0] ?? 0;
 	const lastTime = topTimes.at(-1) ?? wrTime;
@@ -136,17 +136,15 @@ export const calculateLevelPoints = ({
 	const weightedSpreadScore = 0.5 * spreadScore;
 	// const weightedSpreadStddevScore = spreadStddevScore * 0.25;
 
-
 	/*
 	const scoreContributions = weightedGapScore + weightedPbCountScore + weightedSpreadScore + weightedLevelRatingScore;
 	const finalScore = Math.round(BASE_POINTS * scoreContributions * wrTimePenalty * cutPenalty);
 	*/
 
-	const scoreContributions = weightedGapScore + weightedSpreadScore + weightedPbCountScore + weightedLevelRatingScore;
+	const scoreContributions =
+		weightedGapScore + weightedSpreadScore + weightedPbCountScore + weightedLevelRatingScore;
 
-	const finalScore =
-		10_000 *
-		(scoreContributions * wrTimePenalty) * cutPenalty;
+	const finalScore = 10_000 * (scoreContributions * wrTimePenalty) * cutPenalty;
 
 	// round finalScore to the nearest even number
 	const points = finalScore % 2 === 0 ? finalScore : finalScore + 1;
@@ -161,6 +159,6 @@ export const calculateLevelPoints = ({
 			worldRecordTimePenalty: wrTimePenalty,
 			cutPenalty,
 			levelRating: weightedLevelRatingScore,
-		}
-	}
-}
+		},
+	};
+};

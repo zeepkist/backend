@@ -1,5 +1,5 @@
 import { and, eq, sql } from 'drizzle-orm';
-import { db, personalBestGlobal, record, levelPoints } from '../db';
+import { db, levelPoints, personalBestGlobal, record } from '../db';
 import { addJob } from '../jobs';
 
 interface PersonalBestWithRecord {
@@ -105,21 +105,27 @@ export async function upsertPersonalBest({ idUser, idLevel, idRecord, time }: Up
 }
 
 export async function getUserPersonalBestsWithLevelPointsAndPosition({
-	idUser
+	idUser,
 }: { idUser: number }) {
 	const personalBests = await db
 		.select({
 			idUser: personalBestGlobal.idUser,
 			idLevel: personalBestGlobal.idLevel,
 			levelPoints: levelPoints.points,
-			position: sql<bigint>`ROW_NUMBER() OVER (PARTITION BY ${personalBestGlobal.idLevel} ORDER BY ${record.time} ASC)`.as('position'),
-			totalPersonalBests: sql<number>`COUNT(*) OVER (PARTITION BY ${personalBestGlobal.idLevel})`.as('totalPersonalBests'),
+			position:
+				sql<bigint>`ROW_NUMBER() OVER (PARTITION BY ${personalBestGlobal.idLevel} ORDER BY ${record.time} ASC)`.as(
+					'position',
+				),
+			totalPersonalBests:
+				sql<number>`COUNT(*) OVER (PARTITION BY ${personalBestGlobal.idLevel})`.as(
+					'totalPersonalBests',
+				),
 		})
 		.from(personalBestGlobal)
 		.innerJoin(levelPoints, eq(levelPoints.idLevel, personalBestGlobal.idLevel))
 		.innerJoin(record, eq(record.id, personalBestGlobal.idRecord))
 		.where(eq(personalBestGlobal.idUser, idUser))
-		.orderBy(personalBestGlobal.idLevel)
+		.orderBy(personalBestGlobal.idLevel);
 
 	return personalBests;
 }

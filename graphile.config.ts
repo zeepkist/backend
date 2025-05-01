@@ -12,7 +12,7 @@ const preset: GraphileConfig.Preset = {
 		crontabFile: `${__dirname}/src/jobs/crontab`,
 		schema: 'graphile_worker',
 		concurrentJobs: 5,
-		fileExtensions: ['.ts']
+		fileExtensions: ['.ts'],
 	},
 };
 

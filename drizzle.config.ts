@@ -7,7 +7,7 @@ export default defineConfig({
 	dialect: 'postgresql',
 	dbCredentials: {
 		url: DATABASE_URL,
-		ssl: false
+		ssl: false,
 	},
 	schemaFilter: ['public'],
 	tablesFilter: '*',

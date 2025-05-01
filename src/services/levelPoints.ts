@@ -1,9 +1,9 @@
-import { db, levelPoints, personalBestGlobal, record } from '../db';
 import { eq, sql } from 'drizzle-orm';
+import { db, levelPoints, personalBestGlobal, record } from '../db';
 
 export async function updateLevelPoints({
 	idLevel,
-	points
+	points,
 }: {
 	idLevel: number;
 	points: number;
@@ -13,7 +13,7 @@ export async function updateLevelPoints({
 			.update(levelPoints)
 			.set({ points })
 			.where(eq(levelPoints.idLevel, idLevel))
-			.then(rows => rows[0]);
+			.then((rows) => rows[0]);
 	});
 }
 
@@ -26,12 +26,12 @@ export async function batchUpdateLevelPoints(levelScores: Map<number, number>) {
 				.update(levelPoints)
 				.set({
 					points,
-					dateUpdated
+					dateUpdated,
 				})
-				.where(eq(levelPoints.idLevel, idLevel))
-			})
+				.where(eq(levelPoints.idLevel, idLevel));
+		});
 
-		await Promise.all(updates.map(update => update.returning()));
+		await Promise.all(updates.map((update) => update.returning()));
 	});
 }
 
@@ -43,11 +43,14 @@ export async function getAllRankedPersonalBests() {
 			idUser: personalBestGlobal.idUser,
 			idRecord: personalBestGlobal.idRecord,
 			time: record.time,
-			position: sql`ROW_NUMBER() OVER (PARTITION BY ${personalBestGlobal.idLevel} ORDER BY ${record.time} ASC)`.as('row_number'),
+			position:
+				sql`ROW_NUMBER() OVER (PARTITION BY ${personalBestGlobal.idLevel} ORDER BY ${record.time} ASC)`.as(
+					'row_number',
+				),
 		})
 		.from(levelPoints)
 		.innerJoin(personalBestGlobal, eq(personalBestGlobal.idLevel, levelPoints.idLevel))
-		.innerJoin(record, eq(record.id, personalBestGlobal.idRecord))
+		.innerJoin(record, eq(record.id, personalBestGlobal.idRecord));
 
 	return rankedPersonalBests;
 }

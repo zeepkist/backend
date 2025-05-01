@@ -1,6 +1,11 @@
 import { type Task, addJob } from '../../jobs';
+import {
+	getPersonalBestsWithRecord,
+	getTotalUsers,
+	getVoteRating,
+	updateLevelPoints,
+} from '../../services';
 import { calculateLevelPoints } from '../../utils';
-import { getPersonalBestsWithRecord, getTotalUsers, getVoteRating, updateLevelPoints } from '../../services';
 
 interface UpdateLevelScorePayload {
 	idLevel: number;
@@ -23,18 +28,18 @@ const task: Task<UpdateLevelScorePayload> = async (payload, helpers) => {
 		topTimes,
 		personalBests: pbCount,
 		totalUsers,
-		levelRating
+		levelRating,
 	});
 
 	helpers.logger.info(
 		`Level ${idLevel} points calculated: ${points}\n` +
-		`WR Gap Score: ${contributions.worldRecordTimeGap}\n` +
-		`Spread Score: ${contributions.timeSpread}\n` +
-		`PB Count Score: ${contributions.personalBests}\n` +
-		`Time Penalty Score: ${contributions.worldRecordTimePenalty}\n` +
-		`Cut Penalty: ${contributions.cutPenalty}` +
-		`Level Rating: ${contributions.levelRating}`
-	)
+			`WR Gap Score: ${contributions.worldRecordTimeGap}\n` +
+			`Spread Score: ${contributions.timeSpread}\n` +
+			`PB Count Score: ${contributions.personalBests}\n` +
+			`Time Penalty Score: ${contributions.worldRecordTimePenalty}\n` +
+			`Cut Penalty: ${contributions.cutPenalty}` +
+			`Level Rating: ${contributions.levelRating}`,
+	);
 
 	await updateLevelPoints({
 		idLevel,

@@ -1,5 +1,5 @@
-import { db, record, personalBestGlobal } from '../db';
 import { eq, sql } from 'drizzle-orm';
+import { db, personalBestGlobal, record } from '../db';
 
 interface RecordData {
 	idUser: number;

@@ -1,5 +1,10 @@
-import { type Task } from '../../jobs';
-import { getAllUsersWithPersonalBests, getUserPersonalBestsWithLevelPointsAndPosition, updateUserPoints, updateUserRank } from '../../services';
+import type { Task } from '../../jobs';
+import {
+	getAllUsersWithPersonalBests,
+	getUserPersonalBestsWithLevelPointsAndPosition,
+	updateUserPoints,
+	updateUserRank,
+} from '../../services';
 import { calculatePlayerPoints } from '../../utils';
 
 interface PointsMap {
@@ -14,7 +19,7 @@ const task: Task<never> = async (payload, helpers) => {
 
 	for (const { idUser } of users) {
 		const personalBests = await getUserPersonalBestsWithLevelPointsAndPosition({
-			idUser
+			idUser,
 		});
 
 		if (personalBests.length === 0) {
@@ -42,9 +47,9 @@ const task: Task<never> = async (payload, helpers) => {
 
 		await updateUserRank({
 			idUser: userPoint.idUser,
-			rank: i + 1
+			rank: i + 1,
 		});
 	}
-}
+};
 
 export default task;

@@ -192,13 +192,13 @@ export const personalBestGlobal = pgTable(
 		index('IX_personal_bests_level_user').using(
 			'btree',
 			table.idLevel.asc().nullsLast().op('int4_ops'),
-			table.idUser.asc().nullsLast().op('int4_ops')
+			table.idUser.asc().nullsLast().op('int4_ops'),
 		),
 		index('IX_personal_bests_user_level_record').using(
 			'btree',
 			table.idUser.asc().nullsLast().op('int4_ops'),
 			table.idLevel.asc().nullsLast().op('int4_ops'),
-			table.idRecord.asc().nullsLast().op('int4_ops')
+			table.idRecord.asc().nullsLast().op('int4_ops'),
 		),
 		foreignKey({
 			columns: [table.idLevel],

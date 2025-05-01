@@ -1,10 +1,10 @@
-import { db, userPoints } from '../db';
 import { eq } from 'drizzle-orm';
+import { db, userPoints } from '../db';
 
 export async function updateUserPoints({
 	idUser,
 	points,
-	totalPoints
+	totalPoints,
 }: {
 	idUser: number;
 	points: number;
@@ -18,13 +18,13 @@ export async function updateUserPoints({
 				totalPoints,
 				dateUpdated: new Date().toISOString(),
 			})
-			.where(eq(userPoints.idUser, idUser))
+			.where(eq(userPoints.idUser, idUser));
 	});
 }
 
 export async function updateUserRank({
 	idUser,
-	rank
+	rank,
 }: {
 	idUser: number;
 	rank: number;
@@ -36,6 +36,6 @@ export async function updateUserRank({
 				rank,
 				dateUpdated: new Date().toISOString(),
 			})
-			.where(eq(userPoints.idUser, idUser))
+			.where(eq(userPoints.idUser, idUser));
 	});
 }

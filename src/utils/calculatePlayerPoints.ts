@@ -10,18 +10,20 @@ interface CalculatePlayerPointsResult {
 	totalPoints: number;
 }
 
-export const calculatePlayerPoints = (personalBests: PersonalBest[]): CalculatePlayerPointsResult => {
+export const calculatePlayerPoints = (
+	personalBests: PersonalBest[],
+): CalculatePlayerPointsResult => {
 	const pointsList: number[] = [];
 	const totals = {
 		points: 0,
 		totalPoints: 0,
-	}
+	};
 
 	// Step 1: Calculate the user's points for each level
 	for (const { levelPoints, position, totalPersonalBests } of personalBests) {
 		const safePosition = Number(position);
 
-		if (!Number.isFinite(safePosition) || safePosition < 1  || levelPoints === 0) {
+		if (!Number.isFinite(safePosition) || safePosition < 1 || levelPoints === 0) {
 			continue;
 		}
 
@@ -43,4 +45,4 @@ export const calculatePlayerPoints = (personalBests: PersonalBest[]): CalculateP
 	}
 
 	return totals;
-}
+};

@@ -1,6 +1,6 @@
-import { type Task } from '../../jobs';
-import { calculatePlayerPoints } from '../../utils';
+import type { Task } from '../../jobs';
 import { getUserPersonalBestsWithLevelPointsAndPosition, updateUserPoints } from '../../services';
+import { calculatePlayerPoints } from '../../utils';
 
 interface UpdatePlayerScorePayload {
 	idUser: number;
