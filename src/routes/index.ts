@@ -11,4 +11,8 @@ export async function registerRoutes(app: FastifyInstance) {
 	app.register(userRoutes, { prefix: '/user' });
 	app.register(recordRoutes, { prefix: '/record' });
 	app.register(voteRoutes, { prefix: '/vote' });
+
+	app.get('/healthz', async (_, reply) => {
+		return reply.status(200).send({ status: 'ok' });
+	});
 }

@@ -16,6 +16,8 @@ const {
 	WASABI_REGION = '',
 	GHOST_FOLDER = 'ghosts-dev',
 	THUMBNAIL_FOLDER = 'thumbnails-dev',
+	OPENTELEMETRY_COLLECTOR_URL = '',
+	OPENTELEMETRY_SERVICE_NAME = '',
 } = process.env;
 
 export const STEAM_API_BASE_URL = 'https://api.steampowered.com';
@@ -41,4 +43,6 @@ export {
 	WASABI_REGION,
 	GHOST_FOLDER,
 	THUMBNAIL_FOLDER,
+	OPENTELEMETRY_COLLECTOR_URL,
+	OPENTELEMETRY_SERVICE_NAME,
 };
