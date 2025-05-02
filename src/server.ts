@@ -90,7 +90,7 @@ await app.register(ratelimit, {
 app.setNotFoundHandler(
 	{
 		preHandler: app.rateLimit({
-			max: 2,
+			max: 100, // TODO: decrease to 2 once GTR mod is live
 			timeWindow: '5 minutes',
 			exponentialBackoff: true,
 		}),
