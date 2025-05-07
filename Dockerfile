@@ -1,3 +1,7 @@
+LABEL org.opencontainers.image.source=https://github.com/zeepkist/backend
+LABEL org.opencontainers.image.description="Backend service for GTR"
+LABEL org.opencontainers.image.licenses=MIT
+
 # Install dependencies
 FROM oven/bun:1-alpine AS dependencies
 WORKDIR /app
