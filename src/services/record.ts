@@ -29,8 +29,8 @@ export async function insertRecord({
 				idUser,
 				idLevel,
 				time,
-				//splits, // TODO: Bun.sql doesn't support array types yet
-				//speeds, // TODO: Bun.sql doesn't support array types yet
+				splits,
+				speeds,
 				modVersion,
 				gameVersion,
 				dateCreated: now,
