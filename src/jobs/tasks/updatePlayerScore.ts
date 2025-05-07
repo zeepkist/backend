@@ -1,4 +1,4 @@
-import type { Task } from '../../jobs';
+import type { Task } from '..';
 import { getUserPersonalBestsWithLevelPointsAndPosition, updateUserPoints } from '../../services';
 import { calculatePlayerPoints } from '../../utils';
 

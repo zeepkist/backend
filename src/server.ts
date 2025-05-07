@@ -13,10 +13,21 @@ import { registerRoutes } from './routes';
 
 const app = await Fastify({
 	logger: {
-		transport: {
-			target: '@fastify/one-line-logger',
+		serializers: {
+			res (reply) {
+				return {
+					statusCode: reply.statusCode
+				}
+			},
+			req (request) {
+				return {
+					method: request.method,
+					path: request.routeOptions?.url,
+					query: request.query,
+				}
+			}
 		},
-	},
+	}
 });
 
 await app.register(fastifyOtelInstrumentation.plugin());

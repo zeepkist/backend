@@ -1,4 +1,4 @@
-import type { Task } from '../../jobs';
+import type { Task } from '..';
 import {
 	batchUpdateLevelPoints,
 	getAllRankedPersonalBests,

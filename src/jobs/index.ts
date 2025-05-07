@@ -1,12 +1,23 @@
-import { exec, execSync } from 'node:child_process';
 import type { FastifyInstance } from 'fastify';
-import type { Task as GraphileTask } from 'graphile-worker';
-import { run } from 'graphile-worker';
-import preset from '../../graphile.config';
+import { run, type Helpers } from 'graphile-worker';
+import preset from './graphile.config';
 
-export type Task<T> = (payload: T, helpers: any) => Promise<void>;
+import updateLevelScore from './tasks/updateLevelScore';
+import updateLevelScores from './tasks/updateLevelScores';
+import updatePlayerScore from './tasks/updatePlayerScore';
+import updatePlayerScores from './tasks/updatePlayerScores';
 
-const runner = await run({ preset });
+export type Task<T = unknown> = (payload: T, helpers: Helpers) => Promise<void>;
+
+const runner = await run({
+	preset,
+	taskList: {
+		updateLevelScore: updateLevelScore as Task,
+		updateLevelScores: updateLevelScores as Task,
+		updatePlayerScore: updatePlayerScore as Task,
+		updatePlayerScores: updatePlayerScores as Task,
+	}
+});
 
 export const addJob = runner.addJob.bind(runner);
 

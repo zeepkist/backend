@@ -1,4 +1,4 @@
-import { type Task, addJob } from '../../jobs';
+import { type Task, addJob } from '..';
 import {
 	getPersonalBestsWithRecord,
 	getTotalUsers,
@@ -48,7 +48,10 @@ const task: Task<UpdateLevelScorePayload> = async (payload, helpers) => {
 
 	// If job is triggered by a new personal best, we need to update the player score
 	if (idUser) {
-		addJob('updatePlayerScore', { idUser });
+		addJob('updatePlayerScore', { idUser }, {
+			priority: 1,
+			maxAttempts: 3,
+		});
 	}
 };
 
