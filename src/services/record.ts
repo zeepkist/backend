@@ -11,6 +11,12 @@ interface RecordData {
 	gameVersion: string;
 }
 
+interface SubmittedRecordData extends Omit<RecordData, 'splits' | 'speeds'> {
+	splits?: number[];
+	speeds?: number[];
+	dateCreated: string;
+}
+
 export async function insertRecord({
 	idUser,
 	idLevel,
@@ -21,20 +27,27 @@ export async function insertRecord({
 	gameVersion,
 }: RecordData): Promise<typeof record.$inferSelect | null> {
 	const now = new Date().toISOString();
+	const data: SubmittedRecordData = {
+		idUser,
+		idLevel,
+		time,
+		modVersion,
+		gameVersion,
+		dateCreated: now,
+	}
+
+	if (Array.isArray(splits) && splits?.length) {
+		data.splits = splits;
+	}
+
+	if (Array.isArray(speeds) && speeds?.length) {
+		data.speeds = speeds;
+	}
 
 	const result = await db.transaction(async (tx) => {
 		const [inserted] = await tx
 			.insert(record)
-			.values({
-				idUser,
-				idLevel,
-				time,
-				splits,
-				speeds,
-				modVersion,
-				gameVersion,
-				dateCreated: now,
-			})
+			.values(data)
 			.returning();
 
 		return inserted;
