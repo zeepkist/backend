@@ -29,7 +29,7 @@ const preset: GraphileConfig.Preset = {
 		pollInterval: 2000,
 		preparedStatements: true,
 		//taskDirectory: `${__dirname}/tasks`, // tasks imported by runner
-		//crontabFile: `${__dirname}/crontab`,
+		crontabFile: `${__dirname}/crontab`,
 		schema: 'graphile_worker',
 		concurrentJobs: 10,
 		fileExtensions: ['.ts'],
