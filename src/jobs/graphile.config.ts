@@ -5,11 +5,11 @@ import { DATABASE_URL } from '../config';
 export const events = new EventEmitter();
 
 events.on('job:start', ({ job }) => {
-	//console.log(`Worker started job ${job.id}!`);
+	console.log(`Worker started job ${job.id}!`);
 })
 
 events.on('job:success', ({ job }) => {
-	//console.log(`Horrah! Worker completed job ${job.id}!`)
+	console.log(`Horrah! Worker completed job ${job.id}!`)
 })
 
 events.on('job:error', ({ job, error }) => {
@@ -28,8 +28,6 @@ const preset: GraphileConfig.Preset = {
 		maxPoolSize: 10,
 		pollInterval: 2000,
 		preparedStatements: true,
-		//taskDirectory: `${__dirname}/tasks`, // tasks imported by runner
-		crontabFile: `${__dirname}/crontab`,
 		schema: 'graphile_worker',
 		concurrentJobs: 10,
 		fileExtensions: ['.ts'],
