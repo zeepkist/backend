@@ -19,7 +19,14 @@ const client = new S3Client({
 export async function uploadFile(fileName: string, file: Buffer): Promise<void> {
 	const s3File = client.file(fileName);
 
-	await s3File.write(file, {
-		type: 'application/octet-stream',
-	});
+	console.log('Uploading file to S3:', fileName);
+
+	try {
+		await s3File.write(file, {
+			type: 'application/octet-stream',
+		});
+	} catch (error) {
+		console.error('Error uploading file to S3:', error);
+		console.trace(error);
+	}
 }
