@@ -4,20 +4,21 @@ import { DATABASE_URL } from '../config';
 
 export const events = new EventEmitter();
 
-events.on('job:start', ({ worker, job }) => {
-	console.log(`Worker ${worker.id} started job ${job.id}!`);
+events.on('job:start', ({ job }) => {
+	//console.log(`Worker started job ${job.id}!`);
 })
 
-events.on('job:success', ({ worker, job }) => {
-	console.log(`Horrah! Worker ${worker.id} completed job ${job.id}!`)
+events.on('job:success', ({ job }) => {
+	//console.log(`Horrah! Worker completed job ${job.id}!`)
 })
 
-events.on('job:error', ({ worker, job, error }) => {
-	console.error(`Oh no! Worker ${worker.id} failed job ${job.id} with error: ${error}`);
+events.on('job:error', ({ job, error }) => {
+	console.error(`Oh no! Worker failed job ${job.id} with error: ${error}`);
+	console.error(error);
 })
 
-events.on('job:failed', ({ worker, job }) => {
-	console.log(`Oh no! Worker ${worker.id} failed job ${job.id}!`);
+events.on('job:failed', ({ job }) => {
+	console.log(`Oh no! Worker failed job ${job.id}!`);
 })
 
 const preset: GraphileConfig.Preset = {
@@ -30,7 +31,7 @@ const preset: GraphileConfig.Preset = {
 		//taskDirectory: `${__dirname}/tasks`, // tasks imported by runner
 		//crontabFile: `${__dirname}/crontab`,
 		schema: 'graphile_worker',
-		concurrentJobs: 5,
+		concurrentJobs: 10,
 		fileExtensions: ['.ts'],
 		events,
 	},

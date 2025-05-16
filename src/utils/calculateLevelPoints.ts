@@ -1,164 +1,126 @@
-const BASE_POINTS = 10_000;
+const BASE_POINTS = 2_500;
 
-export const calculateLevelRatingScore = (levelRating: number): number => {
-	// levelRating is a number between -100 and 100,
-	// where -100 is the worst and 100 is the best
-	// we want it to be a number between 0 and 1
-	const clampedLevelRating = Math.max(-100, Math.min(100, levelRating));
-	const normalizedLevelRating = (clampedLevelRating + 100) / 200;
-	const levelRatingScore = Math.min(1, normalizedLevelRating);
-
-	return levelRatingScore;
+export const clamp = (value: number, min: number, max: number) => {
+	return Math.max(min, Math.min(max, value));
 };
 
-export const calculateWrGapScore = (lastTime: number, wrTime: number): number => {
-	const wrGap = lastTime - wrTime;
-	const wrGapScore = Math.min(1, wrGap / wrTime);
+export const levelScoreDurationMultiplier = (wrTime: number) => {
+	if (wrTime < 5) return 0.1;
+	if (wrTime < 10) return 0.4;
+	if (wrTime < 20) return 0.7 * 0.03 * (Math.min(0, wrTime - 10)) // from 0.7 to 1.0
+	if (wrTime <= 60) return 1.0
 
-	return wrGapScore;
-};
+	// If the WR time is greater than 60 seconds, we want to penalize the score
+	return Math.min(0.1, 1.0 - 0.01 * (Math.min(0, wrTime - 60))) // from 1.0 to 0.1
+}
 
-const calculatePersonalBestCountScore = (pbCount: number, totalUsers: number): number => {
-	const pbCountScore = Math.min(1, Math.log(pbCount + 1) / Math.log(totalUsers));
+export const levelScoreCompetitivenessMultiplier = (wrTime: number, topTimes: number[], personalBests: number, totalRecords: number) => {
+	//console.debug('Competitiveness multiplier', { wrTime, topTimes, personalBests, records })
+	//console.debug('topTimes', topTimes.length)
 
-	return pbCountScore;
-};
+	const top5 = topTimes.slice(0, 5);
+	const top10 = topTimes.slice(0, 10);
+	const top50 = topTimes.slice(0, 50);
 
-const calculateSpreadScore = (topTimes: number[], wrTime: number): number => {
-	const avgSpread =
-		topTimes.slice(1).reduce((sum, time) => sum + (time - wrTime), 0) / (topTimes.length - 1);
-	const spreadScore = Math.min(1, avgSpread / wrTime);
+	const avgTop5Time = top5.reduce((a, b) => a + b, 0) / top5.length;
+	const avgTop10Time = top10.reduce((a, b) => a + b, 0) / top10.length;
+	const avgTop50Time = top50.reduce((a, b) => a + b, 0) / top50.length;
 
-	return spreadScore;
-};
+	const wrTightness = (avgTop5Time - wrTime) / wrTime;
+	const leaderboardSpread = (avgTop50Time - avgTop10Time) / avgTop50Time;
 
-/*
-const calculateSpreadStddevScore = (topTimes: number[], wrTime: number): number => {
-	const avgSpread =
-		topTimes.slice(1).reduce((sum, time) => sum + (time - wrTime), 0) / (topTimes.length - 1);
-	const spreadStddev = Math.sqrt(
-		topTimes.slice(1).reduce((sum, time) => sum + Math.pow(time - avgSpread, 2), 0) /
-			(topTimes.length - 1),
-	);
-	const spreadScoreStddev = Math.min(1, spreadStddev / wrTime);
+	// PB ratio: how many runs per PB
+	const pbRatio = personalBests / totalRecords
+	const scaledPbRatio = Math.log(1 * 9 * pbRatio) // soften extreme values
 
-	return spreadScoreStddev
-};
-*/
+	return clamp(
+		0.8 + (
+			0.4 * (1 - wrTightness) +
+			0.4 * (1 - leaderboardSpread) +
+			0.2 * (1 - scaledPbRatio)
+		),
+		0.1, // 0.7 is the minimum multiplier
+		3 // 1.3 is the maximum multiplier
+	)
+}
 
-/**
- * Calculate the time penalty based on WR time to penalise levels with short or
- * very long WR times. The penalty is a sigmoid function that drops off
- * to 0.25 at 90 seconds and peaks at 40 seconds.
- *
- * Levels with WR times below 10 seconds are penalised to 0 points.
- *
- * The penalty is applied to the final score.
- */
-const calculateWorldRecordTimePenalty = (wrTime: number): number => {
-	const clampedTime = Math.min(wrTime, 90); // Clamp to 90 seconds
-	const peak = 40; // 40 seconds
-	const minTime = 10; // 10 seconds
-	const minDropoff = 20; // 20 seconds
-	const maxScore = 1.2;
+export const levelScoreRatingModifier = (levelRating: number) => {
+	const normalised = clamp(levelRating / 100, 0, 1)
+	return 0.5 + normalised * 0.8
+}
 
-	// Below minTime, score is 0
-	if (clampedTime < minTime) {
-		return 0;
-	}
+export const levelScorePopularityModifier = (personalBests: number) => {
+	return clamp(
+		0.9 + Math.log10(1 + personalBests) / 2, // 5 slow
+		0.1,
+		1.5
+	)
+}
 
-	// Left side (penalise too short WRs)
-	if (clampedTime < peak) {
-		const steepness = 0.2;
-		const logistic = 1 / (1 + Math.exp(-steepness * (clampedTime - minDropoff)));
+const normaliseNumber = (value: number) => {
+	// If the value is NaN, we want to return 0
+	return Number.isNaN(value) ? 0 : value;
+}
 
-		return maxScore * logistic;
-	}
-
-	// Right side (penalise too long WRs)
-	const decaySteepness = 0.05;
-	const decay = 1 / (1 + Math.exp(decaySteepness * (clampedTime - peak)));
-
-	return maxScore * decay;
-};
-
-/**
- * Calculate the cut penalty based on WR time and top times to penalise levels
- * with suspiciously low WR times, so they don't get inflated scores.
- */
-const calculateCutPenalty = (wrTime: number, topTimes: number[]): number => {
-	const mean = topTimes.reduce((a, b) => a + b, 0) / topTimes.length;
-	const stddev = Math.sqrt(topTimes.reduce((a, b) => a + (b - mean) ** 2, 0) / topTimes.length);
-	const zScore = (wrTime - mean) / stddev;
-	const threshold = -1.5; // 2.5?
-
-	const suspiciousWR = zScore < threshold;
-
-	if (!suspiciousWR) return 1;
-
-	const severity = Math.abs(zScore - threshold);
-	const minimumPenalty = 0.2; // 20% penalty
-	const penaltyScale = 0.5; // Higher = more severe penalty
-	const penalty = Math.max(minimumPenalty, 1 - severity * penaltyScale);
-
-	return penalty;
-};
 
 interface CalculateLevelScore {
 	topTimes: number[];
 	personalBests: number;
-	totalUsers: number;
+	totalRecords: number;
 	levelRating: number;
 }
 
 export const calculateLevelPoints = ({
 	topTimes,
 	personalBests,
-	totalUsers,
+	totalRecords,
 	levelRating,
 }: CalculateLevelScore) => {
+	if (totalRecords === 0) {
+		return {
+			points: 0,
+			contributions: {
+				duration: 0,
+				competitiveness: 0,
+				rating: 0,
+				popularity: 0,
+			},
+		};
+	}
+
 	const wrTime = topTimes[0] ?? 0;
-	const lastTime = topTimes.at(-1) ?? wrTime;
-
-	const levelRatingScore = calculateLevelRatingScore(levelRating);
-	const gapScore = calculateWrGapScore(lastTime, wrTime);
-	const pbCountScore = calculatePersonalBestCountScore(personalBests, totalUsers);
-
-	const spreadScore = calculateSpreadScore(topTimes, wrTime); // TODO: Check which one is better
-	// const spreadStddevScore = calculateSpreadStddevScore(topTimes, wrTime); // TODO: Check which one is better
-
-	const wrTimePenalty = calculateWorldRecordTimePenalty(wrTime);
-	const cutPenalty = calculateCutPenalty(wrTime, topTimes);
-
-	const weightedLevelRatingScore = 0.2 * levelRatingScore;
-	const weightedGapScore = 0.4 * gapScore;
-	const weightedPbCountScore = 2 * pbCountScore;
-	const weightedSpreadScore = 0.5 * spreadScore;
-	// const weightedSpreadStddevScore = spreadStddevScore * 0.25;
+	const durationMultiplier = normaliseNumber(levelScoreDurationMultiplier(wrTime));
+	const competitivenessMultiplier = normaliseNumber(levelScoreCompetitivenessMultiplier(
+		wrTime,
+		topTimes,
+		personalBests,
+		totalRecords
+	))
+	const ratingModifier = normaliseNumber(levelScoreRatingModifier(levelRating));
+	const popularityModifier = normaliseNumber(levelScorePopularityModifier(personalBests));
+	const points = Math.round(
+		BASE_POINTS * durationMultiplier * competitivenessMultiplier * ratingModifier * popularityModifier
+	)
 
 	/*
-	const scoreContributions = weightedGapScore + weightedPbCountScore + weightedSpreadScore + weightedLevelRatingScore;
-	const finalScore = Math.round(BASE_POINTS * scoreContributions * wrTimePenalty * cutPenalty);
-	*/
-
-	const scoreContributions =
-		weightedGapScore + weightedSpreadScore + weightedPbCountScore + weightedLevelRatingScore;
-
-	const finalScore = 10_000 * (scoreContributions * wrTimePenalty) * cutPenalty;
-
-	// round finalScore to the nearest even number
-	const points = finalScore % 2 === 0 ? finalScore : finalScore + 1;
+	if (points < 0) {
+		console.error('Negative points calculated', {
+			points,
+			durationMultiplier,
+			competitivenessMultiplier,
+			ratingModifier,
+			popularityModifier,
+		});
+		process.exit(1);
+	}*/
 
 	return {
-		points: Number.isNaN(points) ? 0 : points,
+		points,
 		contributions: {
-			worldRecordTimeGap: weightedGapScore,
-			timeSpread: weightedSpreadScore,
-			// timeSpreadStddev: weightedSpreadStddevScore,
-			personalBests: weightedPbCountScore,
-			worldRecordTimePenalty: wrTimePenalty,
-			cutPenalty,
-			levelRating: weightedLevelRatingScore,
-		},
-	};
+			duration: durationMultiplier,
+			competitiveness: competitivenessMultiplier,
+			rating: ratingModifier,
+			popularity: popularityModifier,
+		}
+	}
 };

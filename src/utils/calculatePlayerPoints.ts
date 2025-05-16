@@ -38,7 +38,7 @@ export const calculatePlayerPoints = (
 
 	// Step 2: Calculate the decayed points (highest to lowest)
 	for (const [index, points] of pointsList.sort((a, b) => b - a).entries()) {
-		const decay = Math.pow(0.95, index);
+		const decay = 0.95 ** (index - 1);
 
 		totals.points += points * decay;
 		totals.totalPoints += points;

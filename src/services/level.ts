@@ -36,3 +36,11 @@ export async function getOrInsertLevel(hash: string): Promise<typeof level.$infe
 
 	return newLevel;
 }
+
+export async function getAllLevelIds(): Promise<number[]> {
+	const levels = await db
+		.select({ id: level.id })
+		.from(level)
+
+	return levels.map((level) => level.id);
+}

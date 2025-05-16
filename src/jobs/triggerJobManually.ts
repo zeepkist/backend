@@ -4,6 +4,14 @@ import { addJob } from '.';
 
 // addJob('updateLevelScore', { idLevel: 4 })
 
-//addJob('updateLevelScores', { })
+/*
+addJob('updateLevelScores', { }, {
+	maxAttempts: 1
+})
+*/
 
-// addJob('updatePlayerScores', { })
+/*
+addJob('updatePlayerScores', { }, {
+	maxAttempts: 1
+})
+*/

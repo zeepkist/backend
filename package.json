@@ -2,14 +2,14 @@
     "type": "module",
     "private": true,
     "scripts": {
-        "start": "bun run src/server.ts",
-        "compile": "bun build --compile --minify --sourcemap --target bun-linux-x64-musl --outfile server src/server.ts",
+        "start": "bun run src/index.ts",
+        "compile": "bun build --compile --minify --sourcemap --target bun-linux-x64-musl --outfile server src/index.ts",
         "docker:build": "DOCKER_BUILDKIT=1 docker buildx build --platform linux/amd64 -t backend:local -f ./Dockerfile .",
         "docker:run": "docker run --rm --env-file .env --network zeepkist-network -p 3000:3000 backend:local",
         "docker": "bun run docker:build && bun run docker:run",
         "check": "biome check",
         "check:fix": "biome check --write ./",
-        "check:types": "tsc ./src/server.ts --noEmit",
+        "check:types": "tsc ./src/index.ts --noEmit",
         "db:pull": "drizzle-kit pull",
         "db:push": "drizzle-kit push",
         "db:generate": "drizzle-kit generate",
@@ -47,7 +47,9 @@
         "@types/bun": "^1.2.10",
         "@types/pg": "^8.11.13",
         "@types/semver": "^7.7.0",
+        "@types/supertest": "^6.0.3",
         "drizzle-kit": "^0.31.0",
+        "supertest": "^7.1.0",
         "typescript": "^5.8.3"
     }
 }

@@ -11,7 +11,10 @@ export async function updateLevelPoints({
 	await db.transaction(async (tx) => {
 		await tx
 			.update(levelPoints)
-			.set({ points })
+			.set({
+				points,
+				dateUpdated: new Date().toISOString(),
+			 })
 			.where(eq(levelPoints.idLevel, idLevel))
 			.then((rows) => rows[0]);
 	});

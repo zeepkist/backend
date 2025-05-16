@@ -84,3 +84,17 @@ export async function getPersonalBestsWithRecord({
 
 	return personalBests;
 }
+
+export async function getTotalRecords({
+	idLevel,
+}: {
+	idLevel: number;
+}) {
+	const totalRecords = await db
+		.select({ count: sql<number>`COUNT(*)` })
+		.from(record)
+		.where(eq(record.idLevel, idLevel))
+		.then((rows) => Number(rows[0]?.count));
+
+	return totalRecords;
+}
