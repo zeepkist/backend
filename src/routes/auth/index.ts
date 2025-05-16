@@ -25,7 +25,7 @@ interface RefreshRequest {
 
 export const replyWithJwt = async (
 	reply: FastifyReply,
-	userData: typeof user.$inferInsert,
+	userData: typeof user.$inferSelect,
 ): Promise<never> => {
 	if (!userData?.steamId) {
 		return reply.status(401).send({ error: getErrorMessage(ERROR_CODES.AUTH_USER_NOT_FOUND) });
@@ -118,7 +118,7 @@ export const authRoutes: FastifyPluginAsync = async (app) => {
 			if (
 				!auth ||
 				(auth.refreshTokenExpiry !== null &&
-					Date.now() > Number(auth.refreshTokenExpiry * 1000n))
+					Date.now() > Number(auth.refreshTokenExpiry * 1000))
 			) {
 				return reply
 					.status(401)

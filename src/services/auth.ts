@@ -19,11 +19,11 @@ export async function insertAuth({
 	await db.transaction(async (tx) => {
 		await tx.insert(auth).values({
 			idUser: user.id,
-			type: 0,
 			accessToken,
 			accessTokenExpiry,
 			refreshToken,
 			refreshTokenExpiry,
+			type: 0,
 			dateCreated: new Date().toISOString(),
 		});
 	});
