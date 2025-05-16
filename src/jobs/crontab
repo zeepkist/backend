@@ -9,7 +9,7 @@
 # │ │ │ │ │ │    │     │
 # │ │ │ │ │ │    │     │
 # * * * * * task ?opts {payload}
-# 3am UTC every day
-0 3 * * * updateLevelScores ?max=1
-# 5am UTC every day
-0 5 * * * updatePlayerScores ?max=1
+# every 4 hours at half past the hour
+30 */4 * * * updateLevelScores ?max=1
+# every 1 hour
+0 */1 * * * updatePlayerScores ?max=1
