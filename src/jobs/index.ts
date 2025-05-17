@@ -37,8 +37,6 @@ export const addJob = runner.addJob.bind(runner);
 export async function registerJobs(app: FastifyInstance) {
 	app.log.info('Registering jobs...');
 
-	await runner.promise;
-
 	for (const { task, cronTime } of cronTasks) {
 		const validation = validateCronExpression(cronTime);
 
@@ -64,4 +62,6 @@ export async function registerJobs(app: FastifyInstance) {
 
 		app.log.info(`Job ${task} registered with cron time: ${cronTime}`);
 	}
+
+	await runner.promise;
 }
