@@ -1,14 +1,28 @@
-import { relations } from "drizzle-orm/relations";
-import { level, levelItem, levelMetadata, levelPoints, personalBestGlobal, record, user, userPoints, auth, recordMedia, favourite, vote, worldRecordGlobal } from "./schema";
+import { relations } from 'drizzle-orm/relations';
+import {
+	auth,
+	favourite,
+	level,
+	levelItem,
+	levelMetadata,
+	levelPoints,
+	personalBestGlobal,
+	record,
+	recordMedia,
+	user,
+	userPoints,
+	vote,
+	worldRecordGlobal,
+} from './schema';
 
-export const levelItemRelations = relations(levelItem, ({one}) => ({
+export const levelItemRelations = relations(levelItem, ({ one }) => ({
 	level: one(level, {
 		fields: [levelItem.idLevel],
-		references: [level.id]
+		references: [level.id],
 	}),
 }));
 
-export const levelRelations = relations(level, ({many}) => ({
+export const levelRelations = relations(level, ({ many }) => ({
 	levelItems: many(levelItem),
 	levelMetadata: many(levelMetadata),
 	levelPoints: many(levelPoints),
@@ -19,50 +33,50 @@ export const levelRelations = relations(level, ({many}) => ({
 	worldRecordGlobals: many(worldRecordGlobal),
 }));
 
-export const levelMetadataRelations = relations(levelMetadata, ({one}) => ({
+export const levelMetadataRelations = relations(levelMetadata, ({ one }) => ({
 	level: one(level, {
 		fields: [levelMetadata.idLevel],
-		references: [level.id]
+		references: [level.id],
 	}),
 }));
 
-export const levelPointsRelations = relations(levelPoints, ({one}) => ({
+export const levelPointsRelations = relations(levelPoints, ({ one }) => ({
 	level: one(level, {
 		fields: [levelPoints.idLevel],
-		references: [level.id]
+		references: [level.id],
 	}),
 }));
 
-export const personalBestGlobalRelations = relations(personalBestGlobal, ({one}) => ({
+export const personalBestGlobalRelations = relations(personalBestGlobal, ({ one }) => ({
 	level: one(level, {
 		fields: [personalBestGlobal.idLevel],
-		references: [level.id]
+		references: [level.id],
 	}),
 	record: one(record, {
 		fields: [personalBestGlobal.idRecord],
-		references: [record.id]
+		references: [record.id],
 	}),
 	user: one(user, {
 		fields: [personalBestGlobal.idUser],
-		references: [user.id]
+		references: [user.id],
 	}),
 }));
 
-export const recordRelations = relations(record, ({one, many}) => ({
+export const recordRelations = relations(record, ({ one, many }) => ({
 	personalBestGlobals: many(personalBestGlobal),
 	level: one(level, {
 		fields: [record.idLevel],
-		references: [level.id]
+		references: [level.id],
 	}),
 	user: one(user, {
 		fields: [record.idUser],
-		references: [user.id]
+		references: [user.id],
 	}),
 	recordMedias: many(recordMedia),
 	worldRecordGlobals: many(worldRecordGlobal),
 }));
 
-export const userRelations = relations(user, ({many}) => ({
+export const userRelations = relations(user, ({ many }) => ({
 	personalBestGlobals: many(personalBestGlobal),
 	userPoints: many(userPoints),
 	auths: many(auth),
@@ -72,60 +86,60 @@ export const userRelations = relations(user, ({many}) => ({
 	worldRecordGlobals: many(worldRecordGlobal),
 }));
 
-export const userPointsRelations = relations(userPoints, ({one}) => ({
+export const userPointsRelations = relations(userPoints, ({ one }) => ({
 	user: one(user, {
 		fields: [userPoints.idUser],
-		references: [user.id]
+		references: [user.id],
 	}),
 }));
 
-export const authRelations = relations(auth, ({one}) => ({
+export const authRelations = relations(auth, ({ one }) => ({
 	user: one(user, {
 		fields: [auth.idUser],
-		references: [user.id]
+		references: [user.id],
 	}),
 }));
 
-export const recordMediaRelations = relations(recordMedia, ({one}) => ({
+export const recordMediaRelations = relations(recordMedia, ({ one }) => ({
 	record: one(record, {
 		fields: [recordMedia.idRecord],
-		references: [record.id]
+		references: [record.id],
 	}),
 }));
 
-export const favoriteRelations = relations(favourite, ({one}) => ({
+export const favoriteRelations = relations(favourite, ({ one }) => ({
 	level: one(level, {
 		fields: [favourite.idLevel],
-		references: [level.id]
+		references: [level.id],
 	}),
 	user: one(user, {
 		fields: [favourite.idUser],
-		references: [user.id]
+		references: [user.id],
 	}),
 }));
 
-export const voteRelations = relations(vote, ({one}) => ({
+export const voteRelations = relations(vote, ({ one }) => ({
 	level: one(level, {
 		fields: [vote.idLevel],
-		references: [level.id]
+		references: [level.id],
 	}),
 	user: one(user, {
 		fields: [vote.idUser],
-		references: [user.id]
+		references: [user.id],
 	}),
 }));
 
-export const worldRecordGlobalRelations = relations(worldRecordGlobal, ({one}) => ({
+export const worldRecordGlobalRelations = relations(worldRecordGlobal, ({ one }) => ({
 	level: one(level, {
 		fields: [worldRecordGlobal.idLevel],
-		references: [level.id]
+		references: [level.id],
 	}),
 	record: one(record, {
 		fields: [worldRecordGlobal.idRecord],
-		references: [record.id]
+		references: [record.id],
 	}),
 	user: one(user, {
 		fields: [worldRecordGlobal.idUser],
-		references: [user.id]
+		references: [user.id],
 	}),
 }));

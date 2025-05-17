@@ -38,10 +38,14 @@ const task: Task<UpdateLevelScorePayload> = async (payload, helpers) => {
 
 	// If job is triggered by a new personal best, we need to update the player score
 	if (idUser) {
-		addJob('updatePlayerScore', { idUser }, {
-			priority: 1,
-			maxAttempts: 3,
-		});
+		addJob(
+			'updatePlayerScore',
+			{ idUser },
+			{
+				priority: 1,
+				maxAttempts: 3,
+			},
+		);
 	}
 };
 

@@ -1,6 +1,6 @@
-import type { FastifyInstance } from 'fastify';
 import { CronJob, validateCronExpression } from 'cron';
-import { run, type Helpers } from 'graphile-worker';
+import type { FastifyInstance } from 'fastify';
+import { type Helpers, run } from 'graphile-worker';
 import preset from './graphile.config';
 
 import updateLevelScore from './tasks/updateLevelScore';
@@ -15,12 +15,12 @@ const cronJobs: CronJob[] = [];
 const cronTimes = {
 	everyHour: '0 * * * *', // Every hour
 	everyFourHoursAt30: '30 */4 * * *', // Every 4 hours at 30 minutes past the hour
-}
+};
 
 const cronTasks = [
 	{ task: 'updateLevelScores', cronTime: cronTimes.everyFourHoursAt30 },
 	{ task: 'updatePlayerScores', cronTime: cronTimes.everyHour },
-]
+];
 
 const runner = await run({
 	crontabFile: '', // Disable reading crontab
@@ -30,7 +30,7 @@ const runner = await run({
 		updateLevelScores: updateLevelScores as Task,
 		updatePlayerScore: updatePlayerScore as Task,
 		updatePlayerScores: updatePlayerScores as Task,
-	}
+	},
 });
 
 export const addJob = runner.addJob.bind(runner);
@@ -50,14 +50,18 @@ export async function registerJobs(app: FastifyInstance) {
 			cronTime,
 			onTick: () => {
 				app.log.info(`Running task: ${task}`);
-				addJob(task, {}, {
-					priority: 1,
-					maxAttempts: 1,
-				});
+				addJob(
+					task,
+					{},
+					{
+						priority: 1,
+						maxAttempts: 1,
+					},
+				);
 			},
 			start: true,
-			timeZone: 'Europe/London'
-		})
+			timeZone: 'Europe/London',
+		});
 
 		cronJobs.push(job);
 

@@ -1,5 +1,6 @@
 import type { FastifyPluginAsync, FastifyReply } from 'fastify';
 import type { user } from '../../db';
+import { verifyModVersion } from '../../hooks';
 import { deleteAuth, getAuth, getOrInsertUser, insertAuth } from '../../services';
 import { authenticateSteamUser } from '../../steam/authenticate';
 import {
@@ -8,7 +9,6 @@ import {
 	generateRefreshToken,
 	getErrorMessage,
 } from '../../utils';
-import { verifyModVersion } from '../../hooks';
 
 interface LoginRequest {
 	ModVersion: string;
@@ -53,92 +53,102 @@ export const replyWithJwt = async (
 };
 
 export const authRoutes: FastifyPluginAsync = async (app) => {
-	app.post<{ Body: LoginRequest }>('/login', {
-		preValidation: [verifyModVersion]
-	}, async (req, reply) => {
-		try {
-			const { ModVersion, SteamId, AuthenticationTicket } = req.body;
+	app.post<{ Body: LoginRequest }>(
+		'/login',
+		{
+			preValidation: [verifyModVersion],
+		},
+		async (req, reply) => {
+			try {
+				const { ModVersion, SteamId, AuthenticationTicket } = req.body;
 
-			console.log(
-				`[Login] Request received for SteamId ${SteamId} with ModVersion: ${ModVersion}`,
-			);
+				console.log(
+					`[Login] Request received for SteamId ${SteamId} with ModVersion: ${ModVersion}`,
+				);
 
-			if (!ModVersion || !SteamId || !AuthenticationTicket) {
-				return reply
-					.status(400)
-					.send({ error: getErrorMessage(ERROR_CODES.AUTH_MISSING_REQUIRED_FIELDS) });
+				if (!ModVersion || !SteamId || !AuthenticationTicket) {
+					return reply
+						.status(400)
+						.send({ error: getErrorMessage(ERROR_CODES.AUTH_MISSING_REQUIRED_FIELDS) });
+				}
+
+				const authResponse = await authenticateSteamUser(AuthenticationTicket);
+
+				if (!authResponse.success) {
+					return reply
+						.status(401)
+						.send({
+							error: getErrorMessage(ERROR_CODES.AUTH_STEAM_AUTHENTICATION_FAILED),
+						});
+				}
+
+				const steamIdFromRequest = BigInt(SteamId);
+				const steamIdFromAuth = BigInt(authResponse.steamId);
+
+				if (steamIdFromAuth !== steamIdFromRequest) {
+					return reply
+						.status(401)
+						.send({ error: getErrorMessage(ERROR_CODES.AUTH_STEAM_ID_MISMATCH) });
+				}
+
+				const user = await getOrInsertUser(steamIdFromAuth);
+
+				await replyWithJwt(reply, user);
+			} catch (error) {
+				if (!reply.sent) {
+					console.error('Error handling login request:', error);
+					return reply
+						.status(500)
+						.send({ error: getErrorMessage(ERROR_CODES.INTERNAL_SERVER_ERROR) });
+				}
 			}
+		},
+	);
 
-			const authResponse = await authenticateSteamUser(AuthenticationTicket);
+	app.post<{ Body: RefreshRequest }>(
+		'/refresh',
+		{
+			preValidation: [verifyModVersion],
+		},
+		async (req, reply) => {
+			try {
+				const { ModVersion, SteamId, LoginToken, RefreshToken } = req.body;
 
-			if (!authResponse.success) {
-				return reply
-					.status(401)
-					.send({ error: getErrorMessage(ERROR_CODES.AUTH_STEAM_AUTHENTICATION_FAILED) });
+				console.log(
+					`[Refresh] Request received for SteamId ${SteamId} with ModVersion: ${ModVersion}`,
+				);
+
+				if (!ModVersion || !SteamId || !LoginToken || !RefreshToken) {
+					return reply
+						.status(400)
+						.send({ error: getErrorMessage(ERROR_CODES.AUTH_MISSING_REQUIRED_FIELDS) });
+				}
+
+				const steamIdFromRequest = BigInt(SteamId);
+				const user = await getOrInsertUser(steamIdFromRequest);
+				const auth = await getAuth(user.id, RefreshToken);
+
+				if (
+					!auth ||
+					(auth.refreshTokenExpiry !== null &&
+						Date.now() > Number(auth.refreshTokenExpiry * 1000n))
+				) {
+					return reply
+						.status(401)
+						.send({ error: getErrorMessage(ERROR_CODES.AUTH_INVALID_TOKEN) });
+				}
+
+				await deleteAuth(RefreshToken);
+
+				await replyWithJwt(reply, user);
+			} catch (error) {
+				if (!reply.sent) {
+					console.error('Error handling refresh request:', error);
+					return reply
+						.status(500)
+						.send({ error: getErrorMessage(ERROR_CODES.INTERNAL_SERVER_ERROR) });
+				}
 			}
-
-			const steamIdFromRequest = BigInt(SteamId);
-			const steamIdFromAuth = BigInt(authResponse.steamId);
-
-			if (steamIdFromAuth !== steamIdFromRequest) {
-				return reply
-					.status(401)
-					.send({ error: getErrorMessage(ERROR_CODES.AUTH_STEAM_ID_MISMATCH) });
-			}
-
-			const user = await getOrInsertUser(steamIdFromAuth);
-
-			await replyWithJwt(reply, user);
-		} catch (error) {
-			if (!reply.sent) {
-				console.error('Error handling login request:', error);
-				return reply
-					.status(500)
-					.send({ error: getErrorMessage(ERROR_CODES.INTERNAL_SERVER_ERROR) });
-			}
-		}
-	});
-
-	app.post<{ Body: RefreshRequest }>('/refresh', {
-		preValidation: [verifyModVersion]
-	}, async (req, reply) => {
-		try {
-			const { ModVersion, SteamId, LoginToken, RefreshToken } = req.body;
-
-			console.log(
-				`[Refresh] Request received for SteamId ${SteamId} with ModVersion: ${ModVersion}`,
-			);
-
-			if (!ModVersion || !SteamId || !LoginToken || !RefreshToken) {
-				return reply
-					.status(400)
-					.send({ error: getErrorMessage(ERROR_CODES.AUTH_MISSING_REQUIRED_FIELDS) });
-			}
-
-			const steamIdFromRequest = BigInt(SteamId);
-			const user = await getOrInsertUser(steamIdFromRequest);
-			const auth = await getAuth(user.id, RefreshToken);
-
-			if (
-				!auth ||
-				(auth.refreshTokenExpiry !== null &&
-					Date.now() > Number(auth.refreshTokenExpiry * 1000n))
-			) {
-				return reply
-					.status(401)
-					.send({ error: getErrorMessage(ERROR_CODES.AUTH_INVALID_TOKEN) });
-			}
-
-			await deleteAuth(RefreshToken);
-
-			await replyWithJwt(reply, user);
-		} catch (error) {
-			if (!reply.sent) {
-				console.error('Error handling refresh request:', error);
-				return reply
-					.status(500)
-					.send({ error: getErrorMessage(ERROR_CODES.INTERNAL_SERVER_ERROR) });
-			}
-		}
-	});
+		},
+	);
 };

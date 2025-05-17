@@ -35,7 +35,7 @@ export async function insertRecord({
 		modVersion,
 		gameVersion,
 		dateCreated: now,
-	}
+	};
 
 	if (Array.isArray(splits) && splits?.length) {
 		if (splits.some((split) => typeof split !== 'number' || Number.isNaN(split))) {
@@ -54,10 +54,7 @@ export async function insertRecord({
 	}
 
 	const result = await db.transaction(async (tx) => {
-		const [inserted] = await tx
-			.insert(record)
-			.values(data)
-			.returning();
+		const [inserted] = await tx.insert(record).values(data).returning();
 
 		return inserted;
 	});

@@ -6,20 +6,20 @@ export const events = new EventEmitter();
 
 events.on('job:start', ({ job }) => {
 	console.log(`Worker started job ${job.id}!`);
-})
+});
 
 events.on('job:success', ({ job }) => {
-	console.log(`Horrah! Worker completed job ${job.id}!`)
-})
+	console.log(`Horrah! Worker completed job ${job.id}!`);
+});
 
 events.on('job:error', ({ job, error }) => {
 	console.error(`Oh no! Worker failed job ${job.id} with error: ${error}`);
 	console.error(error);
-})
+});
 
 events.on('job:failed', ({ job }) => {
 	console.log(`Oh no! Worker failed job ${job.id}!`);
-})
+});
 
 const preset: GraphileConfig.Preset = {
 	extends: [WorkerPreset],

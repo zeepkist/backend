@@ -1,6 +1,6 @@
-import { buildServer } from './server';
 import { HOST, PORT } from './config';
 import { registerJobs } from './jobs';
+import { buildServer } from './server';
 
 const app = await buildServer();
 

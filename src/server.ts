@@ -7,28 +7,28 @@ import Fastify from 'fastify';
 import noFavIcon from 'fastify-no-icon';
 import JSONB from 'when-json-met-bigint';
 import { HOST, PORT } from './config';
+import { db as realDb } from './db';
 import { fastifyOtelInstrumentation } from './otel';
 import { registerRoutes } from './routes';
-import { db as realDb } from './db';
 
 export async function buildServer(db = realDb) {
 	const app = await Fastify({
 		logger: {
 			serializers: {
-				res (reply) {
+				res(reply) {
 					return {
-						statusCode: reply.statusCode
-					}
+						statusCode: reply.statusCode,
+					};
 				},
-				req (request) {
+				req(request) {
 					return {
 						method: request.method,
 						path: request.routeOptions?.url,
 						query: request.query,
-					}
-				}
+					};
+				},
 			},
-		}
+		},
 	});
 
 	await app.register(fastifyOtelInstrumentation.plugin());

@@ -1,5 +1,5 @@
-import { sql, eq } from 'drizzle-orm';
-import { db, record, worldRecordGlobal, userPoints } from '../db';
+import { eq, sql } from 'drizzle-orm';
+import { db, record, userPoints, worldRecordGlobal } from '../db';
 
 export async function getWorldRecordWithRecord(idLevel: number) {
 	const worldRecord = await db
@@ -77,8 +77,8 @@ export async function upsertWorldRecord({ idLevel, idRecord, idUser, time }: Ups
 			// the count of world records by each user
 			const oldRecordHolder = currentWR?.idUser;
 
-			if (typeof oldRecordHolder === "number" && oldRecordHolder !== idUser) {
-				const worldRecords = await getTotalWorldRecordsByUser(oldRecordHolder)
+			if (typeof oldRecordHolder === 'number' && oldRecordHolder !== idUser) {
+				const worldRecords = await getTotalWorldRecordsByUser(oldRecordHolder);
 				// Update the old record holder's world records count
 				await tx
 					.update(userPoints)
@@ -86,7 +86,7 @@ export async function upsertWorldRecord({ idLevel, idRecord, idUser, time }: Ups
 						worldRecords,
 						dateUpdated: now,
 					})
-					.where(eq(userPoints.idUser, oldRecordHolder))
+					.where(eq(userPoints.idUser, oldRecordHolder));
 			}
 
 			// update the new record holder's world records count

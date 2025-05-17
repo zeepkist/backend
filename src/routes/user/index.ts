@@ -1,7 +1,7 @@
 import type { FastifyPluginAsync } from 'fastify';
+import { authenticateRequest } from '../../hooks';
 import { updateDiscordId, updateUserName } from '../../services';
 import { ERROR_CODES, getErrorMessage } from '../../utils';
-import { authenticateRequest } from '../../hooks';
 
 interface UpdateNameBody {
 	Name: string;
@@ -12,65 +12,73 @@ interface UpdateDiscordIdBody {
 }
 
 export const userRoutes: FastifyPluginAsync = async (app) => {
-	app.post<{ Body: UpdateNameBody }>('/updateSteamName', {
-		preValidation: [authenticateRequest]
-	}, async (req, reply) => {
-		try {
-			const { user: authUser } = req;
+	app.post<{ Body: UpdateNameBody }>(
+		'/updateSteamName',
+		{
+			preValidation: [authenticateRequest],
+		},
+		async (req, reply) => {
+			try {
+				const { user: authUser } = req;
 
-			if (!authUser) {
-				return reply
-					.status(401)
-					.send({ error: getErrorMessage(ERROR_CODES.AUTH_USER_NOT_FOUND) });
-			}
+				if (!authUser) {
+					return reply
+						.status(401)
+						.send({ error: getErrorMessage(ERROR_CODES.AUTH_USER_NOT_FOUND) });
+				}
 
-			const { Name } = req.body;
+				const { Name } = req.body;
 
-			if (!Name) {
+				if (!Name) {
+					return reply.status(200).send();
+				}
+
+				await updateUserName(authUser.steamid, Name);
+
 				return reply.status(200).send();
+			} catch (error) {
+				if (!reply.sent) {
+					console.error('Error handling user update request:', error);
+					return reply
+						.status(500)
+						.send({ error: getErrorMessage(ERROR_CODES.INTERNAL_SERVER_ERROR) });
+				}
 			}
+		},
+	);
 
-			await updateUserName(authUser.steamid, Name);
+	app.post<{ Body: UpdateDiscordIdBody }>(
+		'/updateDiscordId',
+		{
+			preValidation: [authenticateRequest],
+		},
+		async (req, reply) => {
+			try {
+				const { user: authUser } = req;
 
-			return reply.status(200).send();
-		} catch (error) {
-			if (!reply.sent) {
-				console.error('Error handling user update request:', error);
-				return reply
-					.status(500)
-					.send({ error: getErrorMessage(ERROR_CODES.INTERNAL_SERVER_ERROR) });
-			}
-		}
-	});
+				if (!authUser) {
+					return reply
+						.status(401)
+						.send({ error: getErrorMessage(ERROR_CODES.AUTH_USER_NOT_FOUND) });
+				}
 
-	app.post<{ Body: UpdateDiscordIdBody }>('/updateDiscordId', {
-		preValidation: [authenticateRequest]
-	}, async (req, reply) => {
-		try {
-			const { user: authUser } = req;
+				const { DiscordId } = req.body as UpdateDiscordIdBody;
 
-			if (!authUser) {
-				return reply
-					.status(401)
-					.send({ error: getErrorMessage(ERROR_CODES.AUTH_USER_NOT_FOUND) });
-			}
+				if (!DiscordId) {
+					return reply.status(200).send();
+				}
 
-			const { DiscordId } = req.body as UpdateDiscordIdBody;
+				await updateDiscordId(authUser.steamid, BigInt(DiscordId));
 
-			if (!DiscordId) {
 				return reply.status(200).send();
+			} catch (error) {
+				if (!reply.sent) {
+					console.error('Error handling user update request:', error);
+					return reply
+						.status(500)
+						.send({ error: getErrorMessage(ERROR_CODES.INTERNAL_SERVER_ERROR) });
+				}
 			}
-
-			await updateDiscordId(authUser.steamid, BigInt(DiscordId));
-
-			return reply.status(200).send();
-		} catch (error) {
-			if (!reply.sent) {
-				console.error('Error handling user update request:', error);
-				return reply
-					.status(500)
-					.send({ error: getErrorMessage(ERROR_CODES.INTERNAL_SERVER_ERROR) });
-			}
-		}
-	});
+		},
+	);
 };

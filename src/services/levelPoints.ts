@@ -14,7 +14,7 @@ export async function updateLevelPoints({
 			.set({
 				points,
 				dateUpdated: new Date().toISOString(),
-			 })
+			})
 			.where(eq(levelPoints.idLevel, idLevel))
 			.then((rows) => rows[0]);
 	});

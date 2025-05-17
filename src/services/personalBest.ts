@@ -56,13 +56,17 @@ export async function upsertPersonalBest({ idUser, idLevel, idRecord, time }: Up
 			if (updated) {
 				console.debug(`Personal best for user ${idUser} on level ${idLevel} updated`);
 
-				addJob('updateLevelScore', {
-					idLevel,
-					idUser,
-				}, {
-					priority: 1,
-					maxAttempts: 3,
-				});
+				addJob(
+					'updateLevelScore',
+					{
+						idLevel,
+						idUser,
+					},
+					{
+						priority: 1,
+						maxAttempts: 3,
+					},
+				);
 
 				return updated;
 			}
@@ -81,13 +85,17 @@ export async function upsertPersonalBest({ idUser, idLevel, idRecord, time }: Up
 
 			console.debug(`Personal best for user ${idUser} on level ${idLevel} inserted`);
 
-			addJob('updateLevelScore', {
-				idLevel,
-				idUser,
-			}, {
-				priority: 1,
-				maxAttempts: 3,
-			});
+			addJob(
+				'updateLevelScore',
+				{
+					idLevel,
+					idUser,
+				},
+				{
+					priority: 1,
+					maxAttempts: 3,
+				},
+			);
 
 			return inserted;
 		}

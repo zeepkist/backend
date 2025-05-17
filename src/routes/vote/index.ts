@@ -1,7 +1,7 @@
 import type { FastifyPluginAsync, FastifyReply, FastifyRequest } from 'fastify';
+import { authenticateRequest } from '../../hooks';
 import { getOrInsertLevel, getOrInsertUser, upsertVote } from '../../services';
 import { ERROR_CODES, getErrorMessage } from '../../utils';
-import { authenticateRequest } from '../../hooks';
 
 type VoteType = -2 | -1 | 1 | 2;
 
@@ -55,32 +55,36 @@ const handleVoteRequest = async (
 export const voteRoutes: FastifyPluginAsync = async (app) => {
 	// User votes ++ on level
 	app.post<{ Body: VoteBody }>(
-		'/dupvote', {
-			preValidation: [authenticateRequest]
+		'/dupvote',
+		{
+			preValidation: [authenticateRequest],
 		},
 		async (req, reply) => await handleVoteRequest(req, reply, 2),
 	);
 
 	// User votes + on level
 	app.post<{ Body: VoteBody }>(
-		'/upvote', {
-			preValidation: [authenticateRequest]
+		'/upvote',
+		{
+			preValidation: [authenticateRequest],
 		},
 		async (req, reply) => await handleVoteRequest(req, reply, 1),
 	);
 
 	// User votes - on level
 	app.post<{ Body: VoteBody }>(
-		'/downvote', {
-			preValidation: [authenticateRequest]
+		'/downvote',
+		{
+			preValidation: [authenticateRequest],
 		},
 		async (req, reply) => await handleVoteRequest(req, reply, -1),
 	);
 
 	// User votes -- on level
 	app.post<{ Body: VoteBody }>(
-		'/ddownvote', {
-			preValidation: [authenticateRequest]
+		'/ddownvote',
+		{
+			preValidation: [authenticateRequest],
 		},
 		async (req, reply) => await handleVoteRequest(req, reply, -2),
 	);
