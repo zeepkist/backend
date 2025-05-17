@@ -58,8 +58,8 @@ export const levelMetadata = pgTable("level_metadata", {
 
 export const levelPoints = pgTable("level_points", {
 	id: integer().primaryKey().generatedByDefaultAsIdentity({ name: "level_points_id_seq", startWith: 1, increment: 1, minValue: 1, maxValue: 2147483647, cache: 1 }),
-	points: integer().notNull(),
 	idLevel: integer("id_level").notNull(),
+	points: integer().notNull(),
 	dateCreated: timestamp("date_created", { withTimezone: true, mode: 'string' }).notNull(),
 	dateUpdated: timestamp("date_updated", { withTimezone: true, mode: 'string' }),
 }, (table) => [
@@ -68,6 +68,20 @@ export const levelPoints = pgTable("level_points", {
 			columns: [table.idLevel],
 			foreignColumns: [level.id],
 			name: "level_points_level_fkey"
+		}),
+]);
+
+export const levelPointsHistory = pgTable("level_points_history", {
+	id: integer().primaryKey().generatedByDefaultAsIdentity({ name: "level_points_history_id_seq", startWith: 1, increment: 1, minValue: 1, maxValue: 2147483647, cache: 1 }),
+	idLevel: integer("id_level").notNull(),
+	points: integer().notNull(),
+	dateCreated: timestamp("date_created", { withTimezone: true, mode: 'string' }).notNull(),
+}, (table) => [
+	uniqueIndex("UQ_level_points_history_level").using("btree", table.idLevel.asc().nullsLast(), table.dateCreated.desc().nullsLast()),
+	foreignKey({
+			columns: [table.idLevel],
+			foreignColumns: [level.id],
+			name: "level_points_history_level_fkey"
 		}),
 ]);
 
@@ -116,11 +130,11 @@ export const userPoints = pgTable("user_points", {
 	id: integer().primaryKey().generatedByDefaultAsIdentity({ name: "player_points_id_seq", startWith: 1, increment: 1, minValue: 1, maxValue: 2147483647, cache: 1 }),
 	idUser: integer("id_user").notNull(),
 	points: integer().default(0).notNull(),
+	totalPoints: integer("total_points").default(0).notNull(),
+	rank: integer().default(-1).notNull(),
+	worldRecords: integer("world_records").default(0),
 	dateCreated: timestamp("date_created", { withTimezone: true, mode: 'string' }).notNull(),
 	dateUpdated: timestamp("date_updated", { withTimezone: true, mode: 'string' }),
-	rank: integer().default(0).notNull(),
-	worldRecords: integer("world_records").default(0),
-	totalPoints: integer("total_points").default(0).notNull(),
 }, (table) => [
 	index("IX_player_points_user").using("btree", table.idUser.asc().nullsLast()),
 	foreignKey({
@@ -128,6 +142,23 @@ export const userPoints = pgTable("user_points", {
 			foreignColumns: [user.id],
 			name: "player_points_user_fkey"
 		}).onDelete("set null"),
+]);
+
+export const userPointsHistory = pgTable("user_points_history", {
+	id: integer().primaryKey().generatedByDefaultAsIdentity({ name: "user_points_history_id_seq", startWith: 1, increment: 1, minValue: 1, maxValue: 2147483647, cache: 1 }),
+	idUser: integer("id_user").notNull(),
+	points: integer().notNull(),
+	totalPoints: integer("total_points").default(0).notNull(),
+	rank: integer().notNull().default(-1),
+	worldRecords: integer("world_records").default(0).notNull(),
+	dateCreated: timestamp("date_created", { withTimezone: true, mode: 'string' }).notNull(),
+}, (table) => [
+	uniqueIndex("UQ_user_points_history_user").using("btree", table.idUser.asc().nullsLast(), table.dateCreated.desc().nullsLast()),
+	foreignKey({
+		columns: [table.idUser],
+		foreignColumns: [user.id],
+		name: "user_points_history_user_fkey"
+	}).onDelete("set null"),
 ]);
 
 export const auth = pgTable("auth", {
@@ -194,26 +225,6 @@ export const recordMedia = pgTable("record_media", {
 	unique("UQ_record_media_record").on(table.idRecord),
 ]);
 
-export const upvote = pgTable("upvote", {
-	id: integer().primaryKey().generatedByDefaultAsIdentity({ name: "upvotes_id_seq", startWith: 1, increment: 1, minValue: 1, maxValue: 2147483647, cache: 1 }),
-	idUser: integer("id_user").notNull(),
-	idLevel: integer("id_level").notNull(),
-	dateCreated: timestamp("date_created", { withTimezone: true, mode: 'string' }).notNull(),
-	dateUpdated: timestamp("date_updated", { withTimezone: true, mode: 'string' }),
-}, (table) => [
-	index("IX_upvotes_user").using("btree", table.idUser.asc().nullsLast()),
-	foreignKey({
-			columns: [table.idLevel],
-			foreignColumns: [level.id],
-			name: "upvote_level_fkey"
-		}),
-	foreignKey({
-			columns: [table.idUser],
-			foreignColumns: [user.id],
-			name: "upvotes_user_foreign"
-		}).onDelete("set null"),
-]);
-
 export const user = pgTable("user", {
 	id: integer().primaryKey().generatedByDefaultAsIdentity({ name: "users_id_seq", startWith: 1, increment: 1, minValue: 1, maxValue: 2147483647, cache: 1 }),
 	steamName: varchar("steam_name", { length: 255 }),
@@ -232,7 +243,7 @@ export const version = pgTable("version", {
 	dateUpdated: timestamp("date_updated", { withTimezone: true, mode: 'string' }),
 });
 
-export const favorite = pgTable("favorite", {
+export const favourite = pgTable("favourite", {
 	id: integer().primaryKey().generatedByDefaultAsIdentity({ name: "favorites_id_seq", startWith: 1, increment: 1, minValue: 1, maxValue: 2147483647, cache: 1 }),
 	idUser: integer("id_user").notNull(),
 	dateCreated: timestamp("date_created", { withTimezone: true, mode: 'string' }).notNull(),

@@ -1,5 +1,5 @@
 import { relations } from "drizzle-orm/relations";
-import { level, levelItem, levelMetadata, levelPoints, personalBestGlobal, record, user, userPoints, auth, recordMedia, upvote, favorite, vote, worldRecordGlobal } from "./schema";
+import { level, levelItem, levelMetadata, levelPoints, personalBestGlobal, record, user, userPoints, auth, recordMedia, favourite, vote, worldRecordGlobal } from "./schema";
 
 export const levelItemRelations = relations(levelItem, ({one}) => ({
 	level: one(level, {
@@ -14,8 +14,7 @@ export const levelRelations = relations(level, ({many}) => ({
 	levelPoints: many(levelPoints),
 	personalBestGlobals: many(personalBestGlobal),
 	records: many(record),
-	upvotes: many(upvote),
-	favorites: many(favorite),
+	favorites: many(favourite),
 	votes: many(vote),
 	worldRecordGlobals: many(worldRecordGlobal),
 }));
@@ -68,8 +67,7 @@ export const userRelations = relations(user, ({many}) => ({
 	userPoints: many(userPoints),
 	auths: many(auth),
 	records: many(record),
-	upvotes: many(upvote),
-	favorites: many(favorite),
+	favorites: many(favourite),
 	votes: many(vote),
 	worldRecordGlobals: many(worldRecordGlobal),
 }));
@@ -95,24 +93,13 @@ export const recordMediaRelations = relations(recordMedia, ({one}) => ({
 	}),
 }));
 
-export const upvoteRelations = relations(upvote, ({one}) => ({
+export const favoriteRelations = relations(favourite, ({one}) => ({
 	level: one(level, {
-		fields: [upvote.idLevel],
+		fields: [favourite.idLevel],
 		references: [level.id]
 	}),
 	user: one(user, {
-		fields: [upvote.idUser],
-		references: [user.id]
-	}),
-}));
-
-export const favoriteRelations = relations(favorite, ({one}) => ({
-	level: one(level, {
-		fields: [favorite.idLevel],
-		references: [level.id]
-	}),
-	user: one(user, {
-		fields: [favorite.idUser],
+		fields: [favourite.idUser],
 		references: [user.id]
 	}),
 }));
