@@ -1,6 +1,7 @@
 import type { FastifyPluginAsync, FastifyReply, FastifyRequest } from 'fastify';
 import { getOrInsertLevel, getOrInsertUser, upsertVote } from '../../services';
-import { ERROR_CODES, authenticateRequest, getErrorMessage } from '../../utils';
+import { ERROR_CODES, getErrorMessage } from '../../utils';
+import { authenticateRequest } from '../../hooks';
 
 type VoteType = -2 | -1 | 1 | 2;
 
@@ -14,7 +15,14 @@ const handleVoteRequest = async (
 	value: VoteType,
 ) => {
 	try {
-		const { steamid } = await authenticateRequest(req, reply, req.url);
+		const { user: authUser } = req;
+
+		if (!authUser) {
+			return reply
+				.status(401)
+				.send({ error: getErrorMessage(ERROR_CODES.AUTH_USER_NOT_FOUND) });
+		}
+
 		const { Level } = req.body;
 
 		if (!Level) {
@@ -29,7 +37,7 @@ const handleVoteRequest = async (
 			return reply.status(400).send({ error: getErrorMessage(ERROR_CODES.LEVEL_NOT_FOUND) });
 		}
 
-		const user = await getOrInsertUser(steamid);
+		const user = await getOrInsertUser(authUser.steamid);
 
 		await upsertVote(user.id, level.id, value);
 
@@ -47,25 +55,33 @@ const handleVoteRequest = async (
 export const voteRoutes: FastifyPluginAsync = async (app) => {
 	// User votes ++ on level
 	app.post<{ Body: VoteBody }>(
-		'/dupvote',
+		'/dupvote', {
+			preValidation: [authenticateRequest]
+		},
 		async (req, reply) => await handleVoteRequest(req, reply, 2),
 	);
 
 	// User votes + on level
 	app.post<{ Body: VoteBody }>(
-		'/upvote',
+		'/upvote', {
+			preValidation: [authenticateRequest]
+		},
 		async (req, reply) => await handleVoteRequest(req, reply, 1),
 	);
 
 	// User votes - on level
 	app.post<{ Body: VoteBody }>(
-		'/downvote',
+		'/downvote', {
+			preValidation: [authenticateRequest]
+		},
 		async (req, reply) => await handleVoteRequest(req, reply, -1),
 	);
 
 	// User votes -- on level
 	app.post<{ Body: VoteBody }>(
-		'/ddownvote',
+		'/ddownvote', {
+			preValidation: [authenticateRequest]
+		},
 		async (req, reply) => await handleVoteRequest(req, reply, -2),
 	);
 };

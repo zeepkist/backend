@@ -1,7 +1,7 @@
 import { SQL } from 'bun';
 import { drizzle } from 'drizzle-orm/bun-sql';
 import { DATABASE_URL } from '../config';
-import * as schema from './schema';
+import * as schema from '../../drizzle/schema';
 
 const client = new SQL({
 	url: DATABASE_URL,
@@ -23,5 +23,5 @@ const client = new SQL({
 
 export const db = drizzle({ client, schema });
 
-export * from './schema';
-export * from './relations';
+export * from '../../drizzle/schema';
+export * from '../../drizzle/relations';

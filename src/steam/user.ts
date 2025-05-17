@@ -57,7 +57,7 @@ interface GetPlayerSummariesResponse {
 	};
 }
 
-export async function getSteamUser(steamId: string): Promise<SteamUserData> {
+export async function getSteamUser(steamId: bigint): Promise<SteamUserData> {
 	const url = `${STEAM_API_BASE_URL}/ISteamUser/GetPlayerSummaries/v2/?key=${STEAM_API_KEY}&steamids=${steamId}`;
 	const response = await fetch(url);
 

@@ -4,21 +4,21 @@ import { deleteAuth, getAuth, getOrInsertUser, insertAuth } from '../../services
 import { authenticateSteamUser } from '../../steam/authenticate';
 import {
 	ERROR_CODES,
-	authenticateModVersion,
 	generateAccessToken,
 	generateRefreshToken,
 	getErrorMessage,
 } from '../../utils';
+import { verifyModVersion } from '../../hooks';
 
 interface LoginRequest {
 	ModVersion: string;
-	SteamId: bigint;
+	SteamId: string;
 	AuthenticationTicket: string;
 }
 
 interface RefreshRequest {
 	ModVersion: string;
-	SteamId: bigint;
+	SteamId: string;
 	LoginToken: string;
 	RefreshToken: string;
 }
@@ -53,7 +53,9 @@ export const replyWithJwt = async (
 };
 
 export const authRoutes: FastifyPluginAsync = async (app) => {
-	app.post<{ Body: LoginRequest }>('/login', async (req, reply) => {
+	app.post<{ Body: LoginRequest }>('/login', {
+		preValidation: [verifyModVersion]
+	}, async (req, reply) => {
 		try {
 			const { ModVersion, SteamId, AuthenticationTicket } = req.body;
 
@@ -67,8 +69,6 @@ export const authRoutes: FastifyPluginAsync = async (app) => {
 					.send({ error: getErrorMessage(ERROR_CODES.AUTH_MISSING_REQUIRED_FIELDS) });
 			}
 
-			await authenticateModVersion(req, reply, req.url);
-
 			const authResponse = await authenticateSteamUser(AuthenticationTicket);
 
 			if (!authResponse.success) {
@@ -77,13 +77,16 @@ export const authRoutes: FastifyPluginAsync = async (app) => {
 					.send({ error: getErrorMessage(ERROR_CODES.AUTH_STEAM_AUTHENTICATION_FAILED) });
 			}
 
-			if (authResponse.steamId !== String(SteamId)) {
+			const steamIdFromRequest = BigInt(SteamId);
+			const steamIdFromAuth = BigInt(authResponse.steamId);
+
+			if (steamIdFromAuth !== steamIdFromRequest) {
 				return reply
 					.status(401)
 					.send({ error: getErrorMessage(ERROR_CODES.AUTH_STEAM_ID_MISMATCH) });
 			}
 
-			const user = await getOrInsertUser(authResponse.steamId);
+			const user = await getOrInsertUser(steamIdFromAuth);
 
 			await replyWithJwt(reply, user);
 		} catch (error) {
@@ -96,7 +99,9 @@ export const authRoutes: FastifyPluginAsync = async (app) => {
 		}
 	});
 
-	app.post<{ Body: RefreshRequest }>('/refresh', async (req, reply) => {
+	app.post<{ Body: RefreshRequest }>('/refresh', {
+		preValidation: [verifyModVersion]
+	}, async (req, reply) => {
 		try {
 			const { ModVersion, SteamId, LoginToken, RefreshToken } = req.body;
 
@@ -110,15 +115,14 @@ export const authRoutes: FastifyPluginAsync = async (app) => {
 					.send({ error: getErrorMessage(ERROR_CODES.AUTH_MISSING_REQUIRED_FIELDS) });
 			}
 
-			await authenticateModVersion(req, reply, req.url);
-
-			const user = await getOrInsertUser(SteamId.toString());
+			const steamIdFromRequest = BigInt(SteamId);
+			const user = await getOrInsertUser(steamIdFromRequest);
 			const auth = await getAuth(user.id, RefreshToken);
 
 			if (
 				!auth ||
 				(auth.refreshTokenExpiry !== null &&
-					Date.now() > Number(auth.refreshTokenExpiry * 1000))
+					Date.now() > Number(auth.refreshTokenExpiry * 1000n))
 			) {
 				return reply
 					.status(401)

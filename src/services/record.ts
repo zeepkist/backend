@@ -27,6 +27,7 @@ export async function insertRecord({
 	gameVersion,
 }: RecordData): Promise<typeof record.$inferSelect | null> {
 	const now = new Date().toISOString();
+
 	const data: SubmittedRecordData = {
 		idUser,
 		idLevel,
@@ -37,10 +38,18 @@ export async function insertRecord({
 	}
 
 	if (Array.isArray(splits) && splits?.length) {
+		if (splits.some((split) => typeof split !== 'number' || Number.isNaN(split))) {
+			console.error('Invalid splits data', splits);
+			return null;
+		}
 		data.splits = splits;
 	}
 
 	if (Array.isArray(speeds) && speeds?.length) {
+		if (speeds.some((speed) => typeof speed !== 'number' || Number.isNaN(speed))) {
+			console.error('Invalid speeds data', speeds);
+			return null;
+		}
 		data.speeds = speeds;
 	}
 

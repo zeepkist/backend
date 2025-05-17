@@ -1,16 +1,4 @@
-import { pgTable, uniqueIndex, bigint, timestamp, varchar, unique, integer, text, index, foreignKey, numeric, real, boolean, jsonb } from "drizzle-orm/pg-core"
-import { sql } from "drizzle-orm"
-
-
-
-export const versionInfo = pgTable("VersionInfo", {
-	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
-	version: bigint("Version", { mode: "number" }).notNull(),
-	appliedOn: timestamp("AppliedOn", { mode: 'string' }),
-	description: varchar("Description", { length: 1024 }),
-}, (table) => [
-	uniqueIndex("UC_Version").using("btree", table.version.asc().nullsLast().op("int8_ops")),
-]);
+import { pgTable, uniqueIndex, bigint, real, timestamp, varchar, unique, integer, text, index, foreignKey, boolean, jsonb } from "drizzle-orm/pg-core"
 
 export const level = pgTable("level", {
 	id: integer().primaryKey().generatedAlwaysAsIdentity({ name: "level_id_seq", startWith: 1, increment: 1, minValue: 1, maxValue: 2147483647, cache: 1 }),
@@ -24,8 +12,8 @@ export const level = pgTable("level", {
 export const levelItem = pgTable("level_item", {
 	id: integer().primaryKey().generatedAlwaysAsIdentity({ name: "level_item_id_seq", startWith: 1, increment: 1, minValue: 1, maxValue: 2147483647, cache: 1 }),
 	idLevel: integer("id_level").notNull(),
-	workshopId: numeric("workshop_id").notNull(),
-	authorId: numeric("author_id").notNull(),
+	workshopId: bigint("workshop_id", { mode: "bigint" }).notNull(),
+	authorId: bigint("author_id", { mode: "bigint" }).notNull(),
 	name: text().notNull(),
 	imageUrl: text("image_url").notNull(),
 	fileAuthor: text("file_author").notNull(),
@@ -40,7 +28,7 @@ export const levelItem = pgTable("level_item", {
 	dateCreated: timestamp("date_created", { withTimezone: true, mode: 'string' }).notNull(),
 	dateUpdated: timestamp("date_updated", { withTimezone: true, mode: 'string' }),
 }, (table) => [
-	index("IX_level_item_level").using("btree", table.idLevel.asc().nullsLast().op("int4_ops")),
+	index("IX_level_item_level").using("btree", table.idLevel.asc().nullsLast()),
 	foreignKey({
 			columns: [table.idLevel],
 			foreignColumns: [level.id],
@@ -60,7 +48,7 @@ export const levelMetadata = pgTable("level_metadata", {
 	dateCreated: timestamp("date_created", { withTimezone: true, mode: 'string' }).notNull(),
 	dateUpdated: timestamp("date_updated", { withTimezone: true, mode: 'string' }),
 }, (table) => [
-	index("IX_level_metadata_level").using("btree", table.idLevel.asc().nullsLast().op("int4_ops")),
+	index("IX_level_metadata_level").using("btree", table.idLevel.asc().nullsLast()),
 	foreignKey({
 			columns: [table.idLevel],
 			foreignColumns: [level.id],
@@ -75,7 +63,7 @@ export const levelPoints = pgTable("level_points", {
 	dateCreated: timestamp("date_created", { withTimezone: true, mode: 'string' }).notNull(),
 	dateUpdated: timestamp("date_updated", { withTimezone: true, mode: 'string' }),
 }, (table) => [
-	uniqueIndex("UQ_level_points_level").using("btree", table.idLevel.asc().nullsLast().op("int4_ops")),
+	uniqueIndex("UQ_level_points_level").using("btree", table.idLevel.asc().nullsLast()),
 	foreignKey({
 			columns: [table.idLevel],
 			foreignColumns: [level.id],
@@ -85,14 +73,14 @@ export const levelPoints = pgTable("level_points", {
 
 export const levelRequest = pgTable("level_request", {
 	id: integer().primaryKey().generatedByDefaultAsIdentity({ name: "requests_id_seq", startWith: 1, increment: 1, minValue: 1, maxValue: 2147483647, cache: 1 }),
-	workshopId: numeric("workshop_id").notNull(),
+	workshopId: bigint("workshop_id", { mode: "bigint" }).notNull(),
 	uid: text(),
 	hash: text(),
 	dateCreated: timestamp("date_created", { withTimezone: true, mode: 'string' }).notNull(),
 	dateUpdated: timestamp("date_updated", { withTimezone: true, mode: 'string' }),
 }, (table) => [
-	index("IX_level_request_hash").using("btree", table.hash.asc().nullsLast().op("text_ops")),
-	index("IX_level_request_workshop_id").using("btree", table.workshopId.asc().nullsLast().op("numeric_ops")),
+	index("IX_level_request_hash").using("btree", table.hash.asc().nullsLast()),
+	index("IX_level_request_workshop_id").using("btree", table.workshopId.asc().nullsLast()),
 ]);
 
 export const personalBestGlobal = pgTable("personal_best_global", {
@@ -103,10 +91,10 @@ export const personalBestGlobal = pgTable("personal_best_global", {
 	dateCreated: timestamp("date_created", { withTimezone: true, mode: 'string' }).notNull(),
 	dateUpdated: timestamp("date_updated", { withTimezone: true, mode: 'string' }),
 }, (table) => [
-	index("IX_personal_bests_level_user").using("btree", table.idLevel.asc().nullsLast().op("int4_ops"), table.idUser.asc().nullsLast().op("int4_ops")),
-	index("IX_personal_bests_record").using("btree", table.idRecord.asc().nullsLast().op("int4_ops")),
-	index("IX_personal_bests_user").using("btree", table.idUser.asc().nullsLast().op("int4_ops")),
-	index("IX_personal_bests_user_level_record").using("btree", table.idUser.asc().nullsLast().op("int4_ops"), table.idLevel.asc().nullsLast().op("int4_ops"), table.idRecord.asc().nullsLast().op("int4_ops")),
+	index("IX_personal_bests_level_user").using("btree", table.idLevel.asc().nullsLast(), table.idUser.asc().nullsLast()),
+	index("IX_personal_bests_record").using("btree", table.idRecord.asc().nullsLast()),
+	index("IX_personal_bests_user").using("btree", table.idUser.asc().nullsLast()),
+	index("IX_personal_bests_user_level_record").using("btree", table.idUser.asc().nullsLast(), table.idLevel.asc().nullsLast(), table.idRecord.asc().nullsLast()),
 	foreignKey({
 			columns: [table.idLevel],
 			foreignColumns: [level.id],
@@ -134,7 +122,7 @@ export const userPoints = pgTable("user_points", {
 	worldRecords: integer("world_records").default(0),
 	totalPoints: integer("total_points").default(0).notNull(),
 }, (table) => [
-	index("IX_player_points_user").using("btree", table.idUser.asc().nullsLast().op("int4_ops")),
+	index("IX_player_points_user").using("btree", table.idUser.asc().nullsLast()),
 	foreignKey({
 			columns: [table.idUser],
 			foreignColumns: [user.id],
@@ -146,16 +134,14 @@ export const auth = pgTable("auth", {
 	id: integer().primaryKey().generatedByDefaultAsIdentity({ name: "auth_id_seq", startWith: 1, increment: 1, minValue: 1, maxValue: 2147483647, cache: 1 }),
 	idUser: integer("id_user"),
 	accessToken: text("access_token"),
-	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
-	accessTokenExpiry: bigint("access_token_expiry", { mode: "number" }),
+	accessTokenExpiry: bigint("access_token_expiry", { mode: "bigint" }),
 	refreshToken: text("refresh_token"),
-	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
-	refreshTokenExpiry: bigint("refresh_token_expiry", { mode: "number" }),
+	refreshTokenExpiry: bigint("refresh_token_expiry", { mode: "bigint" }),
 	type: integer(),
 	dateCreated: timestamp("date_created", { withTimezone: true, mode: 'string' }).notNull(),
 	dateUpdated: timestamp("date_updated", { withTimezone: true, mode: 'string' }),
 }, (table) => [
-	index("IX_auth_user").using("btree", table.idUser.asc().nullsLast().op("int4_ops")),
+	index("IX_auth_user").using("btree", table.idUser.asc().nullsLast()),
 	foreignKey({
 			columns: [table.idUser],
 			foreignColumns: [user.id],
@@ -175,11 +161,11 @@ export const record = pgTable("record", {
 	splits: real().array(),
 	speeds: real().array(),
 }, (table) => [
-	index("IX_records_id_time").using("btree", table.idLevel.asc().nullsLast().op("int4_ops"), table.time.asc().nullsLast().op("int4_ops")),
-	index("IX_records_level").using("btree", table.idLevel.asc().nullsLast().op("int4_ops")),
-	index("IX_records_level_time").using("btree", table.idLevel.asc().nullsLast().op("float4_ops"), table.time.asc().nullsLast().op("int4_ops")),
-	index("IX_records_time_id").using("btree", table.time.asc().nullsLast().op("float4_ops"), table.idLevel.asc().nullsLast().op("int4_ops")),
-	index("IX_records_user").using("btree", table.idUser.asc().nullsLast().op("int4_ops")),
+	index("IX_records_id_time").using("btree", table.idLevel.asc().nullsLast(), table.time.asc().nullsLast()),
+	index("IX_records_level").using("btree", table.idLevel.asc().nullsLast()),
+	index("IX_records_level_time").using("btree", table.idLevel.asc().nullsLast(), table.time.asc().nullsLast()),
+	index("IX_records_time_id").using("btree", table.time.asc().nullsLast(), table.idLevel.asc().nullsLast()),
+	index("IX_records_user").using("btree", table.idUser.asc().nullsLast()),
 	foreignKey({
 			columns: [table.idLevel],
 			foreignColumns: [level.id],
@@ -199,7 +185,7 @@ export const recordMedia = pgTable("record_media", {
 	dateCreated: timestamp("date_created", { withTimezone: true, mode: 'string' }).notNull(),
 	dateUpdated: timestamp("date_updated", { withTimezone: true, mode: 'string' }),
 }, (table) => [
-	index("IX_media_record").using("btree", table.idRecord.asc().nullsLast().op("int4_ops")),
+	index("IX_media_record").using("btree", table.idRecord.asc().nullsLast()),
 	foreignKey({
 			columns: [table.idRecord],
 			foreignColumns: [record.id],
@@ -215,7 +201,7 @@ export const upvote = pgTable("upvote", {
 	dateCreated: timestamp("date_created", { withTimezone: true, mode: 'string' }).notNull(),
 	dateUpdated: timestamp("date_updated", { withTimezone: true, mode: 'string' }),
 }, (table) => [
-	index("IX_upvotes_user").using("btree", table.idUser.asc().nullsLast().op("int4_ops")),
+	index("IX_upvotes_user").using("btree", table.idUser.asc().nullsLast()),
 	foreignKey({
 			columns: [table.idLevel],
 			foreignColumns: [level.id],
@@ -234,8 +220,8 @@ export const user = pgTable("user", {
 	banned: boolean().default(false).notNull(),
 	dateCreated: timestamp("date_created", { withTimezone: true, mode: 'string' }).notNull(),
 	dateUpdated: timestamp("date_updated", { withTimezone: true, mode: 'string' }),
-	steamId: numeric("steam_id"),
-	discordId: numeric("discord_id"),
+	steamId: bigint("steam_id", { mode: "bigint" }),
+	discordId: bigint("discord_id", { mode: "bigint" }),
 });
 
 export const version = pgTable("version", {
@@ -253,8 +239,8 @@ export const favorite = pgTable("favorite", {
 	dateUpdated: timestamp("date_updated", { withTimezone: true, mode: 'string' }),
 	idLevel: integer("id_level").notNull(),
 }, (table) => [
-	index("IX_favorites_level").using("btree", table.idLevel.asc().nullsLast().op("int4_ops")),
-	index("IX_favorites_user").using("btree", table.idUser.asc().nullsLast().op("int4_ops")),
+	index("IX_favorites_level").using("btree", table.idLevel.asc().nullsLast()),
+	index("IX_favorites_user").using("btree", table.idUser.asc().nullsLast()),
 	foreignKey({
 			columns: [table.idLevel],
 			foreignColumns: [level.id],
@@ -275,7 +261,7 @@ export const vote = pgTable("vote", {
 	dateCreated: timestamp("date_created", { withTimezone: true, mode: 'string' }).notNull(),
 	dateUpdated: timestamp("date_updated", { withTimezone: true, mode: 'string' }),
 }, (table) => [
-	index("IX_vote_user_level").using("btree", table.idUser.asc().nullsLast().op("int4_ops"), table.idLevel.asc().nullsLast().op("int4_ops")),
+	index("IX_vote_user_level").using("btree", table.idUser.asc().nullsLast(), table.idLevel.asc().nullsLast()),
 	foreignKey({
 			columns: [table.idLevel],
 			foreignColumns: [level.id],
@@ -296,9 +282,9 @@ export const worldRecordGlobal = pgTable("world_record_global", {
 	dateUpdated: timestamp("date_updated", { withTimezone: true, mode: 'string' }),
 	idUser: integer("id_user").notNull(),
 }, (table) => [
-	index("IX_world_records_level").using("btree", table.idLevel.asc().nullsLast().op("int4_ops")),
-	index("IX_world_records_record").using("btree", table.idRecord.asc().nullsLast().op("int4_ops")),
-	index("IX_world_records_user").using("btree", table.idUser.asc().nullsLast().op("int4_ops")),
+	index("IX_world_records_level").using("btree", table.idLevel.asc().nullsLast()),
+	index("IX_world_records_record").using("btree", table.idRecord.asc().nullsLast()),
+	index("IX_world_records_user").using("btree", table.idUser.asc().nullsLast()),
 	foreignKey({
 			columns: [table.idLevel],
 			foreignColumns: [level.id],

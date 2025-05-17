@@ -2,14 +2,12 @@ import { eq, sql } from 'drizzle-orm';
 import { db, personalBestGlobal, user } from '../db';
 import { getSteamUser } from '../steam/user.ts';
 
-export async function getOrInsertUser(steamId: string): Promise<typeof user.$inferSelect> {
+export async function getOrInsertUser(steamId: bigint): Promise<typeof user.$inferSelect> {
 	const existingUser = await db.query.user.findFirst({
 		where: eq(user.steamId, steamId),
 	});
 
 	if (existingUser) {
-		console.debug(`User ${steamId} already exists`);
-
 		return existingUser;
 	}
 
@@ -41,7 +39,7 @@ export async function getOrInsertUser(steamId: string): Promise<typeof user.$inf
 }
 
 export async function updateUserName(
-	steamId: string,
+	steamId: bigint,
 	newName: string,
 ): Promise<typeof user.$inferSelect> {
 	const updatedUser = await db.transaction(async (tx) => {
@@ -69,8 +67,8 @@ export async function updateUserName(
 }
 
 export async function updateDiscordId(
-	steamId: string,
-	discordId: string,
+	steamId: bigint,
+	discordId: bigint,
 ): Promise<typeof user.$inferSelect> {
 	const updatedUser = await db.transaction(async (tx) => {
 		const now = new Date().toISOString();

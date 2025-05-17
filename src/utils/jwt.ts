@@ -51,12 +51,12 @@ export function generateRefreshToken(): RefreshTokenResponse {
 	};
 }
 
-interface VerifyResponse {
+export interface VerifyResponse {
 	jti: string;
 	aud: string;
 	iss: string;
 	sub: string;
-	steamid: string;
+	steamid: bigint;
 }
 
 export async function verifyAccessToken(token: string): Promise<VerifyResponse | null> {
@@ -77,6 +77,8 @@ export async function verifyAccessToken(token: string): Promise<VerifyResponse |
 		) {
 			throw new Error(getErrorMessage(ERROR_CODES.AUTH_INVALID_TOKEN));
 		}
+
+		payload.steamid = BigInt(payload.steamid);
 
 		return payload;
 	} catch (error) {

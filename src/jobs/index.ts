@@ -23,6 +23,7 @@ const cronTasks = [
 ]
 
 const runner = await run({
+	crontabFile: '', // Disable reading crontab
 	preset,
 	taskList: {
 		updateLevelScore: updateLevelScore as Task,

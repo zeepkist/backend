@@ -7,7 +7,6 @@ export async function getOrInsertLevel(hash: string): Promise<typeof level.$infe
 	});
 
 	if (existingLevel) {
-		console.debug(`Level with hash ${hash} already exists`);
 		return existingLevel;
 	}
 

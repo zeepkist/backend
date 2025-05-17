@@ -9,10 +9,9 @@ import {
 } from '../../services';
 import {
 	ERROR_CODES,
-	authenticateModVersion,
-	authenticateRequest,
 	getErrorMessage,
 } from '../../utils';
+import { authenticateRequest, verifyModVersion } from '../../hooks';
 
 interface SubmitBody {
 	Level: string;
@@ -25,10 +24,17 @@ interface SubmitBody {
 }
 
 export const recordRoutes: FastifyPluginAsync = async (app) => {
-	app.post<{ Body: SubmitBody }>('/submit', async (req, reply) => {
+	app.post<{ Body: SubmitBody }>('/submit', {
+		preValidation: [verifyModVersion, authenticateRequest]
+	}, async (req, reply) => {
 		try {
-			const { steamid } = await authenticateRequest(req, reply, req.url);
-			await authenticateModVersion(req, reply, req.url);
+			const { user: authUser } = req;
+
+			if (!authUser) {
+				return reply
+					.status(401)
+					.send({ error: getErrorMessage(ERROR_CODES.AUTH_USER_NOT_FOUND) });
+			}
 
 			const { Level, Time, Splits, Speeds, GhostData, GameVersion, ModVersion } = req.body;
 
@@ -38,7 +44,7 @@ export const recordRoutes: FastifyPluginAsync = async (app) => {
 					.send({ error: getErrorMessage(ERROR_CODES.RECORD_SUBMIT_MISSING_PARAMS) });
 			}
 
-			const user = await getOrInsertUser(steamid);
+			const user = await getOrInsertUser(authUser.steamid);
 			const level = await getOrInsertLevel(Level);
 
 			if (!level) {
