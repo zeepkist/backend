@@ -66,7 +66,7 @@ export const levelItem = pgTable(
 			columns: [table.idLevel],
 			foreignColumns: [level.id],
 			name: 'level_item_id_level_fkey',
-		}),
+		}).onDelete('cascade'),
 	],
 );
 
@@ -97,7 +97,7 @@ export const levelMetadata = pgTable(
 			columns: [table.idLevel],
 			foreignColumns: [level.id],
 			name: 'level_metadata_id_level_fkey',
-		}),
+		}).onDelete('cascade'),
 	],
 );
 
@@ -123,7 +123,7 @@ export const levelPoints = pgTable(
 			columns: [table.idLevel],
 			foreignColumns: [level.id],
 			name: 'level_points_level_fkey',
-		}),
+		}).onDelete('cascade'),
 	],
 );
 
@@ -152,7 +152,7 @@ export const levelPointsHistory = pgTable(
 			columns: [table.idLevel],
 			foreignColumns: [level.id],
 			name: 'level_points_history_level_fkey',
-		}),
+		}).onDelete('cascade'),
 	],
 );
 
@@ -214,17 +214,17 @@ export const personalBestGlobal = pgTable(
 			columns: [table.idLevel],
 			foreignColumns: [level.id],
 			name: 'personal_best_global_level_fkey',
-		}),
+		}).onDelete('cascade'),
 		foreignKey({
 			columns: [table.idRecord],
 			foreignColumns: [record.id],
 			name: 'personal_bests_global_record_fkey',
-		}),
+		}).onDelete('cascade'),
 		foreignKey({
 			columns: [table.idUser],
 			foreignColumns: [user.id],
 			name: 'personal_bests_global_user_fkey',
-		}),
+		}).onDelete('cascade'),
 	],
 );
 
@@ -253,7 +253,7 @@ export const userPoints = pgTable(
 			columns: [table.idUser],
 			foreignColumns: [user.id],
 			name: 'player_points_user_fkey',
-		}).onDelete('set null'),
+		}).onDelete('cascade'),
 	],
 );
 
@@ -285,7 +285,7 @@ export const userPointsHistory = pgTable(
 			columns: [table.idUser],
 			foreignColumns: [user.id],
 			name: 'user_points_history_user_fkey',
-		}).onDelete('set null'),
+		}).onDelete('cascade'),
 	],
 );
 
@@ -315,7 +315,7 @@ export const auth = pgTable(
 			columns: [table.idUser],
 			foreignColumns: [user.id],
 			name: 'auth_user_foreign',
-		}).onDelete('set null'),
+		}).onDelete('cascade'),
 	],
 );
 
@@ -362,12 +362,12 @@ export const record = pgTable(
 			columns: [table.idLevel],
 			foreignColumns: [level.id],
 			name: 'record_level_fkey',
-		}),
+		}).onDelete('cascade'),
 		foreignKey({
 			columns: [table.idUser],
 			foreignColumns: [user.id],
 			name: 'records_user_foreign',
-		}).onDelete('set null'),
+		}).onDelete('cascade'),
 	],
 );
 
@@ -392,8 +392,8 @@ export const recordMedia = pgTable(
 		foreignKey({
 			columns: [table.idRecord],
 			foreignColumns: [record.id],
-			name: 'media_record_fkey',
-		}),
+			name: 'media_record_fkey'
+		}).onDelete('cascade'),
 		unique('UQ_record_media_record').on(table.idRecord),
 	],
 );
@@ -453,12 +453,12 @@ export const favourite = pgTable(
 			columns: [table.idLevel],
 			foreignColumns: [level.id],
 			name: 'favorite_level_fkey',
-		}),
+		}).onDelete('cascade'),
 		foreignKey({
 			columns: [table.idUser],
 			foreignColumns: [user.id],
 			name: 'favorites_user_foreign',
-		}).onDelete('set null'),
+		}).onDelete('cascade'),
 	],
 );
 
@@ -489,12 +489,12 @@ export const vote = pgTable(
 			columns: [table.idLevel],
 			foreignColumns: [level.id],
 			name: 'vote_id_level_fkey',
-		}),
+		}).onDelete('cascade'),
 		foreignKey({
 			columns: [table.idUser],
 			foreignColumns: [user.id],
 			name: 'vote_id_user_fkey',
-		}),
+		}).onDelete('cascade'),
 	],
 );
 
@@ -523,16 +523,16 @@ export const worldRecordGlobal = pgTable(
 			columns: [table.idLevel],
 			foreignColumns: [level.id],
 			name: 'world_record_global_level_fkey',
-		}),
+		}).onDelete('cascade'),
 		foreignKey({
 			columns: [table.idRecord],
 			foreignColumns: [record.id],
 			name: 'world_records_global_record_fkey',
-		}),
+		}).onDelete('cascade'),
 		foreignKey({
 			columns: [table.idUser],
 			foreignColumns: [user.id],
 			name: 'world_records_global_user_fkey',
-		}),
+		}).onDelete('cascade'),
 	],
 );
