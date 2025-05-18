@@ -14,11 +14,8 @@ const task: Task<Payload> = async (payload, helpers) => {
 		const personalBests = await getUserPersonalBestsWithLevelPointsAndPosition({ idUser });
 
 		if (personalBests.length === 0) {
-			// helpers.logger.info(`User ${idUser} has not played any levels.`);
 			return;
 		}
-
-		// console.debug(`Found ${personalBests.length} personal bests for user ${idUser}.`, personalBests[0]);
 
 		const { points, totalPoints } = calculatePlayerPoints(personalBests);
 
@@ -27,8 +24,6 @@ const task: Task<Payload> = async (payload, helpers) => {
 			points,
 			totalPoints,
 		});
-
-		// helpers.logger.info(`User ${idUser} points updated: ${totalPoints}, Decayed Points: ${points}`);
 	} catch (error) {
 		helpers.logger.error(`Error updating player score: ${error}`);
 		console.trace(error);

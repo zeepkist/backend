@@ -8,6 +8,6 @@ import { addJob, defaultJobOptions } from '.';
 
 // addJob('updatePlayerScores', {}, defaultJobOptions)
 
-addJob('updateLevelPointsHistory', {}, defaultJobOptions)
+// addJob('updateLevelPointsHistory', {}, defaultJobOptions)
 
 // addJob('updateUserPointsHistory', {}, defaultJobOptions)

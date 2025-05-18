@@ -103,13 +103,8 @@ export async function getTotalUsers(): Promise<number> {
 	return totalUsers ?? 0;
 }
 
-export async function getAllUsersWithPersonalBests() {
-	const users = await db
-		.select({ idUser: user.id })
-		.from(user)
-		.innerJoin(personalBestGlobal, eq(personalBestGlobal.idUser, user.id))
-		.groupBy(user.id)
-		.orderBy(user.id);
+export async function getAllUsers() {
+	const users = await db.select({ idUser: user.id }).from(user).orderBy(user.id);
 
 	return users;
 }

@@ -2,12 +2,16 @@ interface PersonalBest {
 	idLevel: number;
 	levelPoints: number;
 	position: bigint;
-	totalPersonalBests: number;
 }
 
 interface CalculatePlayerPointsResult {
 	points: number;
 	totalPoints: number;
+}
+
+export const calculatePlayerPointsDecayed = (points: number, position: number) => {
+	const decay = 0.95 ** (position - 1);
+	return points * decay;
 }
 
 export const calculatePlayerPoints = (
@@ -20,29 +24,24 @@ export const calculatePlayerPoints = (
 	};
 
 	// Step 1: Calculate the user's points for each level
-	for (const { levelPoints, position, totalPersonalBests } of personalBests) {
-		const safePosition = Number(position);
+	for (const { levelPoints, position } of personalBests) {
+		const index = Number(position);
 
-		if (!Number.isFinite(safePosition) || safePosition < 1 || levelPoints === 0) {
+		if (!Number.isFinite(index) || index < 1 || levelPoints === 0) {
 			continue;
 		}
 
-		//const decay = Math.pow(0.95, safePosition - 1);
-		//const points = levelPoints * decay;
-		// make the log proportional to the total number of PBs on the level (so levels with fewer PBs decrease in value faster)
-		const normalisedPosition = (Number(safePosition) + 1) / (Number(totalPersonalBests) + 1);
-		const points = levelPoints / (1 + Math.log(normalisedPosition));
-		// const points = levelPoints / (1 + Math.log(safePosition + 1));
-		pointsList.push(points);
+		pointsList.push(calculatePlayerPointsDecayed(levelPoints, index));
 	}
 
 	// Step 2: Calculate the decayed points (highest to lowest)
 	for (const [index, points] of pointsList.sort((a, b) => b - a).entries()) {
-		const decay = 0.95 ** (index - 1);
-
-		totals.points += points * decay;
+		totals.points += calculatePlayerPointsDecayed(points, index);
 		totals.totalPoints += points;
 	}
 
-	return totals;
+	return {
+		points: Math.round(totals.points),
+		totalPoints: Math.round(totals.totalPoints),
+	};
 };

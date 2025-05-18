@@ -7,8 +7,8 @@ const client = new SQL({
 	url: DATABASE_URL,
 	max: 20,
 	idleTimeout: 30,
-	connectionTimeout: 30,
-	maxLifetime: 0,
+	connectionTimeout: 10,
+	maxLifetime: 3600,
 	tls: false,
 	bigint: true,
 

@@ -116,14 +116,12 @@ export async function getUserPersonalBestsWithLevelPointsAndPosition({
 			idUser: personalBestGlobal.idUser,
 			idLevel: personalBestGlobal.idLevel,
 			levelPoints: levelPoints.points,
-			position:
-				sql<bigint>`ROW_NUMBER() OVER (PARTITION BY ${personalBestGlobal.idLevel} ORDER BY ${record.time} ASC)`.as(
-					'position',
-				),
-			totalPersonalBests:
-				sql<number>`COUNT(*) OVER (PARTITION BY ${personalBestGlobal.idLevel})`.as(
-					'totalPersonalBests',
-				),
+			position: sql<bigint>`(
+				SELECT COUNT(*)
+				FROM ${record} AS r
+				WHERE r.id_level = ${personalBestGlobal.idLevel}
+				AND r.time < ${record.time}
+			) + 1`.as('position'),
 		})
 		.from(personalBestGlobal)
 		.innerJoin(levelPoints, eq(levelPoints.idLevel, personalBestGlobal.idLevel))

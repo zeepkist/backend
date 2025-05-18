@@ -1,4 +1,4 @@
-const BASE_POINTS = 2_500;
+const BASE_POINTS = 1_000;
 
 export const clamp = (value: number, min: number, max: number) => {
 	return Math.max(min, Math.min(max, value));
