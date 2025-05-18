@@ -15,6 +15,7 @@ interface SubmittedRecordData extends Omit<RecordData, 'splits' | 'speeds'> {
 	splits?: number[];
 	speeds?: number[];
 	dateCreated: string;
+	dateUpdated: string;
 }
 
 export async function insertRecord({
@@ -35,6 +36,7 @@ export async function insertRecord({
 		modVersion,
 		gameVersion,
 		dateCreated: now,
+		dateUpdated: now,
 	};
 
 	if (Array.isArray(splits) && splits?.length) {
