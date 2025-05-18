@@ -2,11 +2,11 @@ import type { Task } from '..';
 import { getUserPersonalBestsWithLevelPointsAndPosition, updateUserPoints } from '../../services';
 import { calculatePlayerPoints } from '../../utils';
 
-interface UpdatePlayerScorePayload {
+interface Payload {
 	idUser: number;
 }
 
-const task: Task<UpdatePlayerScorePayload> = async (payload, helpers) => {
+const task: Task<Payload> = async (payload, helpers) => {
 	try {
 		const { idUser } = payload;
 		helpers.logger.info(`User, ${idUser}!`);

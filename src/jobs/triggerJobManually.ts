@@ -1,17 +1,13 @@
-import { addJob } from '.';
+import { addJob, defaultJobOptions } from '.';
 
-// addJob('updatePlayerScore', { idUser: 4 })
+// addJob('updatePlayerScore', { idUser: 4 }, defaultJobOptions)
 
-// addJob('updateLevelScore', { idLevel: 4 })
+// addJob('updateLevelScore', { idLevel: 4 }, defaultJobOptions)
 
-/*
-addJob('updateLevelScores', { }, {
-	maxAttempts: 1
-})
-*/
+// addJob('updateLevelScores', {}, defaultJobOptions)
 
-/*
-addJob('updatePlayerScores', { }, {
-	maxAttempts: 1
-})
-*/
+// addJob('updatePlayerScores', {}, defaultJobOptions)
+
+addJob('updateLevelPointsHistory', {}, defaultJobOptions)
+
+// addJob('updateUserPointsHistory', {}, defaultJobOptions)

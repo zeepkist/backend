@@ -1,0 +1,21 @@
+import { db, type levelPoints, levelPointsHistory } from '../db';
+
+type LevelPoints = Pick<typeof levelPoints.$inferInsert, 'idLevel' | 'points'>;
+
+type LevelPointsHistory = typeof levelPointsHistory.$inferInsert;
+
+export async function insertLevelPointsHistories(entries: LevelPoints[]) {
+	const now = new Date().toISOString();
+
+	const histories: LevelPointsHistory[] = entries.map(
+		(entry): LevelPointsHistory => ({
+			idLevel: entry.idLevel,
+			points: entry.points,
+			dateCreated: now,
+		}),
+	);
+
+	await db.transaction(async (tx) => {
+		await tx.insert(levelPointsHistory).values(histories);
+	});
+}

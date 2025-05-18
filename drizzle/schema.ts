@@ -17,16 +17,14 @@ import {
 export const level = pgTable(
 	'level',
 	{
-		id: integer()
-			.primaryKey()
-			.generatedAlwaysAsIdentity({
-				name: 'level_id_seq',
-				startWith: 1,
-				increment: 1,
-				minValue: 1,
-				maxValue: 2147483647,
-				cache: 1,
-			}),
+		id: integer().primaryKey().generatedAlwaysAsIdentity({
+			name: 'level_id_seq',
+			startWith: 1,
+			increment: 1,
+			minValue: 1,
+			maxValue: 2147483647,
+			cache: 1,
+		}),
 		hash: text().notNull(),
 		dateCreated: timestamp('date_created', { withTimezone: true, mode: 'string' }).notNull(),
 		dateUpdated: timestamp('date_updated', { withTimezone: true, mode: 'string' }),
@@ -37,16 +35,14 @@ export const level = pgTable(
 export const levelItem = pgTable(
 	'level_item',
 	{
-		id: integer()
-			.primaryKey()
-			.generatedAlwaysAsIdentity({
-				name: 'level_item_id_seq',
-				startWith: 1,
-				increment: 1,
-				minValue: 1,
-				maxValue: 2147483647,
-				cache: 1,
-			}),
+		id: integer().primaryKey().generatedAlwaysAsIdentity({
+			name: 'level_item_id_seq',
+			startWith: 1,
+			increment: 1,
+			minValue: 1,
+			maxValue: 2147483647,
+			cache: 1,
+		}),
 		idLevel: integer('id_level').notNull(),
 		workshopId: bigint('workshop_id', { mode: 'bigint' }).notNull(),
 		authorId: bigint('author_id', { mode: 'bigint' }).notNull(),
@@ -77,16 +73,14 @@ export const levelItem = pgTable(
 export const levelMetadata = pgTable(
 	'level_metadata',
 	{
-		id: integer()
-			.primaryKey()
-			.generatedAlwaysAsIdentity({
-				name: 'level_metadata_id_seq',
-				startWith: 1,
-				increment: 1,
-				minValue: 1,
-				maxValue: 2147483647,
-				cache: 1,
-			}),
+		id: integer().primaryKey().generatedAlwaysAsIdentity({
+			name: 'level_metadata_id_seq',
+			startWith: 1,
+			increment: 1,
+			minValue: 1,
+			maxValue: 2147483647,
+			cache: 1,
+		}),
 		idLevel: integer('id_level').notNull(),
 		amountCheckpoints: integer('amount_checkpoints').notNull(),
 		amountFinishes: integer('amount_finishes').notNull(),
@@ -110,16 +104,14 @@ export const levelMetadata = pgTable(
 export const levelPoints = pgTable(
 	'level_points',
 	{
-		id: integer()
-			.primaryKey()
-			.generatedByDefaultAsIdentity({
-				name: 'level_points_id_seq',
-				startWith: 1,
-				increment: 1,
-				minValue: 1,
-				maxValue: 2147483647,
-				cache: 1,
-			}),
+		id: integer().primaryKey().generatedByDefaultAsIdentity({
+			name: 'level_points_id_seq',
+			startWith: 1,
+			increment: 1,
+			minValue: 1,
+			maxValue: 2147483647,
+			cache: 1,
+		}),
 		idLevel: integer('id_level').notNull(),
 		points: integer().notNull(),
 		dateCreated: timestamp('date_created', { withTimezone: true, mode: 'string' }).notNull(),
@@ -138,16 +130,14 @@ export const levelPoints = pgTable(
 export const levelPointsHistory = pgTable(
 	'level_points_history',
 	{
-		id: integer()
-			.primaryKey()
-			.generatedByDefaultAsIdentity({
-				name: 'level_points_history_id_seq',
-				startWith: 1,
-				increment: 1,
-				minValue: 1,
-				maxValue: 2147483647,
-				cache: 1,
-			}),
+		id: integer().primaryKey().generatedByDefaultAsIdentity({
+			name: 'level_points_history_id_seq',
+			startWith: 1,
+			increment: 1,
+			minValue: 1,
+			maxValue: 2147483647,
+			cache: 1,
+		}),
 		idLevel: integer('id_level').notNull(),
 		points: integer().notNull(),
 		dateCreated: timestamp('date_created', { withTimezone: true, mode: 'string' }).notNull(),
@@ -169,16 +159,14 @@ export const levelPointsHistory = pgTable(
 export const levelRequest = pgTable(
 	'level_request',
 	{
-		id: integer()
-			.primaryKey()
-			.generatedByDefaultAsIdentity({
-				name: 'requests_id_seq',
-				startWith: 1,
-				increment: 1,
-				minValue: 1,
-				maxValue: 2147483647,
-				cache: 1,
-			}),
+		id: integer().primaryKey().generatedByDefaultAsIdentity({
+			name: 'requests_id_seq',
+			startWith: 1,
+			increment: 1,
+			minValue: 1,
+			maxValue: 2147483647,
+			cache: 1,
+		}),
 		workshopId: bigint('workshop_id', { mode: 'bigint' }).notNull(),
 		uid: text(),
 		hash: text(),
@@ -194,16 +182,14 @@ export const levelRequest = pgTable(
 export const personalBestGlobal = pgTable(
 	'personal_best_global',
 	{
-		id: integer()
-			.primaryKey()
-			.generatedByDefaultAsIdentity({
-				name: 'personal_bests_id_seq',
-				startWith: 1,
-				increment: 1,
-				minValue: 1,
-				maxValue: 2147483647,
-				cache: 1,
-			}),
+		id: integer().primaryKey().generatedByDefaultAsIdentity({
+			name: 'personal_bests_id_seq',
+			startWith: 1,
+			increment: 1,
+			minValue: 1,
+			maxValue: 2147483647,
+			cache: 1,
+		}),
 		idRecord: integer('id_record').notNull(),
 		idUser: integer('id_user').notNull(),
 		idLevel: integer('id_level').notNull(),
@@ -245,21 +231,19 @@ export const personalBestGlobal = pgTable(
 export const userPoints = pgTable(
 	'user_points',
 	{
-		id: integer()
-			.primaryKey()
-			.generatedByDefaultAsIdentity({
-				name: 'player_points_id_seq',
-				startWith: 1,
-				increment: 1,
-				minValue: 1,
-				maxValue: 2147483647,
-				cache: 1,
-			}),
+		id: integer().primaryKey().generatedByDefaultAsIdentity({
+			name: 'player_points_id_seq',
+			startWith: 1,
+			increment: 1,
+			minValue: 1,
+			maxValue: 2147483647,
+			cache: 1,
+		}),
 		idUser: integer('id_user').notNull(),
 		points: integer().default(0).notNull(),
 		totalPoints: integer('total_points').default(0).notNull(),
 		rank: integer().default(-1).notNull(),
-		worldRecords: integer('world_records').default(0),
+		worldRecords: integer('world_records').default(0).notNull(),
 		dateCreated: timestamp('date_created', { withTimezone: true, mode: 'string' }).notNull(),
 		dateUpdated: timestamp('date_updated', { withTimezone: true, mode: 'string' }),
 	},
@@ -276,20 +260,18 @@ export const userPoints = pgTable(
 export const userPointsHistory = pgTable(
 	'user_points_history',
 	{
-		id: integer()
-			.primaryKey()
-			.generatedByDefaultAsIdentity({
-				name: 'user_points_history_id_seq',
-				startWith: 1,
-				increment: 1,
-				minValue: 1,
-				maxValue: 2147483647,
-				cache: 1,
-			}),
+		id: integer().primaryKey().generatedByDefaultAsIdentity({
+			name: 'user_points_history_id_seq',
+			startWith: 1,
+			increment: 1,
+			minValue: 1,
+			maxValue: 2147483647,
+			cache: 1,
+		}),
 		idUser: integer('id_user').notNull(),
 		points: integer().notNull(),
 		totalPoints: integer('total_points').default(0).notNull(),
-		rank: integer().notNull().default(-1),
+		rank: integer().default(-1).notNull(),
 		worldRecords: integer('world_records').default(0).notNull(),
 		dateCreated: timestamp('date_created', { withTimezone: true, mode: 'string' }).notNull(),
 	},
@@ -310,16 +292,14 @@ export const userPointsHistory = pgTable(
 export const auth = pgTable(
 	'auth',
 	{
-		id: integer()
-			.primaryKey()
-			.generatedByDefaultAsIdentity({
-				name: 'auth_id_seq',
-				startWith: 1,
-				increment: 1,
-				minValue: 1,
-				maxValue: 2147483647,
-				cache: 1,
-			}),
+		id: integer().primaryKey().generatedByDefaultAsIdentity({
+			name: 'auth_id_seq',
+			startWith: 1,
+			increment: 1,
+			minValue: 1,
+			maxValue: 2147483647,
+			cache: 1,
+		}),
 		idUser: integer('id_user'),
 		accessToken: text('access_token'),
 		accessTokenExpiry: bigint('access_token_expiry', { mode: 'bigint' }),
@@ -342,16 +322,14 @@ export const auth = pgTable(
 export const record = pgTable(
 	'record',
 	{
-		id: integer()
-			.primaryKey()
-			.generatedByDefaultAsIdentity({
-				name: 'records_id_seq',
-				startWith: 1,
-				increment: 1,
-				minValue: 1,
-				maxValue: 2147483647,
-				cache: 1,
-			}),
+		id: integer().primaryKey().generatedByDefaultAsIdentity({
+			name: 'records_id_seq',
+			startWith: 1,
+			increment: 1,
+			minValue: 1,
+			maxValue: 2147483647,
+			cache: 1,
+		}),
 		idUser: integer('id_user').notNull(),
 		time: real().notNull(),
 		gameVersion: varchar('game_version', { length: 255 }).notNull(),
@@ -396,16 +374,14 @@ export const record = pgTable(
 export const recordMedia = pgTable(
 	'record_media',
 	{
-		id: integer()
-			.primaryKey()
-			.generatedByDefaultAsIdentity({
-				name: 'media_id_seq',
-				startWith: 1,
-				increment: 1,
-				minValue: 1,
-				maxValue: 2147483647,
-				cache: 1,
-			}),
+		id: integer().primaryKey().generatedByDefaultAsIdentity({
+			name: 'media_id_seq',
+			startWith: 1,
+			increment: 1,
+			minValue: 1,
+			maxValue: 2147483647,
+			cache: 1,
+		}),
 		idRecord: integer('id_record').notNull(),
 		ghostUrl: text('ghost_url'),
 		dateCreated: timestamp('date_created', { withTimezone: true, mode: 'string' }).notNull(),
@@ -423,16 +399,14 @@ export const recordMedia = pgTable(
 );
 
 export const user = pgTable('user', {
-	id: integer()
-		.primaryKey()
-		.generatedByDefaultAsIdentity({
-			name: 'users_id_seq',
-			startWith: 1,
-			increment: 1,
-			minValue: 1,
-			maxValue: 2147483647,
-			cache: 1,
-		}),
+	id: integer().primaryKey().generatedByDefaultAsIdentity({
+		name: 'users_id_seq',
+		startWith: 1,
+		increment: 1,
+		minValue: 1,
+		maxValue: 2147483647,
+		cache: 1,
+	}),
 	steamName: varchar('steam_name', { length: 255 }),
 	banned: boolean().default(false).notNull(),
 	dateCreated: timestamp('date_created', { withTimezone: true, mode: 'string' }).notNull(),
@@ -442,16 +416,14 @@ export const user = pgTable('user', {
 });
 
 export const version = pgTable('version', {
-	id: integer()
-		.primaryKey()
-		.generatedAlwaysAsIdentity({
-			name: 'versions_id_seq',
-			startWith: 1,
-			increment: 1,
-			minValue: 1,
-			maxValue: 2147483647,
-			cache: 1,
-		}),
+	id: integer().primaryKey().generatedAlwaysAsIdentity({
+		name: 'versions_id_seq',
+		startWith: 1,
+		increment: 1,
+		minValue: 1,
+		maxValue: 2147483647,
+		cache: 1,
+	}),
 	minimum: text(),
 	latest: text(),
 	dateCreated: timestamp('date_created', { withTimezone: true, mode: 'string' }).notNull(),
@@ -461,16 +433,14 @@ export const version = pgTable('version', {
 export const favourite = pgTable(
 	'favourite',
 	{
-		id: integer()
-			.primaryKey()
-			.generatedByDefaultAsIdentity({
-				name: 'favorites_id_seq',
-				startWith: 1,
-				increment: 1,
-				minValue: 1,
-				maxValue: 2147483647,
-				cache: 1,
-			}),
+		id: integer().primaryKey().generatedByDefaultAsIdentity({
+			name: 'favorites_id_seq',
+			startWith: 1,
+			increment: 1,
+			minValue: 1,
+			maxValue: 2147483647,
+			cache: 1,
+		}),
 		idUser: integer('id_user').notNull(),
 		dateCreated: timestamp('date_created', { withTimezone: true, mode: 'string' }).notNull(),
 		dateUpdated: timestamp('date_updated', { withTimezone: true, mode: 'string' }),
@@ -495,16 +465,14 @@ export const favourite = pgTable(
 export const vote = pgTable(
 	'vote',
 	{
-		id: integer()
-			.primaryKey()
-			.generatedAlwaysAsIdentity({
-				name: 'vote_id_seq',
-				startWith: 1,
-				increment: 1,
-				minValue: 1,
-				maxValue: 2147483647,
-				cache: 1,
-			}),
+		id: integer().primaryKey().generatedAlwaysAsIdentity({
+			name: 'vote_id_seq',
+			startWith: 1,
+			increment: 1,
+			minValue: 1,
+			maxValue: 2147483647,
+			cache: 1,
+		}),
 		idUser: integer('id_user').notNull(),
 		idLevel: integer('id_level').notNull(),
 		value: integer().notNull(),
@@ -533,16 +501,14 @@ export const vote = pgTable(
 export const worldRecordGlobal = pgTable(
 	'world_record_global',
 	{
-		id: integer()
-			.primaryKey()
-			.generatedByDefaultAsIdentity({
-				name: 'world_records_id_seq',
-				startWith: 1,
-				increment: 1,
-				minValue: 1,
-				maxValue: 2147483647,
-				cache: 1,
-			}),
+		id: integer().primaryKey().generatedByDefaultAsIdentity({
+			name: 'world_records_id_seq',
+			startWith: 1,
+			increment: 1,
+			minValue: 1,
+			maxValue: 2147483647,
+			cache: 1,
+		}),
 		idRecord: integer('id_record').notNull(),
 		idLevel: integer('id_level').notNull(),
 		dateCreated: timestamp('date_created', { withTimezone: true, mode: 'string' }).notNull(),

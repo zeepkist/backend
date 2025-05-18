@@ -1,4 +1,4 @@
-import { type Task, addJob } from '..';
+import { type Task, addJob, defaultJobOptions } from '..';
 import { getAllLevelIds } from '../../services';
 
 const task: Task<never> = async (payload, helpers) => {
@@ -7,14 +7,7 @@ const task: Task<never> = async (payload, helpers) => {
 
 	for (const idLevel of levels) {
 		helpers.logger.info(`Level, ${idLevel}!`);
-		addJob(
-			'updateLevelScore',
-			{ idLevel },
-			{
-				priority: 1,
-				maxAttempts: 3,
-			},
-		);
+		addJob('updateLevelScore', { idLevel }, defaultJobOptions);
 	}
 };
 

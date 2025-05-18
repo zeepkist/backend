@@ -1,4 +1,4 @@
-import { type Task, addJob } from '..';
+import { type Task, addJob, defaultJobOptions } from '..';
 import {
 	getPersonalBestsWithRecord,
 	getTotalRecords,
@@ -7,12 +7,12 @@ import {
 } from '../../services';
 import { calculateLevelPoints } from '../../utils';
 
-interface UpdateLevelScorePayload {
+interface Payload {
 	idLevel: number;
 	idUser?: number;
 }
 
-const task: Task<UpdateLevelScorePayload> = async (payload, helpers) => {
+const task: Task<Payload> = async (payload, helpers) => {
 	const { idLevel, idUser } = payload;
 
 	helpers.logger.info(`Level, ${idLevel}!`);
@@ -38,14 +38,7 @@ const task: Task<UpdateLevelScorePayload> = async (payload, helpers) => {
 
 	// If job is triggered by a new personal best, we need to update the player score
 	if (idUser) {
-		addJob(
-			'updatePlayerScore',
-			{ idUser },
-			{
-				priority: 1,
-				maxAttempts: 3,
-			},
-		);
+		addJob('updatePlayerScore', { idUser }, defaultJobOptions);
 	}
 };
 

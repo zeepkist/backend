@@ -75,11 +75,9 @@ export const authRoutes: FastifyPluginAsync = async (app) => {
 				const authResponse = await authenticateSteamUser(AuthenticationTicket);
 
 				if (!authResponse.success) {
-					return reply
-						.status(401)
-						.send({
-							error: getErrorMessage(ERROR_CODES.AUTH_STEAM_AUTHENTICATION_FAILED),
-						});
+					return reply.status(401).send({
+						error: getErrorMessage(ERROR_CODES.AUTH_STEAM_AUTHENTICATION_FAILED),
+					});
 				}
 
 				const steamIdFromRequest = BigInt(SteamId);

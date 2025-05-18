@@ -9,3 +9,5 @@ export * from './worldRecord';
 export * from './recordMedia';
 export * from './levelPoints';
 export * from './userPoints';
+export * from './levelPointsHistory';
+export * from './userPointsHistory';

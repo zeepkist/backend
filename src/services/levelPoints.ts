@@ -1,6 +1,28 @@
 import { eq, sql } from 'drizzle-orm';
 import { db, levelPoints, personalBestGlobal, record } from '../db';
 
+export async function getTotalLevelPoints() {
+	const totalPoints = await db
+		.select({ count: sql<number>`COUNT(*)` })
+		.from(levelPoints)
+		.then((rows) => Number(rows[0]?.count));
+
+	return totalPoints ?? 0;
+}
+
+export async function getLevelPointsPaginated(offset: number, limit: number) {
+	const batch = await db
+		.select({
+			idLevel: levelPoints.idLevel,
+			points: levelPoints.points,
+		})
+		.from(levelPoints)
+		.limit(limit)
+		.offset(offset);
+
+	return batch;
+}
+
 export async function updateLevelPoints({
 	idLevel,
 	points,

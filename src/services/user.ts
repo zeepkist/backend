@@ -100,7 +100,7 @@ export async function getTotalUsers(): Promise<number> {
 		.from(user)
 		.then((rows) => Number(rows[0]?.count));
 
-	return totalUsers;
+	return totalUsers ?? 0;
 }
 
 export async function getAllUsersWithPersonalBests() {

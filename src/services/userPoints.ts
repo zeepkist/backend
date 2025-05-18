@@ -1,5 +1,30 @@
-import { eq } from 'drizzle-orm';
+import { eq, sql } from 'drizzle-orm';
 import { db, userPoints } from '../db';
+
+export async function getTotalUserPoints() {
+	const totalPoints = await db
+		.select({ count: sql<number>`COUNT(*)` })
+		.from(userPoints)
+		.then((rows) => Number(rows[0]?.count));
+
+	return totalPoints ?? 0;
+}
+
+export async function getUserPointsPaginated(offset: number, limit: number) {
+	const batch = await db
+		.select({
+			idUser: userPoints.idUser,
+			points: userPoints.points,
+			totalPoints: userPoints.totalPoints,
+			rank: userPoints.rank,
+			worldRecords: userPoints.worldRecords,
+		})
+		.from(userPoints)
+		.limit(limit)
+		.offset(offset);
+
+	return batch;
+}
 
 export async function updateUserPoints({
 	idUser,
