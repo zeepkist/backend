@@ -210,6 +210,7 @@ export const personalBestGlobal = pgTable(
 			table.idLevel.asc().nullsLast(),
 			table.idRecord.asc().nullsLast(),
 		),
+		index('IX_personal_bests_date_created').using('btree', table.dateCreated.asc().nullsLast()),
 		foreignKey({
 			columns: [table.idLevel],
 			foreignColumns: [level.id],
@@ -358,6 +359,7 @@ export const record = pgTable(
 			table.idLevel.asc().nullsLast(),
 		),
 		index('IX_records_user').using('btree', table.idUser.asc().nullsLast()),
+		index('IX_records_date_created').using('btree', table.dateCreated.asc().nullsLast()),
 		foreignKey({
 			columns: [table.idLevel],
 			foreignColumns: [level.id],
@@ -519,6 +521,7 @@ export const worldRecordGlobal = pgTable(
 		index('IX_world_records_level').using('btree', table.idLevel.asc().nullsLast()),
 		index('IX_world_records_record').using('btree', table.idRecord.asc().nullsLast()),
 		index('IX_world_records_user').using('btree', table.idUser.asc().nullsLast()),
+		index('IX_world_records_date_created').using('btree', table.dateCreated.asc().nullsLast()),
 		foreignKey({
 			columns: [table.idLevel],
 			foreignColumns: [level.id],
