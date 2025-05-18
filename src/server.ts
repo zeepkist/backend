@@ -1,6 +1,5 @@
 import cors from '@fastify/cors';
 import helmet from '@fastify/helmet';
-import ratelimit from '@fastify/rate-limit';
 import swagger from '@fastify/swagger';
 import swaggerUi from '@fastify/swagger-ui';
 import Fastify from 'fastify';
@@ -92,25 +91,7 @@ export async function buildServer(db = realDb) {
 		maxAge: 86400,
 	});
 
-	/*
-	await app.register(ratelimit, {
-		max: 100,
-		timeWindow: '1 minute',
-		exponentialBackoff: true,
-	});
-	*/
-
-	// Aggresively rate limit 404 routes
 	app.setNotFoundHandler(
-		{
-			/*
-			preHandler: app.rateLimit({
-				max: 100, // TODO: decrease to 2 once GTR mod is live
-				timeWindow: '5 minutes',
-				exponentialBackoff: true,
-			}),
-			*/
-		},
 		(_, reply) => {
 			reply.status(404).send({
 				error: 'Not Found',
