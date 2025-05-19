@@ -10,6 +10,10 @@ interface CalculatePlayerPointsResult {
 }
 
 export const calculatePlayerPointsDecayed = (points: number, position: number) => {
+	if (position < 1 || !Number.isFinite(points)) {
+		return 0;
+	}
+
 	const decay = 0.95 ** (position - 1);
 	return points * decay;
 }
@@ -23,6 +27,10 @@ export const calculatePlayerPoints = (
 		totalPoints: 0,
 	};
 
+	/**
+	 * Step 1: Calculate the user's points for each level, decaying the points
+	 * based on their position in the level leaderboard.
+	 */
 	// Step 1: Calculate the user's points for each level
 	for (const { levelPoints, position } of personalBests) {
 		const index = Number(position);
@@ -34,9 +42,17 @@ export const calculatePlayerPoints = (
 		pointsList.push(calculatePlayerPointsDecayed(levelPoints, index));
 	}
 
-	// Step 2: Calculate the decayed points (highest to lowest)
+	/**
+	 * Step 2: Calculate the total ranked points for the user, given all of
+	 * their calculated personal bests.
+	 *
+	 * Nth personal bests are worth less than the previous ones, so we sort
+	 * the points in descending order and decay them based on their index.
+	 * This means that the first personal best is worth the most, and the
+	 * last personal best is worth the least.
+	 */
 	for (const [index, points] of pointsList.sort((a, b) => b - a).entries()) {
-		totals.points += calculatePlayerPointsDecayed(points, index);
+		totals.points += calculatePlayerPointsDecayed(points, index + 1);
 		totals.totalPoints += points;
 	}
 

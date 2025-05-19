@@ -1,17 +1,32 @@
 const BASE_POINTS = 1_000;
 
 export const clamp = (value: number, min: number, max: number) => {
+	if (!Number.isFinite(value) || !Number.isFinite(min) || !Number.isFinite(max)) {
+		return Number.NaN;
+	}
+
 	return Math.max(min, Math.min(max, value));
 };
 
-export const levelScoreDurationMultiplier = (wrTime: number) => {
-	if (wrTime < 5) return 0.1;
-	if (wrTime < 10) return 0.4;
-	if (wrTime < 20) return 0.7 * 0.03 * Math.min(0, wrTime - 10); // from 0.7 to 1.0
-	if (wrTime <= 60) return 1.0;
+function average(arr: number[]): number {
+	return arr.reduce((sum, val) => sum + val, 0) / arr.length;
+}
 
-	// If the WR time is greater than 60 seconds, we want to penalize the score
-	return Math.min(0.1, 1.0 - 0.01 * Math.min(0, wrTime - 60)); // from 1.0 to 0.1
+export const levelScoreDurationMultiplier = (wrTime: number) => {
+	// Gradual increase from 0.1 (at 5s) to 0.9 (at 20s)
+	if (wrTime < 20) {
+		const interpolationFactor = (wrTime - 5) / 15; // 5s to 20s
+		return Math.max(0.1, Math.min(0.9, 0.1 + interpolationFactor * 0.9));
+	}
+
+	// No penalisation for ideal level durations
+	if (wrTime <= 60) {
+		return 1.0;
+	}
+
+	// Gradual decrease from 1 (at 60s) to 0.1 (at 150s)
+	const interpolationFactor = (wrTime - 60) / 90; // 60s to 150s
+	return Math.max(0.1, 1.0 - interpolationFactor * 0.9);
 };
 
 export const levelScoreCompetitivenessMultiplier = (
@@ -20,29 +35,35 @@ export const levelScoreCompetitivenessMultiplier = (
 	personalBests: number,
 	totalRecords: number,
 ) => {
-	//console.debug('Competitiveness multiplier', { wrTime, topTimes, personalBests, records })
-	//console.debug('topTimes', topTimes.length)
+	if (topTimes.length === 1) {
+		return 1.0;
+	}
 
 	const top5 = topTimes.slice(0, 5);
 	const top10 = topTimes.slice(0, 10);
 	const top50 = topTimes.slice(0, 50);
 
-	const avgTop5Time = top5.reduce((a, b) => a + b, 0) / top5.length;
-	const avgTop10Time = top10.reduce((a, b) => a + b, 0) / top10.length;
-	const avgTop50Time = top50.reduce((a, b) => a + b, 0) / top50.length;
+	const avgTop5Time = average(top5);
+	const avgTop10Time = average(top10);
+	const avgTop50Time = average(top50);
 
-	const wrTightness = (avgTop5Time - wrTime) / wrTime;
-	const leaderboardSpread = (avgTop50Time - avgTop10Time) / avgTop50Time;
+	// How far the average of the top 5 is from the WR (tighter is better)
+	const tightnessScore = (avgTop5Time - wrTime) / wrTime;
 
-	// PB ratio: how many runs per PB
-	const pbRatio = personalBests / totalRecords;
-	const scaledPbRatio = Math.log(1 * 9 * pbRatio); // soften extreme values
+	// How much the top 50 spreads from the top 10 (larger is better)
+	const spreadScore  = (avgTop50Time - avgTop10Time) / avgTop50Time;
 
-	return clamp(
-		0.8 + (0.4 * (1 - wrTightness) + 0.4 * (1 - leaderboardSpread) + 0.2 * (1 - scaledPbRatio)),
-		0.1, // 0.7 is the minimum multiplier
-		3, // 1.3 is the maximum multiplier
-	);
+	// PB-to-record ratio: How grindy the level is (smaller is worse)
+	// Note: Also reflects how popular the level is (possible that it should be flipped?)
+	const pbRatio = personalBests > 0 ? personalBests / totalRecords : 0
+	const grindinessScore = 1 - Math.log(1 + 9 * pbRatio);
+
+	const weightedScore =
+		0.45 * tightnessScore +
+		0.35 * spreadScore +
+		0.25 * grindinessScore;
+
+	return clamp(1 + weightedScore, 0.1, 3)
 };
 
 export const levelScoreRatingModifier = (levelRating: number) => {
@@ -51,11 +72,16 @@ export const levelScoreRatingModifier = (levelRating: number) => {
 };
 
 export const levelScorePopularityModifier = (personalBests: number) => {
-	return clamp(
-		0.9 + Math.log10(1 + personalBests) / 2, // 5 slow
-		0.1,
-		1.5,
-	);
+	// gradual increase from 0.5 (1 record) to 2.0 (at 500 personal bests)
+	if (personalBests < 1) {
+		return 0.9;
+	}
+	if (personalBests < 500) {
+		const interpolationFactor = (personalBests - 1) / 499; // 1 to 500
+		return Math.max(0.9, Math.min(2.0, 0.9 + interpolationFactor * 1.1));
+	}
+
+	return 2;
 };
 
 const normaliseNumber = (value: number) => {
