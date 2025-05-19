@@ -4,8 +4,6 @@ import { getTotalLevelPoints } from '../../services';
 const BATCH_SIZE = 200;
 
 const task: Task<never> = async (payload, helpers) => {
-	helpers.logger.info('Update level points history!');
-
 	const totalPoints = await getTotalLevelPoints();
 	const totalBatches = Math.ceil(totalPoints / BATCH_SIZE);
 

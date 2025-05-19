@@ -59,8 +59,6 @@ const task: Task<never> = async (payload, helpers) => {
 					points,
 					totalPoints,
 				});
-
-				helpers.logger.info(`User ${idUser} has ${points} points and ${totalPoints} total points.`);
 			}),
 		);
 	}

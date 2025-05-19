@@ -15,8 +15,6 @@ interface Payload {
 const task: Task<Payload> = async (payload, helpers) => {
 	const { idLevel, idUser } = payload;
 
-	helpers.logger.info(`Level, ${idLevel}!`);
-
 	const personalBests = await getPersonalBestsWithRecord({ idLevel, limit: 50 });
 	const totalRecords = await getTotalRecords({ idLevel });
 	const levelRating = await getVoteRating({ idLevel });
@@ -24,7 +22,7 @@ const task: Task<Payload> = async (payload, helpers) => {
 	const topTimes = personalBests.map((pb) => pb.time);
 	const pbCount = Number(personalBests.at(0)?.totalCount) ?? 0;
 
-	const { points, contributions } = calculateLevelPoints({
+	const { points } = calculateLevelPoints({
 		topTimes,
 		personalBests: pbCount,
 		totalRecords,

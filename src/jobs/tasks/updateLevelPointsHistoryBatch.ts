@@ -12,11 +12,8 @@ const task: Task<Payload> = async (payload, helpers) => {
 	const points = await getLevelPointsPaginated(offset, limit);
 
 	if (points.length === 0) {
-		helpers.logger.info('No more level points to process.');
 		return;
 	}
-
-	helpers.logger.info(`Processing level points batch: ${offset} - ${offset + limit}`);
 
 	await insertLevelPointsHistories(points);
 };

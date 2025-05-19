@@ -9,7 +9,6 @@ interface Payload {
 const task: Task<Payload> = async (payload, helpers) => {
 	try {
 		const { idUser } = payload;
-		helpers.logger.info(`User, ${idUser}!`);
 
 		const personalBests = await getUserPersonalBestsWithLevelPointsAndPosition({ idUser });
 
