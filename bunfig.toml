@@ -1,0 +1,4 @@
+[test]
+root = "src"
+smol = true
+coverageSkipTestFiles = true

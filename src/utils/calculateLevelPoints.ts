@@ -1,5 +1,8 @@
 const BASE_POINTS = 1_000;
 
+/**
+ * Clamps a number between a minimum and maximum value.
+ */
 export const clamp = (value: number, min: number, max: number) => {
 	if (!Number.isFinite(value) || !Number.isFinite(min) || !Number.isFinite(max)) {
 		return Number.NaN;
@@ -8,27 +11,40 @@ export const clamp = (value: number, min: number, max: number) => {
 	return Math.max(min, Math.min(max, value));
 };
 
+/**
+ * Calculates the average of an array of numbers.
+ */
 function average(arr: number[]): number {
 	return arr.reduce((sum, val) => sum + val, 0) / arr.length;
 }
 
-export const levelScoreDurationMultiplier = (wrTime: number) => {
-	// Gradual increase from 0.1 (at 5s) to 0.9 (at 20s)
+/**
+ * Calculates the level score duration multiplier based on the WR time.
+ * The multiplier is a gradual increase from 0.1 (at 5s) to 1 (at 20s).
+ *
+ * After 20s, the multiplier is always 1.
+ */
+export const levelScoreLengthMultiplier = (wrTime: number) => {
+	const MIN = 0.1;
+	const MAX = 1 - MIN;
+
 	if (wrTime < 20) {
 		const interpolationFactor = (wrTime - 5) / 15; // 5s to 20s
-		return Math.max(0.1, Math.min(0.9, 0.1 + interpolationFactor * 0.9));
+		return Math.max(MIN, Math.min(1, MIN + interpolationFactor * MAX));
 	}
 
-	// No penalisation for ideal level durations
-	if (wrTime <= 60) {
-		return 1.0;
-	}
-
-	// Gradual decrease from 1 (at 60s) to 0.1 (at 150s)
-	const interpolationFactor = (wrTime - 60) / 90; // 60s to 150s
-	return Math.max(0.1, 1.0 - interpolationFactor * 0.9);
+	return 1;
 };
 
+/**
+ * EXPERIMENTAL: Calculates the competitiveness based on the WR time and the
+ * top times (top 5, top 10, top 50).
+ *
+ * The competitiveness is a combination of:
+ * - How far the average of the top 5 is from the WR (tighter is better)
+ * - How much the top 50 spreads from the top 10 (larger is better)
+ * - PB-to-record ratio: How grindy the level is (smaller is worse)
+ */
 export const levelScoreCompetitivenessMultiplier = (
 	wrTime: number,
 	topTimes: number[],
@@ -66,26 +82,48 @@ export const levelScoreCompetitivenessMultiplier = (
 	return clamp(1 + weightedScore, 0.1, 3)
 };
 
+/**
+ * Calculates the level score rating modifier based on the level rating.
+ * The modifier is a range between 0.5 (at 0%) to 1.3 (at 100).
+ *
+ * Poorly rated levels are worth less, while well-rated levels gain a boost.
+ */
 export const levelScoreRatingModifier = (levelRating: number) => {
+	const MIN = 0.5;
+	const MAX = 1.3 - MIN;
 	const normalised = clamp(levelRating / 100, 0, 1);
-	return 0.5 + normalised * 0.8;
+
+	return MIN + normalised * MAX;
 };
 
+/**
+ * Calculates the level score popularity modifier based on the number of
+ * personal bests.
+ *
+ * The modifier is a gradual increase from 0.9 (1 record) to 3 (at 500
+ * personal bests).
+ */
 export const levelScorePopularityModifier = (personalBests: number) => {
-	// gradual increase from 0.5 (1 record) to 2.0 (at 500 personal bests)
+	const MIN = 0.9;
+	const MAX = 3 - MIN;
+	const PB_CAP = 500;
+
 	if (personalBests < 1) {
-		return 0.9;
-	}
-	if (personalBests < 500) {
-		const interpolationFactor = (personalBests - 1) / 499; // 1 to 500
-		return Math.max(0.9, Math.min(2.0, 0.9 + interpolationFactor * 1.1));
+		return MIN;
 	}
 
-	return 2;
+	if (personalBests < PB_CAP) {
+		const factor = (personalBests - 1) / (PB_CAP - 1);
+		return Math.max(MIN, Math.min(3, MIN + factor * MAX));
+	}
+
+	return 3;
 };
 
+/**
+ * Normalises a number to 0 if it is NaN.
+ */
 const normaliseNumber = (value: number) => {
-	// If the value is NaN, we want to return 0
 	return Number.isNaN(value) ? 0 : value;
 };
 
@@ -96,17 +134,29 @@ interface CalculateLevelScore {
 	levelRating: number;
 }
 
+interface LevelScoreContributions {
+	length: number;
+	competitiveness: number;
+	rating: number;
+	popularity: number;
+}
+
+interface CalculateLevelPointsResult {
+	points: number;
+	contributions: LevelScoreContributions;
+}
+
 export const calculateLevelPoints = ({
 	topTimes,
 	personalBests,
 	totalRecords,
 	levelRating,
-}: CalculateLevelScore) => {
+}: CalculateLevelScore): CalculateLevelPointsResult => {
 	if (totalRecords === 0) {
 		return {
 			points: 0,
 			contributions: {
-				duration: 0,
+				length: 0,
 				competitiveness: 0,
 				rating: 0,
 				popularity: 0,
@@ -115,7 +165,7 @@ export const calculateLevelPoints = ({
 	}
 
 	const wrTime = topTimes[0] ?? 0;
-	const durationMultiplier = normaliseNumber(levelScoreDurationMultiplier(wrTime));
+	const lengthMultiplier = normaliseNumber(levelScoreLengthMultiplier(wrTime));
 	const competitivenessMultiplier = normaliseNumber(
 		levelScoreCompetitivenessMultiplier(wrTime, topTimes, personalBests, totalRecords),
 	);
@@ -123,16 +173,16 @@ export const calculateLevelPoints = ({
 	const popularityModifier = normaliseNumber(levelScorePopularityModifier(personalBests));
 	const points = Math.round(
 		BASE_POINTS *
-			durationMultiplier *
-			competitivenessMultiplier *
-			ratingModifier *
-			popularityModifier,
+		lengthMultiplier *
+		competitivenessMultiplier *
+		ratingModifier *
+		popularityModifier,
 	);
 
 	return {
 		points,
 		contributions: {
-			duration: durationMultiplier,
+			length: lengthMultiplier,
 			competitiveness: competitivenessMultiplier,
 			rating: ratingModifier,
 			popularity: popularityModifier,

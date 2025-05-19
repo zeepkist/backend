@@ -3,6 +3,7 @@
 	"private": true,
 	"scripts": {
 		"start": "bun run src/index.ts",
+		"test": "bun test --bail=1",
 		"compile": "bun build --compile --minify --sourcemap --target bun-linux-x64-musl --outfile server src/index.ts",
 		"docker:build": "DOCKER_BUILDKIT=1 docker buildx build --platform linux/amd64 -t backend:local -f ./Dockerfile .",
 		"docker:run": "docker run --rm --env-file .env --network zeepkist-network -p 3000:3000 backend:local",

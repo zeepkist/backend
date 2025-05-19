@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'bun:test';
-import { clamp, levelScoreDurationMultiplier, levelScoreCompetitivenessMultiplier, levelScoreRatingModifier, levelScorePopularityModifier, calculateLevelPoints } from './calculateLevelPoints';
+import { clamp, levelScoreLengthMultiplier, levelScoreCompetitivenessMultiplier, levelScoreRatingModifier, levelScorePopularityModifier, calculateLevelPoints } from './calculateLevelPoints';
 
 describe('clamp', () => {
 	it('should clamp a value between min and max', () => {
@@ -37,36 +37,39 @@ describe('clamp', () => {
 	});
 });
 
-describe('levelScoreDurationMultiplier', () => {
-	it('should return the correct duration multiplier', () => {
+describe('levelScoreLengthMultiplier', () => {
+	const testCases = [
 		// Too short level durations
-		expect(levelScoreDurationMultiplier(0)).toBe(0.1);
-		expect(levelScoreDurationMultiplier(1)).toBe(0.1);
-		expect(levelScoreDurationMultiplier(4)).toBe(0.1);
-
-		expect(levelScoreDurationMultiplier(5)).toBe(0.1);
-		expect(levelScoreDurationMultiplier(6)).toBe(0.16);
-		expect(levelScoreDurationMultiplier(8)).toBe(0.28);
-		expect(levelScoreDurationMultiplier(10)).toBe(0.4);
-		expect(levelScoreDurationMultiplier(15)).toBe(0.7);
-		expect(levelScoreDurationMultiplier(19)).toBe(0.9);
-
+		{ input: 0, expected: 0.1 },
+		{ input: 1, expected: 0.1 },
+		{ input: 4, expected: 0.1 },
+		{ input: 5, expected: 0.1 },
+		{ input: 6, expected: 0.16 },
+		{ input: 8, expected: 0.28 },
+		{ input: 10, expected: 0.4 },
+		{ input: 15, expected: 0.7 },
+		{ input: 19, expected: 0.9400000000000001 },
 		// Ideal level durations
-		expect(levelScoreDurationMultiplier(20)).toBe(1);
-		expect(levelScoreDurationMultiplier(30)).toBe(1);
-		expect(levelScoreDurationMultiplier(40)).toBe(1);
-		expect(levelScoreDurationMultiplier(50)).toBe(1);
-		expect(levelScoreDurationMultiplier(60)).toBe(1);
+		{ input: 20, expected: 1 },
+		{ input: 30, expected: 1 },
+		{ input: 40, expected: 1 },
+		{ input: 50, expected: 1 },
+		{ input: 60, expected: 1 },
+		{ input: 61, expected: 1 },
+		{ input: 70, expected: 1 },
+		{ input: 80, expected: 1 },
+		{ input: 90, expected: 1 },
+		{ input: 120, expected: 1 },
+		{ input: 180, expected: 1 },
+		{ input: 300, expected: 1 },
+	]
 
-		// Too long level durations
-		expect(levelScoreDurationMultiplier(61)).toBe(0.99);
-		expect(levelScoreDurationMultiplier(70)).toBe(0.9);
-		expect(levelScoreDurationMultiplier(80)).toBe(0.8);
-		expect(levelScoreDurationMultiplier(90)).toBe(0.7);
-		expect(levelScoreDurationMultiplier(120)).toBe(0.4);
-		expect(levelScoreDurationMultiplier(180)).toBe(0.1);
-		expect(levelScoreDurationMultiplier(300)).toBe(0.1);
-	});
+	for (const { input, expected } of testCases) {
+		it(`should return ${expected} for WR time of ${input} seconds`, () => {
+			const result = levelScoreLengthMultiplier(input);
+			expect(result).toEqual(expected);
+		});
+	}
 });
 
 describe('levelScoreCompetitivenessMultiplier', () => {
@@ -284,14 +287,17 @@ describe('levelScorePopularityModifier', () => {
 	const testCases = [
 		{ personalBests: 0, expected: 0.9 },
 		{ personalBests: 1, expected: 0.9 },
-		{ personalBests: 5, expected: 0.9088176352705412 },
-		{ personalBests: 10, expected: 0.9198396793587175 },
-		{ personalBests: 50, expected: 1.0080160320641283 },
-		{ personalBests: 100, expected: 1.1182364729458918 },
-		{ personalBests: 250, expected: 1.4488977955911824 },
-		{ personalBests: 500, expected: 2 },
-		{ personalBests: 750, expected: 2 },
-		{ personalBests: 1000, expected: 2 },
+		{ personalBests: 5, expected: 0.9168336673346693 },
+		{ personalBests: 10, expected: 0.9378757515030061 },
+		{ personalBests: 50, expected: 1.1062124248496994 },
+		{ personalBests: 100, expected: 1.3166332665330662 },
+		{ personalBests: 250, expected: 1.9478957915831665 },
+		{ personalBests: 400, expected: 2.579158316633267 },
+		{ personalBests: 450, expected: 2.7895791583166334 },
+		{ personalBests: 499, expected: 2.9957915831663327 },
+		{ personalBests: 500, expected: 3 },
+		{ personalBests: 750, expected: 3 },
+		{ personalBests: 1000, expected: 3 },
 	];
 
 	for (const { personalBests, expected } of testCases) {
@@ -313,7 +319,7 @@ describe('calculateLevelPoints', () => {
 		expect(result).toEqual({
 			points: 0,
 			contributions: {
-				duration: 0,
+				length: 0,
 				competitiveness: 0,
 				rating: 0,
 				popularity: 0,
@@ -329,12 +335,12 @@ describe('calculateLevelPoints', () => {
 			levelRating: 50,
 		});
 		expect(result).toEqual({
-			points: 927,
+			points: 945,
 			contributions: {
-				duration: 1,
+				length: 1,
 				competitiveness: 1.1195365284569014,
 				rating: 0.9,
-				popularity: 0.9198396793587175,
+				popularity: 0.9378757515030061,
 			},
 		});
 	});
@@ -345,15 +351,16 @@ describe('calculateLevelPoints', () => {
 			topTimes: [30, 31, 32, 33, 34],
 			personalBests: 10,
 			totalRecords: 100,
+			//levelRating: 86,
 			levelRating: 86,
 		});
 		expect(result).toEqual({
-			points: 1223,
+			points: 1247,
 			contributions: {
-				duration: 1,
+				length: 1,
 				competitiveness: 1.1195365284569014,
 				rating: 1.1880000000000002,
-				popularity: 0.9198396793587175,
+				popularity: 0.9378757515030061,
 			},
 		});
 	});
