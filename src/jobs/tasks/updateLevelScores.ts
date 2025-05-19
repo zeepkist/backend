@@ -15,7 +15,7 @@ const task: Task<Payload> = async (payload, helpers) => {
 		helpers.logger.info(`Found ${levelIds.length} levels to update`);
 	} else {
 		const now = new Date();
-		const recordsSince = new Date(now.getTime() - 5 * 60 * 60 * 1000); // 5 hours ago
+		const recordsSince = new Date(now.getTime() - 2 * 60 * 60 * 1000); // 2 hours ago
 
 		levelIds = await getAllLevelIdsWithRecordsSince(recordsSince);
 
