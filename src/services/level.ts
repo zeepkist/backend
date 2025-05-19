@@ -1,5 +1,5 @@
-import { eq } from 'drizzle-orm';
-import { db, level } from '../db';
+import { eq, gte } from 'drizzle-orm';
+import { db, level, record } from '../db';
 
 export async function getOrInsertLevel(hash: string): Promise<typeof level.$inferSelect | null> {
 	const existingLevel = await db.query.level.findFirst({
@@ -38,6 +38,16 @@ export async function getOrInsertLevel(hash: string): Promise<typeof level.$infe
 
 export async function getAllLevelIds(): Promise<number[]> {
 	const levels = await db.select({ id: level.id }).from(level);
+
+	return levels.map((level) => level.id);
+}
+
+export async function getAllLevelIdsWithRecordsSince(recordsSince: Date): Promise<number[]> {
+	const levels = await db
+		.select({ id: level.id })
+		.from(level)
+		.innerJoin(record, eq(level.id, record.idLevel))
+		.where(gte(record.dateCreated, recordsSince.toISOString()));
 
 	return levels.map((level) => level.id);
 }

@@ -1,12 +1,14 @@
 import { type Task, addJob, defaultJobOptions } from '..';
-import { getAllLevelIds } from '../../services';
+import { getAllLevelIdsWithRecordsSince } from '../../services';
 
 const task: Task<never> = async (payload, helpers) => {
-	helpers.logger.info('Update level scores!');
-	const levels = await getAllLevelIds();
+	const now = new Date();
+	const recordsSince = new Date(now.getTime() - 5 * 60 * 60 * 1000); // 5 hours ago
+	const levels = await getAllLevelIdsWithRecordsSince(recordsSince);
+
+	helpers.logger.info(`Found ${levels.length} levels to update since ${recordsSince.toISOString()}`);
 
 	for (const idLevel of levels) {
-		helpers.logger.info(`Level, ${idLevel}!`);
 		addJob('updateLevelScore', { idLevel }, defaultJobOptions);
 	}
 };
