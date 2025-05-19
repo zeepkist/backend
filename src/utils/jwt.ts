@@ -52,9 +52,11 @@ export function generateRefreshToken(): RefreshTokenResponse {
 }
 
 export interface VerifyResponse {
-	jti: string;
 	aud: string;
+	exp: number;
+	iat: number;
 	iss: string;
+	jti: string;
 	sub: string;
 	steamid: bigint;
 }
