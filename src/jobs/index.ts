@@ -23,15 +23,15 @@ interface CronTask {
 const cronJobs: CronJob[] = [];
 
 const cronTimes = {
-	everyHour: '0 * * * *', // Every hour
-	everyFourHoursAt30: '30 */4 * * *', // Every 4 hours at 30 minutes past the hour
+	everyHour: '0 * * * *',
+	everyHourAt30: '30 * * * *',
 	everyDayAtMidnight: '0 0 * * *',
 	everyMondayAt1am: '0 1 * * 1',
 } as const;
 
 const cronTasks: CronTask[] = [
 	{ task: 'updateLevelScores', cronTime: cronTimes.everyMondayAt1am, payload: { all: true } },
-	{ task: 'updateLevelScores', cronTime: cronTimes.everyFourHoursAt30 },
+	{ task: 'updateLevelScores', cronTime: cronTimes.everyHourAt30, payload: { all: true }  },
 	{ task: 'updatePlayerScores', cronTime: cronTimes.everyHour },
 	{ task: 'updateLevelPointsHistory', cronTime: cronTimes.everyDayAtMidnight },
 	{ task: 'updateUserPointsHistory', cronTime: cronTimes.everyDayAtMidnight },
