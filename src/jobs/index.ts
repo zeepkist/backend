@@ -17,6 +17,7 @@ export type Task<T = unknown> = (payload: T, helpers: Helpers) => Promise<void>;
 interface CronTask {
 	task: string;
 	cronTime: string;
+	payload?: object;
 }
 
 const cronJobs: CronJob[] = [];
@@ -25,9 +26,11 @@ const cronTimes = {
 	everyHour: '0 * * * *', // Every hour
 	everyFourHoursAt30: '30 */4 * * *', // Every 4 hours at 30 minutes past the hour
 	everyDayAtMidnight: '0 0 * * *',
+	everyMondayAt1am: '0 1 * * 1',
 } as const;
 
 const cronTasks: CronTask[] = [
+	{ task: 'updateLevelScores', cronTime: cronTimes.everyMondayAt1am, payload: { all: true } },
 	{ task: 'updateLevelScores', cronTime: cronTimes.everyFourHoursAt30 },
 	{ task: 'updatePlayerScores', cronTime: cronTimes.everyHour },
 	{ task: 'updateLevelPointsHistory', cronTime: cronTimes.everyDayAtMidnight },
@@ -59,7 +62,7 @@ export const addJob = runner.addJob.bind(runner);
 export async function registerJobs(app: FastifyInstance) {
 	app.log.info('Registering jobs...');
 
-	for (const { task, cronTime } of cronTasks) {
+	for (const { task, cronTime, payload } of cronTasks) {
 		const validation = validateCronExpression(cronTime);
 
 		if (!validation.valid) {
@@ -71,7 +74,7 @@ export async function registerJobs(app: FastifyInstance) {
 			cronTime,
 			onTick: () => {
 				app.log.info(`Running task: ${task}`);
-				addJob(task, {}, defaultJobOptions);
+				addJob(task, payload ?? {}, defaultJobOptions);
 			},
 			start: true,
 			timeZone: 'Europe/London',
