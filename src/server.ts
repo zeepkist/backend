@@ -106,7 +106,7 @@ export async function buildServer(db = realDb) {
 			if (typeof body !== 'string') {
 				return done(new Error('Invalid body'));
 			}
-			const parsed = JSONB.parse(body);
+			const parsed = JSONB.parse(body || '{}');
 			done(null, parsed);
 		} catch (err) {
 			if (err instanceof Error || err === null) {

@@ -4,7 +4,7 @@ import { addJob, defaultJobOptions } from '.';
 
 // addJob('updateLevelScore', { idLevel: 4 }, defaultJobOptions)
 
-// addJob('updateLevelScores', { all: false }, defaultJobOptions)
+// addJob('updateLevelScores', { all: true }, defaultJobOptions)
 
 // addJob('updatePlayerScores', {}, defaultJobOptions)
 

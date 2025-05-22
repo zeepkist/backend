@@ -25,13 +25,15 @@ const cronJobs: CronJob[] = [];
 const cronTimes = {
 	everyHour: '0 * * * *',
 	everyHourAt30: '30 * * * *',
+	every6Hours: '0 1,7,13,19 * * *',
 	everyDayAtMidnight: '0 0 * * *',
 	everyMondayAt1am: '0 1 * * 1',
 } as const;
 
 const cronTasks: CronTask[] = [
-	{ task: 'updateLevelScores', cronTime: cronTimes.everyMondayAt1am, payload: { all: true } },
-	{ task: 'updateLevelScores', cronTime: cronTimes.everyHourAt30, payload: { all: false }  },
+	//{ task: 'updateLevelScores', cronTime: cronTimes.everyMondayAt1am, payload: { all: true } },
+	{ task: 'updateLevelScores', cronTime: cronTimes.every6Hours, payload: { all: true } },
+	//{ task: 'updateLevelScores', cronTime: cronTimes.everyHourAt30, payload: { all: false }  },
 	{ task: 'updatePlayerScores', cronTime: cronTimes.everyHour },
 	{ task: 'updateLevelPointsHistory', cronTime: cronTimes.everyDayAtMidnight },
 	{ task: 'updateUserPointsHistory', cronTime: cronTimes.everyDayAtMidnight },
@@ -55,9 +57,12 @@ const runner = await run({
 		updateUserPointsHistory: updateUserPointsHistory as Task,
 		updateUserPointsHistoryBatch: updateUserPointsHistoryBatch as Task,
 	},
+	noHandleSignals: true, // Stop Graphile Worker hijacking Fastify graceful shutdown
 });
 
 export const addJob = runner.addJob.bind(runner);
+
+export const stopJobs = runner.stop.bind(runner);
 
 export async function registerJobs(app: FastifyInstance) {
 	app.log.info('Registering jobs...');
