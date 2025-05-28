@@ -197,6 +197,7 @@ export const personalBestGlobal = pgTable(
 		dateUpdated: timestamp('date_updated', { withTimezone: true, mode: 'string' }),
 	},
 	(table) => [
+		unique('UQ_personal_bests_user_level').on(table.idUser, table.idLevel),
 		index('IX_personal_bests_level_user').using(
 			'btree',
 			table.idLevel.asc().nullsLast(),
@@ -249,6 +250,7 @@ export const userPoints = pgTable(
 		dateUpdated: timestamp('date_updated', { withTimezone: true, mode: 'string' }),
 	},
 	(table) => [
+		unique('UQ_user_points_user').on(table.idUser),
 		index('IX_player_points_user').using('btree', table.idUser.asc().nullsLast()),
 		foreignKey({
 			columns: [table.idUser],
@@ -461,6 +463,7 @@ export const favourite = pgTable(
 		idLevel: integer('id_level').notNull(),
 	},
 	(table) => [
+		unique('UQ_favourites_user_level').on(table.idUser, table.idLevel),
 		index('IX_favorites_level').using('btree', table.idLevel.asc().nullsLast()),
 		index('IX_favorites_user').using('btree', table.idUser.asc().nullsLast()),
 		foreignKey({
@@ -530,6 +533,7 @@ export const worldRecordGlobal = pgTable(
 		idUser: integer('id_user').notNull(),
 	},
 	(table) => [
+		unique('UQ_world_records_level').on(table.idLevel),
 		index('IX_world_records_level').using('btree', table.idLevel.asc().nullsLast()),
 		index('IX_world_records_record').using('btree', table.idRecord.asc().nullsLast()),
 		index('IX_world_records_user').using('btree', table.idUser.asc().nullsLast()),

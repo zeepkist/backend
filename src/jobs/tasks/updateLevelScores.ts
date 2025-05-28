@@ -1,28 +1,25 @@
 import { type Task, addJob, defaultJobOptions } from '..';
 import { getAllLevelIdsWithRecordsSince, getAllLevelIds } from '../../services';
 
+async function* getLevelIdsGenerator(all: boolean): AsyncGenerator<number> {
+	if (all) {
+		for (const id of await getAllLevelIds()) yield id;
+	} else {
+		const since = new Date(Date.now() - 2 * 60 * 60 * 1000);
+		for (const id of await getAllLevelIdsWithRecordsSince(since)) yield id;
+	}
+}
+
 interface Payload {
 	all: boolean;
 }
 
 const task: Task<Payload> = async (payload, helpers) => {
 	const { all = false } = payload;
-	let levelIds: number[] = [];
 
-	if (all) {
-		levelIds = await getAllLevelIds();
+	helpers.logger.info(`Starting updateLevelScores task with all=${all}`);
 
-		helpers.logger.info(`Found ${levelIds.length} levels to update`);
-	} else {
-		const now = new Date();
-		const recordsSince = new Date(now.getTime() - 2 * 60 * 60 * 1000); // 2 hours ago
-
-		levelIds = await getAllLevelIdsWithRecordsSince(recordsSince);
-
-		helpers.logger.info(`Found ${levelIds.length} levels to update since ${recordsSince.toISOString()}`);
-	}
-
-	for (const idLevel of levelIds) {
+	for await (const idLevel of getLevelIdsGenerator(all)) {
 		addJob('updateLevelScore', { idLevel }, defaultJobOptions);
 	}
 };
