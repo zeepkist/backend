@@ -250,8 +250,7 @@ export const userPoints = pgTable(
 		dateUpdated: timestamp('date_updated', { withTimezone: true, mode: 'string' }),
 	},
 	(table) => [
-		unique('UQ_user_points_user').on(table.idUser),
-		index('IX_player_points_user').using('btree', table.idUser.asc().nullsLast()),
+		uniqueIndex('UQ_player_points_user').using('btree', table.idUser.asc().nullsLast()),
 		foreignKey({
 			columns: [table.idUser],
 			foreignColumns: [user.id],
