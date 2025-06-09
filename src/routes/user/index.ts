@@ -8,7 +8,7 @@ interface UpdateNameBody {
 }
 
 interface UpdateDiscordIdBody {
-	DiscordId: string;
+	Id: string;
 }
 
 export const userRoutes: FastifyPluginAsync = async (app) => {
@@ -51,6 +51,17 @@ export const userRoutes: FastifyPluginAsync = async (app) => {
 		'/updateDiscordId',
 		{
 			preValidation: [authenticateRequest],
+			/*
+			schema: {
+				body: {
+					type: 'object',
+					properties: {
+						Id: { type: 'string', maxLength: 18 },
+					},
+					required: ['Id'],
+				},
+			}
+			*/
 		},
 		async (req, reply) => {
 			try {
@@ -62,13 +73,13 @@ export const userRoutes: FastifyPluginAsync = async (app) => {
 						.send({ error: getErrorMessage(ERROR_CODES.AUTH_USER_NOT_FOUND) });
 				}
 
-				const { DiscordId } = req.body as UpdateDiscordIdBody;
+				const { Id } = req.body as UpdateDiscordIdBody;
 
-				if (!DiscordId) {
+				if (!Id) {
 					return reply.status(200).send();
 				}
 
-				await updateDiscordId(authUser.steamid, BigInt(DiscordId));
+				await updateDiscordId(authUser.steamid, BigInt(Id));
 
 				return reply.status(200).send();
 			} catch (error) {
