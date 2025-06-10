@@ -9,6 +9,7 @@ import { HOST, PORT } from './config';
 import { db as realDb } from './db';
 import { fastifyOtelInstrumentation } from './otel';
 import { registerRoutes } from './routes';
+import { ERROR_CODES, handleError } from './utils';
 
 export async function buildServer(db = realDb) {
 	const app = await Fastify({
@@ -93,10 +94,7 @@ export async function buildServer(db = realDb) {
 
 	app.setNotFoundHandler(
 		(_, reply) => {
-			reply.status(404).send({
-				error: 'Not Found',
-				message: 'The requested resource was not found on this server.',
-			});
+			reply.status(404).send(handleError(ERROR_CODES.GENERIC_NOT_FOUND));
 		},
 	);
 
@@ -111,6 +109,35 @@ export async function buildServer(db = realDb) {
 		} catch (err) {
 			if (err instanceof Error || err === null) {
 				done(err);
+			}
+		}
+	});
+
+	app.setErrorHandler((error, req, reply) => {
+		req.log.error(error);
+
+		if ('validation' in error || 'validationContext' in error) {
+			const response = handleError(ERROR_CODES.GENERIC_INVALID_REQUEST);
+			response.error.details = error.validation?.map((e) => (
+				e.message || 'Unknown validation error'
+			));
+			return reply.status(400).send(response);
+		}
+
+		switch (error.code) {
+			case 'FST_ERR_NOT_FOUND': {
+				return reply.status(404).send(handleError(ERROR_CODES.GENERIC_NOT_FOUND));
+			}
+			case 'FST_ERR_BAD_STATUS_CODE': {
+				return reply.status(500).send(handleError(ERROR_CODES.INTERNAL_SERVER_ERROR));
+			}
+			case 'FST_ERR_CONTENT_TYPE_INVALID':
+			case 'FST_ERR_CONTENT_TYPE_UNSUPPORTED': {
+				return reply.status(415).send(handleError(ERROR_CODES.GENERIC_INVALID_REQUEST));
+			}
+			default: {
+				const response = handleError(ERROR_CODES.INTERNAL_SERVER_ERROR);
+				return reply.status(500).send(response);
 			}
 		}
 	});

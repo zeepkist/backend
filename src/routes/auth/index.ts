@@ -1,4 +1,4 @@
-import type { FastifyPluginAsync, FastifyReply } from 'fastify';
+import type { FastifyPluginAsync, FastifyReply, FastifySchema } from 'fastify';
 import type { user } from '../../db';
 import { verifyModVersion } from '../../hooks';
 import { deleteAuth, getAuth, getOrInsertUser, insertAuth } from '../../services';
@@ -8,6 +8,7 @@ import {
 	generateAccessToken,
 	generateRefreshToken,
 	getErrorMessage,
+	handleError
 } from '../../utils';
 
 interface LoginRequest {
@@ -103,10 +104,52 @@ export const authRoutes: FastifyPluginAsync = async (app) => {
 		},
 	);
 
+	const refreshSchema: FastifySchema = {
+		tags: ['Authentication'],
+		operationId: 'refreshAuthToken',
+		summary: 'Refresh authentication token',
+		description: 'Refreshes the authentication token for the user.',
+		produces: ['application/json'],
+		consumes: ['application/json'],
+		body: {
+			type: 'object',
+			required: ['ModVersion', 'SteamId', 'LoginToken', 'RefreshToken'],
+			properties: {
+				ModVersion: {
+					type: 'string',
+					description: 'Version of the mod used by the client',
+				},
+				SteamId: { type: 'string' },
+				LoginToken: { type: 'string' },
+				RefreshToken: { type: 'string' },
+			},
+			examples: [
+				{
+					ModVersion: '1.0.0',
+					SteamId: '12345678901234567',
+					LoginToken: 'exampleLoginToken',
+					RefreshToken: 'exampleRefreshToken',
+				}
+			]
+		},
+		response: {
+			200: {
+				type: 'object',
+				properties: {
+					AccessToken: { type: 'string' },
+					AccessTokenExpiry: { type: 'number' },
+					RefreshToken: { type: 'string' },
+					RefreshTokenExpiry: { type: 'number' },
+				},
+			},
+		},
+	};
+
 	app.post<{ Body: RefreshRequest }>(
 		'/refresh',
 		{
 			preValidation: [verifyModVersion],
+			schema: refreshSchema,
 		},
 		async (req, reply) => {
 			try {
@@ -119,10 +162,19 @@ export const authRoutes: FastifyPluginAsync = async (app) => {
 				if (!ModVersion || !SteamId || !LoginToken || !RefreshToken) {
 					return reply
 						.status(400)
-						.send({ error: getErrorMessage(ERROR_CODES.AUTH_MISSING_REQUIRED_FIELDS) });
+						.send(handleError(ERROR_CODES.AUTH_MISSING_REQUIRED_FIELDS));
 				}
 
-				const steamIdFromRequest = BigInt(SteamId);
+				let steamIdFromRequest: bigint;
+
+				try {
+					steamIdFromRequest = BigInt(SteamId);
+				} catch (error) {
+					return reply
+						.status(400)
+						.send(handleError(ERROR_CODES.GENERIC_INVALID_REQUEST, error));
+				}
+
 				const user = await getOrInsertUser(steamIdFromRequest);
 				const auth = await getAuth(user.id, RefreshToken);
 
@@ -133,7 +185,7 @@ export const authRoutes: FastifyPluginAsync = async (app) => {
 				) {
 					return reply
 						.status(401)
-						.send({ error: getErrorMessage(ERROR_CODES.AUTH_INVALID_TOKEN) });
+						.send(handleError(ERROR_CODES.AUTH_INVALID_TOKEN));
 				}
 
 				await deleteAuth(RefreshToken);
@@ -144,7 +196,7 @@ export const authRoutes: FastifyPluginAsync = async (app) => {
 					console.error('Error handling refresh request:', error);
 					return reply
 						.status(500)
-						.send({ error: getErrorMessage(ERROR_CODES.INTERNAL_SERVER_ERROR) });
+						.send(handleError(ERROR_CODES.INTERNAL_SERVER_ERROR, error));
 				}
 			}
 		},

@@ -26,6 +26,8 @@ export const ERROR_CODES = {
 	// Record errors
 	RECORD_SUBMIT_MISSING_PARAMS: 19,
 	RECORD_SUBMIT_FAILED: 20,
+	GENERIC_NOT_FOUND: 21,
+	GENERIC_INVALID_REQUEST: 22,
 } as const;
 
 export const ERROR_MESSAGES = {
@@ -56,19 +58,50 @@ export const ERROR_MESSAGES = {
 	// Record errors
 	[ERROR_CODES.RECORD_SUBMIT_MISSING_PARAMS]: 'Missing required parameters',
 	[ERROR_CODES.RECORD_SUBMIT_FAILED]: 'Failed to submit record',
+	[ERROR_CODES.GENERIC_INVALID_REQUEST]: 'Invalid request',
+	[ERROR_CODES.GENERIC_NOT_FOUND]: 'Not found',
 };
 
 export type ErrorCode = (typeof ERROR_CODES)[keyof typeof ERROR_CODES];
 export type ErrorMessage = (typeof ERROR_MESSAGES)[keyof typeof ERROR_MESSAGES];
 
-export function getErrorMessage(code: ErrorCode): ErrorMessage {
+interface GetErrorMessageOptions {
+	isConsole: boolean;
+	error?: unknown;
+}
+
+export function getErrorMessage(code: ErrorCode, options?: GetErrorMessageOptions): ErrorMessage {
 	const message = ERROR_MESSAGES[code];
 	if (!message) {
 		throw new Error(`Unknown error code: ${code}`);
 	}
 
-	const errorMessage = `${message} (ERR #${code})`;
+	const errorMessage = options?.isConsole ? `${message} (ERR #${code})` : message;
 
 	console.error(errorMessage);
+
+	if (options?.error) console.error(options.error);
+
 	return errorMessage;
+}
+
+interface ErrorResponse {
+	error: {
+		message: ErrorMessage;
+		code: ErrorCode;
+		details?: string[];
+	}
+}
+
+export function handleError(code: ErrorCode, error?: unknown): ErrorResponse {
+	const message = getErrorMessage(code, {
+		isConsole: false,
+		error
+	});
+	return {
+		error: {
+			message,
+			code,
+		}
+	};
 }

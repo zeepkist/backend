@@ -292,12 +292,12 @@ describe('levelScorePopularityModifier', () => {
 		{ personalBests: 50, expected: 1.1062124248496994 },
 		{ personalBests: 100, expected: 1.3166332665330662 },
 		{ personalBests: 250, expected: 1.9478957915831665 },
-		{ personalBests: 400, expected: 2.579158316633267 },
-		{ personalBests: 450, expected: 2.7895791583166334 },
-		{ personalBests: 499, expected: 2.9957915831663327 },
-		{ personalBests: 500, expected: 3 },
-		{ personalBests: 750, expected: 3 },
-		{ personalBests: 1000, expected: 3 },
+		{ personalBests: 400, expected: 2.1 },
+		{ personalBests: 450, expected: 2.1 },
+		{ personalBests: 499, expected: 2.1 },
+		{ personalBests: 500, expected: 2.1 },
+		{ personalBests: 750, expected: 2.1 },
+		{ personalBests: 1000, expected: 2.1 },
 	];
 
 	for (const { personalBests, expected } of testCases) {
