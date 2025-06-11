@@ -9,6 +9,7 @@ const {
 	DATABASE_URL = '',
 	PORT = 3000,
 	HOST = '0.0.0.0',
+	DEBUG = 0,
 	WASABI_ACCESSKEY = '',
 	WASABI_SECRETKEY = '',
 	WASABI_BUCKET = '',
@@ -26,6 +27,8 @@ export const JWT_EXPIRY = parse('5m') ?? 0;
 export const JWT_REFRESH_EXPIRY = parse('7d') ?? 0;
 
 export const SERVER_PORT = Number(PORT);
+
+export const IS_DEBUG_MODE = Number(DEBUG) === 1;
 
 export {
 	STEAM_APP_ID,
