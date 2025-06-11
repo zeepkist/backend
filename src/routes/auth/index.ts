@@ -71,11 +71,19 @@ export const authRoutes: FastifyPluginAsync = async (app) => {
 					description: 'Version of the mod used by the client',
 				},
 				SteamId: {
-					type: 'string',
-					description: 'Steam ID of the user',
-					pattern: '^[0-9]{17}$',
-					maxLength: 17,
-					minLength: 17,
+					anyOf: [
+						{
+							type: 'string',
+							description: 'Steam ID of the user',
+							pattern: '^[0-9]{17}$',
+							maxLength: 17,
+							minLength: 17,
+						},
+						{
+							type: 'number',
+							description: 'Deprecated. Use string format for Steam ID',
+						}
+					]
 				},
 				AuthenticationTicket: {
 					type: 'string',
@@ -211,12 +219,21 @@ export const authRoutes: FastifyPluginAsync = async (app) => {
 					type: 'string',
 					description: 'Version of the mod used by the client',
 				},
+
 				SteamId: {
-					type: 'string',
-					description: 'Steam ID of the user',
-					pattern: '^[0-9]{17}$',
-					maxLength: 17,
-					minLength: 17,
+					anyOf: [
+						{
+							type: 'string',
+							description: 'Steam ID of the user',
+							pattern: '^[0-9]{17}$',
+							maxLength: 17,
+							minLength: 17,
+						},
+						{
+							type: 'number',
+							description: 'Deprecated. Use string format for Steam ID',
+						}
+					]
 				},
 				LoginToken: {
 					type: 'string',
