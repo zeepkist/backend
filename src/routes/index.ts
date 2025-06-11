@@ -12,7 +12,17 @@ export async function registerRoutes(app: FastifyInstance) {
 	app.register(recordRoutes, { prefix: '/record' });
 	app.register(voteRoutes, { prefix: '/vote' });
 
-	app.get('/healthz', async (_, reply) => {
+	// Ignore favicon in documentation
+	app.get('/favicon.ico', {
+		schema: { hide: true },
+	}, async (_, reply) => {
+		return reply.status(204).send();
+	});
+
+	// Health check route
+	app.get('/healthz', {
+		schema: { hide: true }
+	}, async (_, reply) => {
 		return reply.status(200).send({ status: 'ok' });
 	});
 }

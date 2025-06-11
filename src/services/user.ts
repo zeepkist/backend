@@ -1,11 +1,17 @@
 import { eq, sql } from 'drizzle-orm';
-import { db, personalBestGlobal, user } from '../db';
+import { db, user } from '../db';
 import { getSteamUser } from '../steam/user.ts';
 
-export async function getOrInsertUser(steamId: bigint): Promise<typeof user.$inferSelect> {
+export async function getUser(steamId: bigint): Promise<typeof user.$inferSelect | null> {
 	const existingUser = await db.query.user.findFirst({
 		where: eq(user.steamId, steamId),
 	});
+
+	return existingUser || null;
+}
+
+export async function getOrInsertUser(steamId: bigint): Promise<typeof user.$inferSelect> {
+	const existingUser = await getUser(steamId);
 
 	if (existingUser) {
 		return existingUser;

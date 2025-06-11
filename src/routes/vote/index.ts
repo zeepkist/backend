@@ -1,8 +1,9 @@
 import type { FastifyPluginAsync, FastifyReply, FastifyRequest } from 'fastify';
 import { authenticateRequest } from '../../hooks';
-import { getOrInsertLevel, getOrInsertUser, upsertVote } from '../../services';
-import { ERROR_CODES, getErrorMessage } from '../../utils';
+import { getLevel, getUser, upsertVote } from '../../services';
+import { ERROR_CODES, handleError } from '../../utils';
 
+// --, -, +, ++
 type VoteType = -2 | -1 | 1 | 2;
 
 interface VoteBody {
@@ -20,7 +21,7 @@ const handleVoteRequest = async (
 		if (!authUser) {
 			return reply
 				.status(401)
-				.send({ error: getErrorMessage(ERROR_CODES.AUTH_USER_NOT_FOUND) });
+				.send(handleError(ERROR_CODES.AUTH_USER_NOT_FOUND));
 		}
 
 		const { Level } = req.body;
@@ -28,16 +29,24 @@ const handleVoteRequest = async (
 		if (!Level) {
 			return reply
 				.status(400)
-				.send({ error: getErrorMessage(ERROR_CODES.VOTE_MISSING_PARAMS) });
+				.send(handleError(ERROR_CODES.VOTE_MISSING_PARAMS));
 		}
 
-		const level = await getOrInsertLevel(Level);
+		const user = await getUser(authUser.steamid);
+
+		if (!user) {
+			return reply
+				.status(401)
+				.send(handleError(ERROR_CODES.AUTH_USER_NOT_FOUND));
+		}
+
+		const level = await getLevel(Level);
 
 		if (!level) {
-			return reply.status(400).send({ error: getErrorMessage(ERROR_CODES.LEVEL_NOT_FOUND) });
+			return reply
+				.status(400)
+				.send(handleError(ERROR_CODES.LEVEL_NOT_FOUND));
 		}
-
-		const user = await getOrInsertUser(authUser.steamid);
 
 		await upsertVote(user.id, level.id, value);
 
@@ -47,7 +56,7 @@ const handleVoteRequest = async (
 			console.error('Error handling vote request:', error);
 			return reply
 				.status(500)
-				.send({ error: getErrorMessage(ERROR_CODES.INTERNAL_SERVER_ERROR) });
+				.send(handleError(ERROR_CODES.INTERNAL_SERVER_ERROR, error));
 		}
 	}
 };

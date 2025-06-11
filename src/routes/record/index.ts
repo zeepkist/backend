@@ -2,13 +2,13 @@ import type { FastifyPluginAsync } from 'fastify';
 import { authenticateRequest, verifyModVersion } from '../../hooks';
 import {
 	getOrInsertLevel,
-	getOrInsertUser,
+	getUser,
 	insertRecord,
 	insertRecordMedia,
 	upsertPersonalBest,
 	upsertWorldRecord,
 } from '../../services';
-import { ERROR_CODES, getErrorMessage } from '../../utils';
+import { ERROR_CODES, handleError } from '../../utils';
 
 interface SubmitBody {
 	Level: string;
@@ -33,7 +33,7 @@ export const recordRoutes: FastifyPluginAsync = async (app) => {
 				if (!authUser) {
 					return reply
 						.status(401)
-						.send({ error: getErrorMessage(ERROR_CODES.AUTH_USER_NOT_FOUND) });
+						.send(handleError(ERROR_CODES.AUTH_USER_NOT_FOUND));
 				}
 
 				const { Level, Time, Splits, Speeds, GhostData, GameVersion, ModVersion } =
@@ -42,16 +42,23 @@ export const recordRoutes: FastifyPluginAsync = async (app) => {
 				if (!Level || !Time || !Splits || !Speeds || !GhostData || !GameVersion) {
 					return reply
 						.status(400)
-						.send({ error: getErrorMessage(ERROR_CODES.RECORD_SUBMIT_MISSING_PARAMS) });
+						.send(handleError(ERROR_CODES.RECORD_SUBMIT_MISSING_PARAMS));
 				}
 
-				const user = await getOrInsertUser(authUser.steamid);
+				const user = await getUser(authUser.steamid);
+
+				if (!user) {
+					return reply
+						.status(401)
+						.send(handleError(ERROR_CODES.AUTH_USER_NOT_FOUND));
+				}
+
 				const level = await getOrInsertLevel(Level);
 
 				if (!level) {
 					return reply
 						.status(400)
-						.send({ error: getErrorMessage(ERROR_CODES.LEVEL_NOT_FOUND) });
+						.send(handleError(ERROR_CODES.LEVEL_NOT_FOUND));
 				}
 
 				const record = await insertRecord({
@@ -67,7 +74,7 @@ export const recordRoutes: FastifyPluginAsync = async (app) => {
 				if (!record) {
 					return reply
 						.status(400)
-						.send({ error: getErrorMessage(ERROR_CODES.RECORD_SUBMIT_FAILED) });
+						.send(handleError(ERROR_CODES.RECORD_SUBMIT_FAILED));
 				}
 
 				await Promise.all([
@@ -93,7 +100,7 @@ export const recordRoutes: FastifyPluginAsync = async (app) => {
 					console.trace('Error handling record request:', error);
 					return reply
 						.status(500)
-						.send({ error: getErrorMessage(ERROR_CODES.INTERNAL_SERVER_ERROR) });
+						.send(handleError(ERROR_CODES.INTERNAL_SERVER_ERROR));
 				}
 			}
 		},

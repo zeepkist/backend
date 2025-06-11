@@ -1,15 +1,42 @@
 import cors from '@fastify/cors';
 import helmet from '@fastify/helmet';
 import swagger from '@fastify/swagger';
+import type { OpenAPIV3, OpenAPIV3_1 } from 'openapi-types';
 import swaggerUi from '@fastify/swagger-ui';
 import Fastify from 'fastify';
-import noFavIcon from 'fastify-no-icon';
 import JSONB from 'when-json-met-bigint';
-import { HOST, PORT } from './config';
+import { HOST, PORT, IS_DEBUG_MODE } from './config';
 import { db as realDb } from './db';
 import { fastifyOtelInstrumentation } from './otel';
 import { registerRoutes } from './routes';
 import { ERROR_CODES, handleError } from './utils';
+
+type OpenApi = Partial<
+	OpenAPIV3.Document<object> |
+	OpenAPIV3_1.Document<object>
+> | undefined;
+
+const openapi: OpenApi = {
+	openapi: '3.0.0',
+	info: {
+		title: 'Zeepkist Community Hub API',
+		description: 'API documentation for the Zeepkist Community Hub',
+		version: '1.0.0',
+	},
+	servers: [
+		{
+			url: 'https://backend.zeepki.st',
+			description: 'Production',
+		},
+	],
+}
+
+if (IS_DEBUG_MODE) {
+	openapi.servers?.push({
+		url: `http://${HOST}:${PORT}`,
+		description: 'Development',
+	});
+}
 
 export async function buildServer(db = realDb) {
 	const app = await Fastify({
@@ -33,35 +60,36 @@ export async function buildServer(db = realDb) {
 
 	await app.register(fastifyOtelInstrumentation.plugin());
 
+	app.register(helmet, {
+		global: true,
+		hidePoweredBy: true
+	});
+
+	await app.register(cors, {
+		origin: '*',
+		maxAge: 86400,
+	});
+
 	await app.register(swagger, {
-		openapi: {
-			openapi: '3.0.0',
-			info: {
-				title: 'Zeepkist Community Hub API',
-				description: 'API documentation for the Zeepkist Community Hub',
-				version: '1.0.0',
-			},
-			servers: [
-				{
-					url: `http://${HOST}:${PORT}`,
-					description: 'Development server',
-				},
-				{
-					url: 'https://backend.zeepki.st',
-					description: 'Production server',
-				},
-			],
-		},
+		openapi
 	});
 
 	await app.register(swaggerUi, {
 		routePrefix: '/docs',
 		uiConfig: {
-			docExpansion: 'full',
+			docExpansion: 'list',
 			deepLinking: true,
 		},
-		staticCSP: true,
+		staticCSP: false,
+		transformStaticCSP: () => '',
 		transformSpecificationClone: true,
+		uiHooks: {
+			onRequest: (_, reply, done) => {
+				// Remove Content Security Policy header
+				reply.removeHeader('Content-Security-Policy');
+				done();
+			}
+		}
 		/*
 		logo: {
 			type: 'image/png',
@@ -79,17 +107,6 @@ export async function buildServer(db = realDb) {
 			],
 		},
 		*/
-	});
-
-	app.register(helmet, {
-		global: true,
-	});
-
-	app.register(noFavIcon);
-
-	await app.register(cors, {
-		origin: '*',
-		maxAge: 86400,
 	});
 
 	app.setNotFoundHandler(

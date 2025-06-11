@@ -1,10 +1,16 @@
 import { eq, gte } from 'drizzle-orm';
 import { db, level, record } from '../db';
 
-export async function getOrInsertLevel(hash: string): Promise<typeof level.$inferSelect | null> {
+export async function getLevel(hash: string): Promise<typeof level.$inferSelect | null> {
 	const existingLevel = await db.query.level.findFirst({
 		where: eq(level.hash, hash),
 	});
+
+	return existingLevel || null;
+}
+
+export async function getOrInsertLevel(hash: string): Promise<typeof level.$inferSelect | null> {
+	const existingLevel = await getLevel(hash);
 
 	if (existingLevel) {
 		return existingLevel;
