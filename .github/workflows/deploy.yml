@@ -58,6 +58,10 @@ jobs:
               env:
                 NODE_ENV: production
 
+            - name: Clone Super League Data
+              run: |
+                git clone --branch data https://github.com/zeepkist/super-league.git super_league_data
+
             - name: Build and push Docker image for ZSL import
               run: |
                 docker build -f Dockerfile.zsl -t ghcr.io/${{ github.repository }}/zsl:latest .
