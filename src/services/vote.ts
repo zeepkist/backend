@@ -1,6 +1,13 @@
 import { and, eq, sql } from 'drizzle-orm';
 import { db, vote } from '../db';
 
+const votePercentage = sql<number>`
+	ROUND(
+		((SUM(${vote.value})::numeric / (COUNT(*) * 2)) * 50 + 50),
+		2
+	)
+`
+
 export async function upsertVote(
 	idUser: number,
 	idLevel: number,
@@ -41,15 +48,14 @@ export async function upsertVote(
 	return result;
 }
 
+/**
+ * Retrieves the vote rating for a specific level.
+ * The rating is calculated as the percentage, mapping -100%-100% to 0-100%.
+ */
 export async function getVoteRating({ idLevel }: { idLevel: number }): Promise<number> {
 	const rating = await db
 		.select({
-			percentage: sql<number>`
-				ROUND(
-					(SUM(${vote.value})::numeric / (COUNT(*) * 2)) * 100,
-					2
-				)
-			`.as('percentage'),
+			percentage: votePercentage.as('percentage'),
 		})
 		.from(vote)
 		.where(eq(vote.idLevel, idLevel))
@@ -63,12 +69,7 @@ export async function getVoteRatings() {
 	const ratings = await db
 		.select({
 			idLevel: vote.idLevel,
-			percentage: sql<number>`
-				ROUND(
-					(SUM(${vote.value})::numeric / (COUNT(*) * 2)) * 100,
-					2
-				)
-			`.as('percentage'),
+			percentage: votePercentage.as('percentage'),
 		})
 		.from(vote)
 		.groupBy(vote.idLevel)
