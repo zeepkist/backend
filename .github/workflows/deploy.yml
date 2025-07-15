@@ -57,3 +57,10 @@ jobs:
                 docker push ghcr.io/${{ github.repository }}/migrate:latest
               env:
                 NODE_ENV: production
+
+            - name: Build and push Docker image for ZSL import
+              run: |
+                docker build -f Dockerfile.zsl -t ghcr.io/${{ github.repository }}/zsl:latest .
+                docker push ghcr.io/${{ github.repository }}/zsl:latest
+              env:
+                NODE_ENV: production

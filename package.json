@@ -16,7 +16,10 @@
 		"db:generate": "drizzle-kit generate",
 		"db:migrate": "drizzle-kit migrate",
 		"db:studio": "drizzle-kit studio",
-		"triggerJob": "bun run src/jobs/triggerJobManually.ts"
+		"triggerJob": "bun run src/jobs/triggerJobManually.ts",
+		"zsl:import": "bun run src/zsl/import.ts",
+		"zsl:build": "DOCKER_BUILDKIT=1 docker buildx build --platform linux/amd64 -t zsl:local -f ./Dockerfile.zsl .",
+		"zsl:run": "docker run --rm --env-file .env --network zeepkist-network zsl:local"
 	},
 	"dependencies": {
 		"@fastify/cors": "^11.0.1",

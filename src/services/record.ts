@@ -1,4 +1,4 @@
-import { eq, sql } from 'drizzle-orm';
+import { and, eq, gt, lt, sql } from 'drizzle-orm';
 import { db, personalBestGlobal, record } from '../db';
 
 interface RecordData {
@@ -16,6 +16,34 @@ interface SubmittedRecordData extends Omit<RecordData, 'splits' | 'speeds'> {
 	speeds?: number[];
 	dateCreated: string;
 	dateUpdated: string;
+}
+
+interface GetRecordFromZsl {
+	idLevel: number;
+	idUser: number;
+	time: number;
+}
+
+/**
+ * Attempt to match a ZSL record to an existing GTR record.
+ *
+ * Loosely match by time to account for differences in decimal place precision.
+ * (if a time is within 5 decimal places of the ZSL time, it is considered a match)
+ */
+export async function getRecordFromZsl({
+	idLevel,
+	idUser,
+	time
+}: GetRecordFromZsl): Promise<typeof record.$inferSelect | undefined> {
+	const precision = 0.00001;
+	return await db.query.record.findFirst({
+		where: and(
+			eq(record.idLevel, idLevel),
+			eq(record.idUser, idUser),
+			gt(record.time, time - precision),
+			lt(record.time, time + precision)
+		),
+	});
 }
 
 export async function insertRecord({

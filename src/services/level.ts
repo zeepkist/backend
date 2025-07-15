@@ -1,10 +1,24 @@
 import { eq, gte } from 'drizzle-orm';
-import { db, level, record } from '../db';
+import { db, level, levelItem, record } from '../db';
 
 export async function getLevel(hash: string): Promise<typeof level.$inferSelect | null> {
 	const existingLevel = await db.query.level.findFirst({
 		where: eq(level.hash, hash),
 	});
+
+	return existingLevel || null;
+}
+
+export async function getLevelByUuid(uuid: string): Promise<{ id: number } | null> {
+	const existingLevel = await db
+		.select({
+			id: level.id,
+		})
+		.from(level)
+		.innerJoin(levelItem, eq(level.id, levelItem.idLevel))
+		.where(eq(levelItem.fileUid, uuid))
+		.limit(1)
+		.then(rows => rows[0]);
 
 	return existingLevel || null;
 }

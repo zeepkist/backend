@@ -19,6 +19,7 @@ const {
 	THUMBNAIL_FOLDER = 'thumbnails-dev',
 	OPENTELEMETRY_COLLECTOR_URL = '',
 	OPENTELEMETRY_SERVICE_NAME = '',
+	ENABLE_WORKERS = false,
 } = process.env;
 
 export const STEAM_API_BASE_URL = 'https://api.steampowered.com';
@@ -48,4 +49,5 @@ export {
 	THUMBNAIL_FOLDER,
 	OPENTELEMETRY_COLLECTOR_URL,
 	OPENTELEMETRY_SERVICE_NAME,
+	ENABLE_WORKERS,
 };

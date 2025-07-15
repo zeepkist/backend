@@ -1,0 +1,11 @@
+FROM oven/bun:1-alpine
+
+WORKDIR /app
+
+COPY package.json bun.lock ./
+COPY super_league_data/ ./super_league_data/
+RUN bun install --frozen-lockfile
+
+COPY . .
+
+CMD ["bun", "run", "zsl:import"]

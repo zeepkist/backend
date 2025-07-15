@@ -2,6 +2,7 @@ import { CronJob, validateCronExpression } from 'cron';
 import type { FastifyInstance } from 'fastify';
 import { type Helpers, type TaskSpec, run } from 'graphile-worker';
 import preset from './graphile.config';
+import { ENABLE_WORKERS } from '../config';
 
 import updateLevelPointsHistory from './tasks/updateLevelPointsHistory';
 import updateLevelPointsHistoryBatch from './tasks/updateLevelPointsHistoryBatch';
@@ -18,6 +19,33 @@ interface CronTask {
 	task: string;
 	cronTime: string;
 	payload?: object;
+}
+
+const createRunner = () => {
+	if (!ENABLE_WORKERS) {
+		console.warn('Graphile Worker is disabled. No jobs will be run.');
+		return {
+			addJob: () => Promise.resolve(),
+			stop: () => Promise.resolve(),
+			promise: Promise.resolve(),
+		};
+	}
+
+	return run({
+		crontabFile: '', // Disable reading crontab
+		preset,
+		taskList: {
+			updateLevelPointsHistory: updateLevelPointsHistory as Task,
+			updateLevelPointsHistoryBatch: updateLevelPointsHistoryBatch as Task,
+			updateLevelScore: updateLevelScore as Task,
+			updateLevelScores: updateLevelScores as Task,
+			updatePlayerScore: updatePlayerScore as Task,
+			updatePlayerScores: updatePlayerScores as Task,
+			updateUserPointsHistory: updateUserPointsHistory as Task,
+			updateUserPointsHistoryBatch: updateUserPointsHistoryBatch as Task,
+		},
+		noHandleSignals: true, // Stop Graphile Worker hijacking Fastify graceful shutdown
+	});
 }
 
 const cronJobs: CronJob[] = [];
@@ -44,21 +72,7 @@ export const defaultJobOptions: TaskSpec = {
 	maxAttempts: 1,
 };
 
-const runner = await run({
-	crontabFile: '', // Disable reading crontab
-	preset,
-	taskList: {
-		updateLevelPointsHistory: updateLevelPointsHistory as Task,
-		updateLevelPointsHistoryBatch: updateLevelPointsHistoryBatch as Task,
-		updateLevelScore: updateLevelScore as Task,
-		updateLevelScores: updateLevelScores as Task,
-		updatePlayerScore: updatePlayerScore as Task,
-		updatePlayerScores: updatePlayerScores as Task,
-		updateUserPointsHistory: updateUserPointsHistory as Task,
-		updateUserPointsHistoryBatch: updateUserPointsHistoryBatch as Task,
-	},
-	noHandleSignals: true, // Stop Graphile Worker hijacking Fastify graceful shutdown
-});
+const runner = await createRunner();
 
 export const addJob = runner.addJob.bind(runner);
 

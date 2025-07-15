@@ -20,5 +20,7 @@ LABEL org.opencontainers.image.source=https://github.com/zeepkist/backend
 LABEL org.opencontainers.image.description="Backend service for GTR"
 LABEL org.opencontainers.image.licenses=MIT
 
+ENV ENABLE_WORKERS=true
+
 EXPOSE 3000/tcp
 CMD ["./server"]
