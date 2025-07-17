@@ -31,6 +31,8 @@ export const SERVER_PORT = Number(PORT);
 
 export const IS_DEBUG_MODE = Number(DEBUG) === 1;
 
+export const DEFAULT_VOTE_RATING = 0.5;
+
 export {
 	STEAM_APP_ID,
 	STEAM_API_KEY,

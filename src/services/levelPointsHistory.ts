@@ -1,6 +1,6 @@
 import { db, type levelPoints, levelPointsHistory } from '../db';
 
-type LevelPoints = Pick<typeof levelPoints.$inferInsert, 'idLevel' | 'points'>;
+type LevelPoints = Pick<typeof levelPoints.$inferInsert, 'idLevel' | 'points' | 'rating' | 'lengthModifier' | 'competitivenessModifier' | 'ratingModifier' | 'popularityModifier'>;
 
 type LevelPointsHistory = typeof levelPointsHistory.$inferInsert;
 
@@ -11,6 +11,11 @@ export async function insertLevelPointsHistories(entries: LevelPoints[]) {
 		(entry): LevelPointsHistory => ({
 			idLevel: entry.idLevel,
 			points: entry.points,
+			rating: entry.rating,
+			lengthModifier: entry.lengthModifier,
+			competitivenessModifier: entry.competitivenessModifier,
+			ratingModifier: entry.ratingModifier,
+			popularityModifier: entry.popularityModifier,
 			dateCreated: now,
 		}),
 	);

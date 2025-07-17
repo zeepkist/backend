@@ -12,8 +12,9 @@ import {
 	timestamp,
 	unique,
 	uniqueIndex,
-	varchar,
+	varchar
 } from 'drizzle-orm/pg-core';
+import { DEFAULT_VOTE_RATING } from '../src/config';
 
 export const level = pgTable(
 	'level',
@@ -121,6 +122,11 @@ export const levelPoints = pgTable(
 		}),
 		idLevel: integer('id_level').notNull(),
 		points: integer().notNull(),
+		rating: real().notNull().default(DEFAULT_VOTE_RATING),
+		lengthModifier: real('modifier_length').notNull().default(1.0),
+		competitivenessModifier: real('modifier_competitiveness').notNull().default(1.0),
+		ratingModifier: real('modifier_rating').notNull().default(1.0),
+		popularityModifier: real('modifier_popularity').notNull().default(1.0),
 		dateCreated: timestamp('date_created', { withTimezone: true, mode: 'string' }).notNull().defaultNow(),
 		dateUpdated: timestamp('date_updated', { withTimezone: true, mode: 'string' }).$onUpdate(
 			() => new Date().toISOString(),
@@ -149,6 +155,11 @@ export const levelPointsHistory = pgTable(
 		}),
 		idLevel: integer('id_level').notNull(),
 		points: integer().notNull(),
+		rating: real().notNull().default(DEFAULT_VOTE_RATING),
+		lengthModifier: real('modifier_length').notNull().default(1.0),
+		competitivenessModifier: real('modifier_competitiveness').notNull().default(1.0),
+		ratingModifier: real('modifier_rating').notNull().default(1.0),
+		popularityModifier: real('modifier_popularity').notNull().default(1.0),
 		dateCreated: timestamp('date_created', { withTimezone: true, mode: 'string' }).notNull().defaultNow(),
 		dateUpdated: timestamp('date_updated', { withTimezone: true, mode: 'string' }).$onUpdate(
 			() => new Date().toISOString(),

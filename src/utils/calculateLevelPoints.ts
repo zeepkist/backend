@@ -30,18 +30,28 @@ function average(arr: number[]): number {
  * - Short levels (≤5s) get a low multiplier (min 0.1)
  * - Longer levels (up to 20s) get a higher multiplier (up to 1.0)
  * - Scales smoothly using an ease-out curve between 5s and 20s
- * - Levels longer than 20s always return 1
+ * - Levels longer than 20s always return 1 until 75s and then ease out to 0.5 at 120s
  */
 export const levelScoreLengthMultiplier = (wrTime: number) => {
 	const MIN = 0.1;
 	const MAX = 1 - MIN;
 	const START = 5;
 	const END = 20;
+	const LONG_START = 75;
+	const LONG_END = 120;
+	const LONG_MIN = 0.5;
 
 	if (wrTime < END) {
 		const clamped = Math.max(0, wrTime - START) / (END - START); // normalized [0,1]
 		const eased = Math.sqrt(clamped); // ease-out growth
 		return MIN + eased * MAX;
+	}
+
+	if (wrTime > LONG_START) {
+		const clamped = Math.min(wrTime, LONG_END) - LONG_START;
+		const normalized = clamped / (LONG_END - LONG_START); // [0,1]
+		const eased = Math.sqrt(normalized); // ease-out decay
+		return 1 - eased * (1 - LONG_MIN);
 	}
 
 	return 1;
@@ -116,16 +126,17 @@ export const levelScoreCompetitivenessMultiplier = (
  *
  * Set in-game with ++, +, - or -- votes in chat.
  *
- * - Lower rating → lower multiplier (min 0.5)
+ * - Lower rating → lower multiplier (min 0.7)
  * - Higher rating → higher multiplier (up to 1.3)
- * - Linearly scales between 0 and 100
+ * - Scaled by Wilson lower bound to provide confidence
  */
-export const levelScoreRatingModifier = (levelRating: number) => {
-	const MIN = 0.5;
-	const MAX = 1.3 - MIN;
-	const normalised = clamp(levelRating / 100, 0, 1);
+export const levelScoreRatingModifier = (rating: number) => {
+	const MIN = 0.7;
+	const MAX = 1.3;
 
-	return MIN + normalised * MAX;
+	const multiplier = MIN + Math.max(0, Math.min(rating, 1)) * (MAX - MIN);
+
+	return multiplier;
 };
 
 /**
@@ -165,60 +176,60 @@ interface CalculateLevelScore {
 	topTimes: number[];
 	personalBests: number;
 	totalRecords: number;
-	levelRating: number;
+	rating: number;
 }
 
-interface LevelScoreContributions {
-	length: number;
-	competitiveness: number;
-	rating: number;
-	popularity: number;
+interface LevelScoreModifiers {
+	lengthModifier: number;
+	competitivenessModifier: number;
+	ratingModifier: number;
+	popularityModifier: number;
 }
 
 interface CalculateLevelPointsResult {
 	points: number;
-	contributions: LevelScoreContributions;
+	modifiers: LevelScoreModifiers;
 }
 
 export const calculateLevelPoints = ({
 	topTimes,
 	personalBests,
 	totalRecords,
-	levelRating,
+	rating,
 }: CalculateLevelScore): CalculateLevelPointsResult => {
 	if (totalRecords === 0) {
 		return {
 			points: 0,
-			contributions: {
-				length: 0,
-				competitiveness: 0,
-				rating: 0,
-				popularity: 0,
+			modifiers: {
+				lengthModifier: 0,
+				competitivenessModifier: 0,
+				ratingModifier: 0,
+				popularityModifier: 0,
 			},
 		};
 	}
 
 	const wrTime = topTimes[0] ?? 0;
-	const lengthMultiplier = normaliseNumber(levelScoreLengthMultiplier(wrTime));
-	const { modifier: competitivenessMultiplier } = levelScoreCompetitivenessMultiplier(wrTime, topTimes, personalBests, totalRecords);
-	const ratingModifier = normaliseNumber(levelScoreRatingModifier(levelRating));
+	const lengthModifier = normaliseNumber(levelScoreLengthMultiplier(wrTime));
+	const { modifier: competitivenessModifier } = levelScoreCompetitivenessMultiplier(wrTime, topTimes, personalBests, totalRecords);
+	const ratingModifier = normaliseNumber(levelScoreRatingModifier(rating));
 	const popularityModifier = normaliseNumber(levelScorePopularityModifier(personalBests));
 
 	const points = Math.round(
 		BASE_POINTS *
-		lengthMultiplier *
-		competitivenessMultiplier *
+		lengthModifier *
+		competitivenessModifier *
 		ratingModifier *
 		popularityModifier,
 	);
 
 	return {
 		points,
-		contributions: {
-			length: lengthMultiplier,
-			competitiveness: competitivenessMultiplier,
-			rating: ratingModifier,
-			popularity: popularityModifier,
+		modifiers: {
+			lengthModifier,
+			competitivenessModifier,
+			ratingModifier,
+			popularityModifier,
 		},
 	};
 };

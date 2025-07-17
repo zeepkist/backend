@@ -3,3 +3,4 @@ export * from './jwt';
 export * from './generateUid';
 export * from './calculateLevelPoints';
 export * from './calculatePlayerPoints';
+export * from './calculateVoteRating';
