@@ -28,6 +28,9 @@ jobs:
 
             - name: Run Tests
               run: bun test
+              env:
+                JWT_AUDIENCE: ${{ secrets.TEST_JWT_AUDIENCE }}
+                JWT_ISSUER: ${{ secrets.TEST_JWT_ISSUER }}
 
             - name: Log in to GitHub Container Registry
               uses: docker/login-action@v2

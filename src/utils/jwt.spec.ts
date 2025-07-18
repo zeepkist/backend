@@ -1,4 +1,4 @@
-import { describe, expect, it, spyOn } from 'bun:test';
+import { describe, expect, it } from 'bun:test';
 import { generateAccessToken, generateRefreshToken, verifyAccessToken } from './jwt.ts';
 
 describe('generateAccessToken', () => {
