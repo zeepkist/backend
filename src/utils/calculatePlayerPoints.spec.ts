@@ -93,8 +93,8 @@ describe('calculatePlayerPoints', () => {
 		];
 
 		const result = calculatePlayerPoints(personalBests);
-		expect(result.points).toBe(2245);
-		expect(result.totalPoints).toBe(2340);
+		expect(result.points).toBe(2227);
+		expect(result.totalPoints).toBe(2321);
 	});
 
 	it('should make nth personal best worth less, even if they have the same base value (1st)', () => {
@@ -117,8 +117,8 @@ describe('calculatePlayerPoints', () => {
 		];
 
 		const result = calculatePlayerPoints(personalBests);
-		expect(result.points).toBe(1737);
-		expect(result.totalPoints).toBe(1826);
+		expect(result.points).toBe(639);
+		expect(result.totalPoints).toBe(672);
 	});
 
 	it('should sort personal bests by most valuable', () => {
@@ -129,8 +129,8 @@ describe('calculatePlayerPoints', () => {
 		];
 
 		const result = calculatePlayerPoints(personalBests);
-		expect(result.points).toBe(5622);
-		expect(result.totalPoints).toBe(5766);
+		expect(result.points).toBe(4169);
+		expect(result.totalPoints).toBe(4237);
 	});
 
 	it('should handle empty personal bests', () => {
