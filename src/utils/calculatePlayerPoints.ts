@@ -9,8 +9,11 @@ interface CalculatePlayerPointsResult {
 	totalPoints: number;
 }
 
+const GLOBAL_DECAY_FACTOR = 0.95;
+const LEVEL_DECAY_FACTOR = 0.985;
+
 /**
- * Decay factor is 0.95 for global leaderboard and 0.995 for level leaderboard.
+ * Calculate a player's points based on their position in the leaderboard.
  */
 export const calculatePlayerPointsDecayed = (points: number, position: number, decayFactor: number) => {
 	if (position < 1 || !Number.isFinite(points)) {
@@ -42,7 +45,7 @@ export const calculatePlayerPoints = (
 			continue;
 		}
 
-		pointsList.push(calculatePlayerPointsDecayed(levelPoints, index, 0.995));
+		pointsList.push(calculatePlayerPointsDecayed(levelPoints, index, LEVEL_DECAY_FACTOR));
 	}
 
 	/**
@@ -55,7 +58,7 @@ export const calculatePlayerPoints = (
 	 * last personal best is worth the least.
 	 */
 	for (const [index, points] of pointsList.sort((a, b) => b - a).entries()) {
-		totals.points += calculatePlayerPointsDecayed(points, index + 1, 0.95);
+		totals.points += calculatePlayerPointsDecayed(points, index + 1, GLOBAL_DECAY_FACTOR);
 		totals.totalPoints += points;
 	}
 
