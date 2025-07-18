@@ -1,11 +1,15 @@
 import { join } from 'node:path';
-import { SUPER_LEAGUE_DATA } from './config';
 import { getOrCreateZslSeason, getOrInsertUser, upsertZslSeasonResult } from '../services';
-import type { SeasonMetadata, SeasonStanding } from './types'
+import { SUPER_LEAGUE_DATA } from './config';
+import type { SeasonMetadata, SeasonStanding } from './types';
 
 let previousPointsStructureId: number | null = null;
 
-export const importSeason = async (seasonName: string, metadata: SeasonMetadata, eventDates: string[]) => {
+export const importSeason = async (
+	seasonName: string,
+	metadata: SeasonMetadata,
+	eventDates: string[],
+) => {
 	if (!metadata.events || Object.keys(metadata.events).length === 0) {
 		console.warn(`Season "${seasonName}" has no events, skipping`);
 		return;
@@ -13,8 +17,8 @@ export const importSeason = async (seasonName: string, metadata: SeasonMetadata,
 
 	const dbSeason = await getOrCreateZslSeason(seasonName, {
 		idPointsStructure: previousPointsStructureId ?? 1, // Default to 1 if no previous structure
-		startDate: eventDates.at(0) ?? "",
-		endDate: eventDates.at(-1) ?? "",
+		startDate: eventDates.at(0) ?? '',
+		endDate: eventDates.at(-1) ?? '',
 	});
 
 	if (!dbSeason) {
@@ -25,7 +29,9 @@ export const importSeason = async (seasonName: string, metadata: SeasonMetadata,
 	previousPointsStructureId = dbSeason.idPointsStructure;
 
 	// Import Season Results
-	const seasonStandings = await Bun.file(join(SUPER_LEAGUE_DATA, seasonName, 'standings.json')).json() as SeasonStanding[];
+	const seasonStandings = (await Bun.file(
+		join(SUPER_LEAGUE_DATA, seasonName, 'standings.json'),
+	).json()) as SeasonStanding[];
 
 	if (!seasonStandings || seasonStandings.length === 0) {
 		console.warn(`No standings found for season "${seasonName}", skipping standings import`);
@@ -44,6 +50,5 @@ export const importSeason = async (seasonName: string, metadata: SeasonMetadata,
 		});
 	}
 
-
 	return dbSeason;
-}
+};

@@ -20,6 +20,7 @@ export async function getLevelPointsPaginated(offset: number, limit: number) {
 			competitivenessModifier: levelPoints.competitivenessModifier,
 			ratingModifier: levelPoints.ratingModifier,
 			popularityModifier: levelPoints.popularityModifier,
+			cutPenalty: levelPoints.cutPenalty,
 		})
 		.from(levelPoints)
 		.limit(limit)
@@ -36,6 +37,7 @@ interface UpdateLevelPointsPayload {
 	competitivenessModifier: number;
 	ratingModifier: number;
 	popularityModifier: number;
+	cutPenalty: number;
 }
 
 export async function updateLevelPoints({
@@ -46,6 +48,7 @@ export async function updateLevelPoints({
 	competitivenessModifier,
 	ratingModifier,
 	popularityModifier,
+	cutPenalty,
 }: UpdateLevelPointsPayload): Promise<void> {
 	await db.transaction(async (tx) => {
 		await tx
@@ -58,6 +61,7 @@ export async function updateLevelPoints({
 				competitivenessModifier,
 				ratingModifier,
 				popularityModifier,
+				cutPenalty,
 			})
 			.where(eq(levelPoints.idLevel, idLevel))
 			.then((rows) => rows[0]);

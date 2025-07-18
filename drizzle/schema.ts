@@ -12,7 +12,7 @@ import {
 	timestamp,
 	unique,
 	uniqueIndex,
-	varchar
+	varchar,
 } from 'drizzle-orm/pg-core';
 import { DEFAULT_VOTE_RATING } from '../src/config';
 
@@ -28,7 +28,9 @@ export const level = pgTable(
 			cache: 1,
 		}),
 		hash: text().notNull(),
-		dateCreated: timestamp('date_created', { withTimezone: true, mode: 'string' }).notNull().defaultNow(),
+		dateCreated: timestamp('date_created', { withTimezone: true, mode: 'string' })
+			.notNull()
+			.defaultNow(),
 		dateUpdated: timestamp('date_updated', { withTimezone: true, mode: 'string' }).$onUpdate(
 			() => new Date().toISOString(),
 		),
@@ -61,7 +63,9 @@ export const levelItem = pgTable(
 		deleted: boolean().notNull(),
 		createdAt: timestamp('created_at', { withTimezone: true, mode: 'string' }).notNull(), // workshop level created at
 		updatedAt: timestamp('updated_at', { withTimezone: true, mode: 'string' }).notNull(), // workshop level updated at
-		dateCreated: timestamp('date_created', { withTimezone: true, mode: 'string' }).notNull().defaultNow(),
+		dateCreated: timestamp('date_created', { withTimezone: true, mode: 'string' })
+			.notNull()
+			.defaultNow(),
 		dateUpdated: timestamp('date_updated', { withTimezone: true, mode: 'string' }).$onUpdate(
 			() => new Date().toISOString(),
 		),
@@ -94,7 +98,9 @@ export const levelMetadata = pgTable(
 		typeGround: integer('type_ground').notNull(),
 		typeSkybox: integer('type_skybox').notNull(),
 		blocks: jsonb().notNull(),
-		dateCreated: timestamp('date_created', { withTimezone: true, mode: 'string' }).notNull().defaultNow(),
+		dateCreated: timestamp('date_created', { withTimezone: true, mode: 'string' })
+			.notNull()
+			.defaultNow(),
 		dateUpdated: timestamp('date_updated', { withTimezone: true, mode: 'string' }).$onUpdate(
 			() => new Date().toISOString(),
 		),
@@ -127,7 +133,10 @@ export const levelPoints = pgTable(
 		competitivenessModifier: real('modifier_competitiveness').notNull().default(1.0),
 		ratingModifier: real('modifier_rating').notNull().default(1.0),
 		popularityModifier: real('modifier_popularity').notNull().default(1.0),
-		dateCreated: timestamp('date_created', { withTimezone: true, mode: 'string' }).notNull().defaultNow(),
+		cutPenalty: real('cut_penalty').notNull().default(1.0),
+		dateCreated: timestamp('date_created', { withTimezone: true, mode: 'string' })
+			.notNull()
+			.defaultNow(),
 		dateUpdated: timestamp('date_updated', { withTimezone: true, mode: 'string' }).$onUpdate(
 			() => new Date().toISOString(),
 		),
@@ -160,7 +169,10 @@ export const levelPointsHistory = pgTable(
 		competitivenessModifier: real('modifier_competitiveness').notNull().default(1.0),
 		ratingModifier: real('modifier_rating').notNull().default(1.0),
 		popularityModifier: real('modifier_popularity').notNull().default(1.0),
-		dateCreated: timestamp('date_created', { withTimezone: true, mode: 'string' }).notNull().defaultNow(),
+		cutPenalty: real('cut_penalty').notNull().default(1.0),
+		dateCreated: timestamp('date_created', { withTimezone: true, mode: 'string' })
+			.notNull()
+			.defaultNow(),
 		dateUpdated: timestamp('date_updated', { withTimezone: true, mode: 'string' }).$onUpdate(
 			() => new Date().toISOString(),
 		),
@@ -193,7 +205,9 @@ export const levelRequest = pgTable(
 		workshopId: bigint('workshop_id', { mode: 'bigint' }).notNull(),
 		uid: text(),
 		hash: text(),
-		dateCreated: timestamp('date_created', { withTimezone: true, mode: 'string' }).notNull().defaultNow(),
+		dateCreated: timestamp('date_created', { withTimezone: true, mode: 'string' })
+			.notNull()
+			.defaultNow(),
 		dateUpdated: timestamp('date_updated', { withTimezone: true, mode: 'string' }).$onUpdate(
 			() => new Date().toISOString(),
 		),
@@ -218,7 +232,9 @@ export const personalBestGlobal = pgTable(
 		idRecord: integer('id_record').notNull(),
 		idUser: integer('id_user').notNull(),
 		idLevel: integer('id_level').notNull(),
-		dateCreated: timestamp('date_created', { withTimezone: true, mode: 'string' }).notNull().defaultNow(),
+		dateCreated: timestamp('date_created', { withTimezone: true, mode: 'string' })
+			.notNull()
+			.defaultNow(),
 		dateUpdated: timestamp('date_updated', { withTimezone: true, mode: 'string' }).$onUpdate(
 			() => new Date().toISOString(),
 		),
@@ -273,7 +289,9 @@ export const userPoints = pgTable(
 		totalPoints: integer('total_points').default(0).notNull(),
 		rank: integer().default(-1).notNull(),
 		worldRecords: integer('world_records').default(0).notNull(),
-		dateCreated: timestamp('date_created', { withTimezone: true, mode: 'string' }).notNull().defaultNow(),
+		dateCreated: timestamp('date_created', { withTimezone: true, mode: 'string' })
+			.notNull()
+			.defaultNow(),
 		dateUpdated: timestamp('date_updated', { withTimezone: true, mode: 'string' }).$onUpdate(
 			() => new Date().toISOString(),
 		),
@@ -304,7 +322,9 @@ export const userPointsHistory = pgTable(
 		totalPoints: integer('total_points').default(0).notNull(),
 		rank: integer().default(-1).notNull(),
 		worldRecords: integer('world_records').default(0).notNull(),
-		dateCreated: timestamp('date_created', { withTimezone: true, mode: 'string' }).notNull().defaultNow(),
+		dateCreated: timestamp('date_created', { withTimezone: true, mode: 'string' })
+			.notNull()
+			.defaultNow(),
 		dateUpdated: timestamp('date_updated', { withTimezone: true, mode: 'string' }).$onUpdate(
 			() => new Date().toISOString(),
 		),
@@ -340,7 +360,9 @@ export const auth = pgTable(
 		refreshToken: text('refresh_token'),
 		refreshTokenExpiry: bigint('refresh_token_expiry', { mode: 'bigint' }),
 		type: integer(),
-		dateCreated: timestamp('date_created', { withTimezone: true, mode: 'string' }).notNull().defaultNow(),
+		dateCreated: timestamp('date_created', { withTimezone: true, mode: 'string' })
+			.notNull()
+			.defaultNow(),
 		dateUpdated: timestamp('date_updated', { withTimezone: true, mode: 'string' }).$onUpdate(
 			() => new Date().toISOString(),
 		),
@@ -373,7 +395,9 @@ export const record = pgTable(
 		modVersion: varchar('mod_version', { length: 255 }).notNull(),
 		splits: real().array(),
 		speeds: real().array(),
-		dateCreated: timestamp('date_created', { withTimezone: true, mode: 'string' }).notNull().defaultNow(),
+		dateCreated: timestamp('date_created', { withTimezone: true, mode: 'string' })
+			.notNull()
+			.defaultNow(),
 		dateUpdated: timestamp('date_updated', { withTimezone: true, mode: 'string' }).$onUpdate(
 			() => new Date().toISOString(),
 		),
@@ -435,7 +459,9 @@ export const recordMedia = pgTable(
 		}),
 		idRecord: integer('id_record').notNull(),
 		ghostUrl: text('ghost_url'),
-		dateCreated: timestamp('date_created', { withTimezone: true, mode: 'string' }).notNull().defaultNow(),
+		dateCreated: timestamp('date_created', { withTimezone: true, mode: 'string' })
+			.notNull()
+			.defaultNow(),
 		dateUpdated: timestamp('date_updated', { withTimezone: true, mode: 'string' }).$onUpdate(
 			() => new Date().toISOString(),
 		),
@@ -444,7 +470,7 @@ export const recordMedia = pgTable(
 		foreignKey({
 			columns: [table.idRecord],
 			foreignColumns: [record.id],
-			name: 'media_record_fkey'
+			name: 'media_record_fkey',
 		}).onDelete('cascade'),
 		unique('UQ_record_media_record').on(table.idRecord),
 		index('IX_media_record').using('btree', table.idRecord.asc().nullsLast()),
@@ -464,9 +490,11 @@ export const user = pgTable('user', {
 	banned: boolean().default(false).notNull(),
 	steamId: bigint('steam_id', { mode: 'bigint' }),
 	discordId: bigint('discord_id', { mode: 'bigint' }),
-	dateCreated: timestamp('date_created', { withTimezone: true, mode: 'string' }).notNull().defaultNow(),
-	dateUpdated: timestamp('date_updated', { withTimezone: true, mode: 'string' }).$onUpdate(
-		() => new Date().toISOString(),
+	dateCreated: timestamp('date_created', { withTimezone: true, mode: 'string' })
+		.notNull()
+		.defaultNow(),
+	dateUpdated: timestamp('date_updated', { withTimezone: true, mode: 'string' }).$onUpdate(() =>
+		new Date().toISOString(),
 	),
 });
 
@@ -481,9 +509,11 @@ export const version = pgTable('version', {
 	}),
 	minimum: text(),
 	latest: text(),
-	dateCreated: timestamp('date_created', { withTimezone: true, mode: 'string' }).notNull().defaultNow(),
-	dateUpdated: timestamp('date_updated', { withTimezone: true, mode: 'string' }).$onUpdate(
-		() => new Date().toISOString(),
+	dateCreated: timestamp('date_created', { withTimezone: true, mode: 'string' })
+		.notNull()
+		.defaultNow(),
+	dateUpdated: timestamp('date_updated', { withTimezone: true, mode: 'string' }).$onUpdate(() =>
+		new Date().toISOString(),
 	),
 });
 
@@ -499,7 +529,9 @@ export const favourite = pgTable(
 			cache: 1,
 		}),
 		idUser: integer('id_user').notNull(),
-		dateCreated: timestamp('date_created', { withTimezone: true, mode: 'string' }).notNull().defaultNow(),
+		dateCreated: timestamp('date_created', { withTimezone: true, mode: 'string' })
+			.notNull()
+			.defaultNow(),
 		dateUpdated: timestamp('date_updated', { withTimezone: true, mode: 'string' }).$onUpdate(
 			() => new Date().toISOString(),
 		),
@@ -536,7 +568,9 @@ export const vote = pgTable(
 		idUser: integer('id_user').notNull(),
 		idLevel: integer('id_level').notNull(),
 		value: integer().notNull(),
-		dateCreated: timestamp('date_created', { withTimezone: true, mode: 'string' }).notNull().defaultNow(),
+		dateCreated: timestamp('date_created', { withTimezone: true, mode: 'string' })
+			.notNull()
+			.defaultNow(),
 		dateUpdated: timestamp('date_updated', { withTimezone: true, mode: 'string' }).$onUpdate(
 			() => new Date().toISOString(),
 		),
@@ -573,7 +607,9 @@ export const worldRecordGlobal = pgTable(
 		}),
 		idRecord: integer('id_record').notNull(),
 		idLevel: integer('id_level').notNull(),
-		dateCreated: timestamp('date_created', { withTimezone: true, mode: 'string' }).notNull().defaultNow(),
+		dateCreated: timestamp('date_created', { withTimezone: true, mode: 'string' })
+			.notNull()
+			.defaultNow(),
 		dateUpdated: timestamp('date_updated', { withTimezone: true, mode: 'string' }).$onUpdate(
 			() => new Date().toISOString(),
 		),
@@ -620,27 +656,26 @@ export const worldRecordGlobal = pgTable(
  *   season. E.g, if it is 4 and there are 6 rounds, the user's worst 2 rounds
  *   are ignored when calculating the total season points.
  */
-export const zslPointsStructure = pgTable(
-	'zsl_points_structure',
-	{
-		id: integer().primaryKey().generatedAlwaysAsIdentity({
-			name: 'zsl_points_structure_id_seq',
-			startWith: 1,
-			increment: 1,
-			minValue: 1,
-			maxValue: 2147483647,
-			cache: 1,
-		}),
-		name: text('name').notNull(),
-		points: integer('points').array().notNull(),
-		minimumPoints: integer('minimum_points').notNull(),
-		bestOf: integer('best_of').notNull(),
-		dateCreated: timestamp('date_created', { withTimezone: true, mode: 'string' }).notNull().defaultNow(),
-		dateUpdated: timestamp('date_updated', { withTimezone: true, mode: 'string' }).$onUpdate(
-			() => new Date().toISOString(),
-		),
-	},
-)
+export const zslPointsStructure = pgTable('zsl_points_structure', {
+	id: integer().primaryKey().generatedAlwaysAsIdentity({
+		name: 'zsl_points_structure_id_seq',
+		startWith: 1,
+		increment: 1,
+		minValue: 1,
+		maxValue: 2147483647,
+		cache: 1,
+	}),
+	name: text('name').notNull(),
+	points: integer('points').array().notNull(),
+	minimumPoints: integer('minimum_points').notNull(),
+	bestOf: integer('best_of').notNull(),
+	dateCreated: timestamp('date_created', { withTimezone: true, mode: 'string' })
+		.notNull()
+		.defaultNow(),
+	dateUpdated: timestamp('date_updated', { withTimezone: true, mode: 'string' }).$onUpdate(() =>
+		new Date().toISOString(),
+	),
+});
 
 /**
  * ZSL Seasons
@@ -660,7 +695,9 @@ export const zslSeason = pgTable(
 		name: text('name').notNull(),
 		dateStarted: timestamp('start_date', { withTimezone: true, mode: 'string' }).notNull(),
 		dateEnded: timestamp('end_date', { withTimezone: true, mode: 'string' }).notNull(),
-		dateCreated: timestamp('date_created', { withTimezone: true, mode: 'string' }).notNull().defaultNow(),
+		dateCreated: timestamp('date_created', { withTimezone: true, mode: 'string' })
+			.notNull()
+			.defaultNow(),
 		dateUpdated: timestamp('date_updated', { withTimezone: true, mode: 'string' }).$onUpdate(
 			() => new Date().toISOString(),
 		),
@@ -693,7 +730,9 @@ export const zslRound = pgTable(
 		round: integer('round').notNull(),
 		workshopId: bigint('workshop_id', { mode: 'bigint' }).notNull(),
 		eventDate: timestamp('event_date', { withTimezone: true, mode: 'string' }).notNull(),
-		dateCreated: timestamp('date_created', { withTimezone: true, mode: 'string' }).notNull().defaultNow(),
+		dateCreated: timestamp('date_created', { withTimezone: true, mode: 'string' })
+			.notNull()
+			.defaultNow(),
 		dateUpdated: timestamp('date_updated', { withTimezone: true, mode: 'string' }).$onUpdate(
 			() => new Date().toISOString(),
 		),
@@ -711,7 +750,7 @@ export const zslRound = pgTable(
 		index('IX_zsl_round_event_date').using('btree', table.eventDate.asc().nullsLast()),
 		*/
 	],
-)
+);
 
 /**
  * ZSL Levels
@@ -729,10 +768,12 @@ export const zslLevel = pgTable(
 		}),
 		idRound: integer('id_round').notNull(),
 		idLevel: integer('id_level').notNull(),
-		dateCreated: timestamp('date_created', { withTimezone: true, mode: 'string' }).notNull().defaultNow(),
+		dateCreated: timestamp('date_created', { withTimezone: true, mode: 'string' })
+			.notNull()
+			.defaultNow(),
 		dateUpdated: timestamp('date_updated', { withTimezone: true, mode: 'string' }).$onUpdate(
 			() => new Date().toISOString(),
-		)
+		),
 	},
 	(table) => [
 		foreignKey({
@@ -744,7 +785,7 @@ export const zslLevel = pgTable(
 			columns: [table.idLevel],
 			foreignColumns: [level.id],
 			name: 'zsl_level_level_fkey',
-		})
+		}),
 		/*
 		index('IX_zsl_level_round').using('btree', table.idRound.asc().nullsLast()),
 		index('IX_zsl_level_id').using('btree', table.idLevel.asc().nullsLast()),
@@ -766,7 +807,9 @@ export const zslLevelResult = pgTable(
 		position: integer('position').notNull(), // Position in the level result. Duplicate points have the same position.
 		points: integer('points').notNull(), // Points earned from points structure
 		time: real('time').notNull(),
-		dateCreated: timestamp('date_created', { withTimezone: true, mode: 'string' }).notNull().defaultNow(),
+		dateCreated: timestamp('date_created', { withTimezone: true, mode: 'string' })
+			.notNull()
+			.defaultNow(),
 		dateUpdated: timestamp('date_updated', { withTimezone: true, mode: 'string' }).$onUpdate(
 			() => new Date().toISOString(),
 		),
@@ -810,7 +853,9 @@ export const zslRoundResult = pgTable(
 		idUser: integer('id_user').notNull(), // Foreign key to user
 		position: integer('position').notNull(), // Position in the round result. Duplicate points have the same position.
 		points: integer('points').notNull(), // Total points earned in the round
-		dateCreated: timestamp('date_created', { withTimezone: true, mode: 'string' }).notNull().defaultNow(),
+		dateCreated: timestamp('date_created', { withTimezone: true, mode: 'string' })
+			.notNull()
+			.defaultNow(),
 		dateUpdated: timestamp('date_updated', { withTimezone: true, mode: 'string' }).$onUpdate(
 			() => new Date().toISOString(),
 		),
@@ -834,7 +879,7 @@ export const zslRoundResult = pgTable(
 		index('IX_zsl_round_result_date_created').using('btree', table.dateCreated.asc().nullsLast()),
 		*/
 	],
-)
+);
 
 /**
  * ZSL Season Results
@@ -848,7 +893,9 @@ export const zslSeasonResult = pgTable(
 		idUser: integer('id_user').notNull(), // Foreign key to user
 		position: integer('position').notNull(), // Position in the season result. Duplicate points have the same position.
 		points: integer('points').notNull(), // Total points earned in the season
-		dateCreated: timestamp('date_created', { withTimezone: true, mode: 'string' }).notNull().defaultNow(),
+		dateCreated: timestamp('date_created', { withTimezone: true, mode: 'string' })
+			.notNull()
+			.defaultNow(),
 		dateUpdated: timestamp('date_updated', { withTimezone: true, mode: 'string' }).$onUpdate(
 			() => new Date().toISOString(),
 		),

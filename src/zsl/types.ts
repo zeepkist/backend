@@ -1,4 +1,3 @@
-
 interface EventMetadata {
 	name: string;
 	workshopId: string;

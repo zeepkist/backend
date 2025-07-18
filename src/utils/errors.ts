@@ -90,18 +90,18 @@ interface ErrorResponse {
 		message: ErrorMessage;
 		code: ErrorCode;
 		details?: string[];
-	}
+	};
 }
 
 export function handleError(code: ErrorCode, error?: unknown): ErrorResponse {
 	const message = getErrorMessage(code, {
 		isConsole: false,
-		error
+		error,
 	});
 	return {
 		error: {
 			message,
 			code,
-		}
+		},
 	};
 }

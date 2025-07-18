@@ -1,5 +1,5 @@
 import { type Task, addJob, defaultJobOptions } from '..';
-import { getAllLevelIdsWithRecordsSince, getAllLevelIds } from '../../services';
+import { getAllLevelIds, getAllLevelIdsWithRecordsSince } from '../../services';
 
 async function* getLevelIdsGenerator(all: boolean): AsyncGenerator<number> {
 	if (all) {

@@ -15,9 +15,7 @@ export async function isModOutdated(modVersion: string) {
 		console.debug(`Comparing mod version ${modVersion} with minimum version ${minimumVersion}`);
 
 		// Check if the mod version is less than the minimum semver version (e.g "1.2.3 < "1.2.4")
-		return lt(modVersion, minimumVersion, {
-
-		});
+		return lt(modVersion, minimumVersion, {});
 	} catch (error) {
 		// if not type error, log the error
 		if (!(error instanceof TypeError)) {

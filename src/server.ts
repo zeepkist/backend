@@ -1,20 +1,17 @@
 import cors from '@fastify/cors';
 import helmet from '@fastify/helmet';
 import swagger from '@fastify/swagger';
-import type { OpenAPIV3, OpenAPIV3_1 } from 'openapi-types';
 import swaggerUi from '@fastify/swagger-ui';
 import Fastify from 'fastify';
+import type { OpenAPIV3, OpenAPIV3_1 } from 'openapi-types';
 import JSONB from 'when-json-met-bigint';
-import { HOST, PORT, IS_DEBUG_MODE } from './config';
+import { HOST, IS_DEBUG_MODE, PORT } from './config';
 import { db as realDb } from './db';
 import { fastifyOtelInstrumentation } from './otel';
 import { registerRoutes } from './routes';
 import { ERROR_CODES, handleError } from './utils';
 
-type OpenApi = Partial<
-	OpenAPIV3.Document<object> |
-	OpenAPIV3_1.Document<object>
-> | undefined;
+type OpenApi = Partial<OpenAPIV3.Document<object> | OpenAPIV3_1.Document<object>> | undefined;
 
 const openapi: OpenApi = {
 	openapi: '3.0.0',
@@ -29,7 +26,7 @@ const openapi: OpenApi = {
 			description: 'Production',
 		},
 	],
-}
+};
 
 if (IS_DEBUG_MODE) {
 	openapi.servers?.push({
@@ -62,7 +59,7 @@ export async function buildServer(db = realDb) {
 
 	app.register(helmet, {
 		global: true,
-		hidePoweredBy: true
+		hidePoweredBy: true,
 	});
 
 	await app.register(cors, {
@@ -71,7 +68,7 @@ export async function buildServer(db = realDb) {
 	});
 
 	await app.register(swagger, {
-		openapi
+		openapi,
 	});
 
 	await app.register(swaggerUi, {
@@ -88,8 +85,8 @@ export async function buildServer(db = realDb) {
 				// Remove Content Security Policy header
 				reply.removeHeader('Content-Security-Policy');
 				done();
-			}
-		}
+			},
+		},
 		/*
 		logo: {
 			type: 'image/png',
@@ -109,11 +106,9 @@ export async function buildServer(db = realDb) {
 		*/
 	});
 
-	app.setNotFoundHandler(
-		(_, reply) => {
-			reply.status(404).send(handleError(ERROR_CODES.GENERIC_NOT_FOUND));
-		},
-	);
+	app.setNotFoundHandler((_, reply) => {
+		reply.status(404).send(handleError(ERROR_CODES.GENERIC_NOT_FOUND));
+	});
 
 	// Register JSONB support for BigInt
 	app.addContentTypeParser('application/json', { parseAs: 'string' }, (_, body, done) => {
@@ -135,9 +130,9 @@ export async function buildServer(db = realDb) {
 
 		if ('validation' in error || 'validationContext' in error) {
 			const response = handleError(ERROR_CODES.GENERIC_INVALID_REQUEST);
-			response.error.details = error.validation?.map((e) => (
-				e.message || 'Unknown validation error'
-			));
+			response.error.details = error.validation?.map(
+				(e) => e.message || 'Unknown validation error',
+			);
 			return reply.status(400).send(response);
 		}
 

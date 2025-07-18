@@ -33,7 +33,7 @@ interface GetRecordFromZsl {
 export async function getRecordFromZsl({
 	idLevel,
 	idUser,
-	time
+	time,
 }: GetRecordFromZsl): Promise<typeof record.$inferSelect | undefined> {
 	const precision = 0.00001;
 	return await db.query.record.findFirst({
@@ -41,7 +41,7 @@ export async function getRecordFromZsl({
 			eq(record.idLevel, idLevel),
 			eq(record.idUser, idUser),
 			gt(record.time, time - precision),
-			lt(record.time, time + precision)
+			lt(record.time, time + precision),
 		),
 	});
 }

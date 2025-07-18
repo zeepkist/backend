@@ -29,10 +29,10 @@ export async function getOrCreateZslRound({
 			and(
 				eq(zslRound.idSeason, idSeason),
 				eq(zslRound.round, round),
-				eq(zslRound.name, name)
-			)
+				eq(zslRound.name, name),
+			),
 		)
-		.then(rows => rows[0]);
+		.then((rows) => rows[0]);
 
 	if (existingRound) {
 		return existingRound;
@@ -43,7 +43,7 @@ export async function getOrCreateZslRound({
 	const eventDate = new Date(date);
 	eventDate.setHours(18, 0, 0, 0);
 
-	const adjustedWorkshopId = workshopId === "" ? -1 : workshopId;
+	const adjustedWorkshopId = workshopId === '' ? -1 : workshopId;
 
 	const [createdRound] = await db.transaction(async (tx) => {
 		const inserted = await tx
@@ -62,7 +62,5 @@ export async function getOrCreateZslRound({
 		return inserted;
 	});
 
-	return createdRound
-
-
+	return createdRound;
 }

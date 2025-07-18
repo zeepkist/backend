@@ -1,5 +1,5 @@
 import { and, eq } from 'drizzle-orm';
-import { db, zslSeasonResult } from '../db'
+import { db, zslSeasonResult } from '../db';
 
 export async function upsertZslSeasonResult({
 	idSeason,
@@ -14,35 +14,23 @@ export async function upsertZslSeasonResult({
 }) {
 	await db.transaction(async (tx) => {
 		const [existing] = await tx
-			.select(
-				{
-					idSeason: zslSeasonResult.idSeason,
-					position: zslSeasonResult.position,
-					points: zslSeasonResult.points,
-				}
-			)
+			.select({
+				idSeason: zslSeasonResult.idSeason,
+				position: zslSeasonResult.position,
+				points: zslSeasonResult.points,
+			})
 			.from(zslSeasonResult)
-			.where(
-				and(
-					eq(zslSeasonResult.idUser, idUser),
-					eq(zslSeasonResult.idSeason, idSeason)
-				)
-			)
+			.where(and(eq(zslSeasonResult.idUser, idUser), eq(zslSeasonResult.idSeason, idSeason)));
 
 		if (existing) {
 			await tx
 				.update(zslSeasonResult)
 				.set({ position, points })
 				.where(
-					and(
-						eq(zslSeasonResult.idUser, idUser),
-						eq(zslSeasonResult.idSeason, idSeason)
-					)
+					and(eq(zslSeasonResult.idUser, idUser), eq(zslSeasonResult.idSeason, idSeason)),
 				);
 		} else {
-			await tx
-				.insert(zslSeasonResult)
-				.values({ idSeason, idUser, position, points });
+			await tx.insert(zslSeasonResult).values({ idSeason, idUser, position, points });
 		}
 	});
 }

@@ -18,7 +18,7 @@ export async function getLevelByUuid(uuid: string): Promise<{ id: number } | nul
 		.innerJoin(levelItem, eq(level.id, levelItem.idLevel))
 		.where(eq(levelItem.fileUid, uuid))
 		.limit(1)
-		.then(rows => rows[0]);
+		.then((rows) => rows[0]);
 
 	return existingLevel || null;
 }

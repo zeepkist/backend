@@ -30,17 +30,14 @@ const gracefulShutdown = async (signal: string) => {
 	console.log(`Received ${signal}. Closing server...`);
 
 	try {
-		await Promise.all([
-			app.close(),
-			stopJobs(),
-		])
+		await Promise.all([app.close(), stopJobs()]);
 		console.log('Server closed');
 	} catch (err) {
 		console.error('Error closing server:', err);
 	} finally {
 		process.exit(0);
 	}
-}
+};
 
 process.on('SIGINT', gracefulShutdown);
 process.on('SIGTERM', gracefulShutdown);

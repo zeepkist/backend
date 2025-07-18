@@ -1,4 +1,5 @@
-import { and, eq, sql } from 'drizzle-orm';
+import { and, asc, eq, sql } from 'drizzle-orm';
+import { CACHE_KEY, CACHE_TTL_MS, getState, setState } from '../cache';
 import { db, levelPoints, personalBestGlobal, record } from '../db';
 import { addJob, defaultJobOptions } from '../jobs';
 
@@ -130,4 +131,44 @@ export async function getUserPersonalBestsWithLevelPointsAndPosition({
 		.orderBy(personalBestGlobal.idLevel);
 
 	return personalBests;
+}
+
+/**
+ * Returns the count of personal bests for all levels, used to calculate the 90th percentile.
+ * Caches the result for 24 hours to avoid frequent database queries.
+ */
+export async function getPersonalBestCount90thPercentile() {
+	const cached = getState<number>(CACHE_KEY.personalBestPercentile);
+
+	if (cached) {
+		return cached;
+	}
+
+	const [result] = await db
+		.select({
+			percentile: sql<number>`PERCENTILE_CONT(0.9) WITHIN GROUP (ORDER BY pb_count)`.as(
+				'percentile',
+			),
+		})
+		.from(
+			db
+				.select({
+					idLevel: personalBestGlobal.idLevel,
+					pb_count: sql<number>`COUNT(*)`.as('pb_count'),
+				})
+				.from(personalBestGlobal)
+				.groupBy(personalBestGlobal.idLevel)
+				.as('level_pb_counts'),
+		)
+		.execute();
+
+	const percentile = result?.percentile ?? 0;
+
+	setState(
+		CACHE_KEY.personalBestPercentile,
+		percentile,
+		CACHE_TTL_MS[CACHE_KEY.personalBestPercentile],
+	);
+
+	return percentile;
 }

@@ -20,7 +20,7 @@ describe('generateAccessToken', () => {
 		expect(header).toHaveLength(36);
 		expect(decodedHeader).toEqual({
 			alg: 'HS256',
-			typ: 'JWT'
+			typ: 'JWT',
 		});
 
 		expect(decodedPayload).toEqual({
@@ -46,9 +46,8 @@ describe('generateAccessToken', () => {
 		expect(refreshToken).toBeString();
 		expect(refreshTokenExpiry).toBeGreaterThan(BigInt(Date.now()) / 1000n);
 		expect(refreshToken).toHaveLength(36);
-	})
+	});
 });
-
 
 describe('verifyAccessToken', () => {
 	it('should verify a valid access token', async () => {

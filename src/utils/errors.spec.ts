@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test';
-import { getErrorMessage, ERROR_MESSAGES, ERROR_CODES } from './errors';
+import { ERROR_CODES, ERROR_MESSAGES, getErrorMessage } from './errors';
 
 describe('getErrorMessage', () => {
 	it('should return the correct error message for a given error code', () => {

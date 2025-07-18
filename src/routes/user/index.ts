@@ -15,7 +15,8 @@ const updateSteamNameSchema: FastifySchema = {
 	tags: ['User'],
 	operationId: 'updateSteamName',
 	summary: 'Update the Steam name of the authenticated user',
-	description: 'Allows the authenticated user to update their Steam name. If no name is provided, it will not perform any action.',
+	description:
+		'Allows the authenticated user to update their Steam name. If no name is provided, it will not perform any action.',
 	produces: ['application/json'],
 	consumes: ['application/json'],
 	body: {
@@ -34,7 +35,8 @@ const updateDiscordIdSchema: FastifySchema = {
 	tags: ['User'],
 	operationId: 'updateDiscordId',
 	summary: 'Update the Discord ID of the authenticated user',
-	description: 'Allows the authenticated user to update their Discord ID. If no ID is provided, it will not perform any action.',
+	description:
+		'Allows the authenticated user to update their Discord ID. If no ID is provided, it will not perform any action.',
 	produces: ['application/json'],
 	consumes: ['application/json'],
 	body: {
@@ -64,9 +66,7 @@ export const userRoutes: FastifyPluginAsync = async (app) => {
 				const { user: authUser } = req;
 
 				if (!authUser) {
-					return reply
-						.status(401)
-						.send(handleError(ERROR_CODES.AUTH_USER_NOT_FOUND));
+					return reply.status(401).send(handleError(ERROR_CODES.AUTH_USER_NOT_FOUND));
 				}
 
 				const { Name } = req.body;
@@ -81,9 +81,7 @@ export const userRoutes: FastifyPluginAsync = async (app) => {
 			} catch (error) {
 				if (!reply.sent) {
 					console.error('Error handling user update request:', error);
-					return reply
-						.status(500)
-						.send(handleError(ERROR_CODES.INTERNAL_SERVER_ERROR));
+					return reply.status(500).send(handleError(ERROR_CODES.INTERNAL_SERVER_ERROR));
 				}
 			}
 		},
@@ -100,9 +98,7 @@ export const userRoutes: FastifyPluginAsync = async (app) => {
 				const { user: authUser } = req;
 
 				if (!authUser) {
-					return reply
-						.status(401)
-						.send(handleError(ERROR_CODES.AUTH_USER_NOT_FOUND));
+					return reply.status(401).send(handleError(ERROR_CODES.AUTH_USER_NOT_FOUND));
 				}
 
 				const { Id } = req.body as UpdateDiscordIdBody;
@@ -117,9 +113,7 @@ export const userRoutes: FastifyPluginAsync = async (app) => {
 			} catch (error) {
 				if (!reply.sent) {
 					console.error('Error handling user update request:', error);
-					return reply
-						.status(500)
-						.send(handleError(ERROR_CODES.INTERNAL_SERVER_ERROR));
+					return reply.status(500).send(handleError(ERROR_CODES.INTERNAL_SERVER_ERROR));
 				}
 			}
 		},

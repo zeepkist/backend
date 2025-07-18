@@ -1,8 +1,8 @@
 import { CronJob, validateCronExpression } from 'cron';
 import type { FastifyInstance } from 'fastify';
 import { type Helpers, type TaskSpec, run } from 'graphile-worker';
-import preset from './graphile.config';
 import { ENABLE_WORKERS } from '../config';
+import preset from './graphile.config';
 
 import updateLevelPointsHistory from './tasks/updateLevelPointsHistory';
 import updateLevelPointsHistoryBatch from './tasks/updateLevelPointsHistoryBatch';
@@ -46,7 +46,7 @@ const createRunner = () => {
 		},
 		noHandleSignals: true, // Stop Graphile Worker hijacking Fastify graceful shutdown
 	});
-}
+};
 
 const cronJobs: CronJob[] = [];
 

@@ -6,22 +6,14 @@ interface GetZslLevel {
 	idLevel: number;
 }
 
-export async function getOrCreateZslLevel({
-	idRound,
-	idLevel
-}: GetZslLevel) {
+export async function getOrCreateZslLevel({ idRound, idLevel }: GetZslLevel) {
 	const existingLevel = await db
 		.select({
-			id: zslLevel.id
+			id: zslLevel.id,
 		})
 		.from(zslLevel)
-		.where(
-			and(
-				eq(zslLevel.idRound, idRound),
-				eq(zslLevel.idLevel, idLevel)
-			)
-		)
-		.then(rows => rows[0]);
+		.where(and(eq(zslLevel.idRound, idRound), eq(zslLevel.idLevel, idLevel)))
+		.then((rows) => rows[0]);
 
 	if (existingLevel) {
 		return existingLevel;
@@ -34,7 +26,7 @@ export async function getOrCreateZslLevel({
 			.insert(zslLevel)
 			.values({
 				idRound,
-				idLevel
+				idLevel,
 			})
 			.returning();
 
@@ -43,7 +35,5 @@ export async function getOrCreateZslLevel({
 		return inserted;
 	});
 
-	return createdRound
-
-
+	return createdRound;
 }

@@ -15,14 +15,18 @@ const LEVEL_DECAY_FACTOR = 0.985;
 /**
  * Calculate a player's points based on their position in the leaderboard.
  */
-export const calculatePlayerPointsDecayed = (points: number, position: number, decayFactor: number) => {
+export const calculatePlayerPointsDecayed = (
+	points: number,
+	position: number,
+	decayFactor: number,
+) => {
 	if (position < 1 || !Number.isFinite(points)) {
 		return 0;
 	}
 
 	const decay = decayFactor ** (position - 1);
 	return points * decay;
-}
+};
 
 export const calculatePlayerPoints = (
 	personalBests: PersonalBest[],

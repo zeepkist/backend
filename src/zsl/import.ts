@@ -1,10 +1,12 @@
 import { join } from 'node:path';
 import { SUPER_LEAGUE_DATA } from './config';
-import type { SuperLeagueMetadata } from './types';
-import { importSeason } from './importSeason';
 import { importRound } from './importRound';
+import { importSeason } from './importSeason';
+import type { SuperLeagueMetadata } from './types';
 
-const metadata = await Bun.file(join(SUPER_LEAGUE_DATA, 'metadata.json')).json() as SuperLeagueMetadata;
+const metadata = (await Bun.file(
+	join(SUPER_LEAGUE_DATA, 'metadata.json'),
+).json()) as SuperLeagueMetadata;
 
 console.debug(`Loaded metadata for ${metadata.length} seasons`);
 
@@ -33,8 +35,8 @@ for await (const [seasonName, seasonMetadata] of metadata) {
 			idSeason: season.id,
 			name: eventMetadata.name,
 			round: index + 1, // round is 1-indexed
-			workshopId: eventMetadata.workshopId || "",
-			eventDate: eventDates[index] || ''
+			workshopId: eventMetadata.workshopId || '',
+			eventDate: eventDates[index] || '',
 		});
 	}
 }

@@ -1,5 +1,12 @@
-import { describe, it, expect } from 'bun:test';
-import { clamp, levelScoreLengthMultiplier, levelScoreCompetitivenessMultiplier, levelScoreRatingModifier, levelScorePopularityModifier, calculateLevelPoints } from './calculateLevelPoints';
+import { describe, expect, it } from 'bun:test';
+import {
+	calculateLevelPoints,
+	clamp,
+	levelScoreCompetitivenessMultiplier,
+	levelScoreLengthMultiplier,
+	levelScorePopularityModifier,
+	levelScoreRatingModifier,
+} from './calculateLevelPoints';
 
 describe('clamp', () => {
 	it('should clamp a value between min and max', () => {
@@ -62,7 +69,7 @@ describe('levelScoreLengthMultiplier', () => {
 		{ input: 120, expected: 1 },
 		{ input: 180, expected: 1 },
 		{ input: 300, expected: 1 },
-	]
+	];
 
 	for (const { input, expected } of testCases) {
 		it(`should return ${expected} for WR time of ${input} seconds`, () => {
@@ -89,8 +96,16 @@ describe('levelScoreCompetitivenessMultiplier', () => {
 			input: {
 				wrTime: 30,
 				topTimes: [
-					30.000000, 30.001393, 30.023092, 30.092322, 30.129403,
-					30.200000, 30.250000, 30.300000, 30.350000, 30.400000,
+					30.0,
+					30.001393,
+					30.023092,
+					30.092322,
+					30.129403,
+					30.2,
+					30.25,
+					30.3,
+					30.35,
+					30.4,
 					...Array(40).fill(30.5),
 				],
 				personalBests: 50,
@@ -103,8 +118,16 @@ describe('levelScoreCompetitivenessMultiplier', () => {
 			input: {
 				wrTime: 30,
 				topTimes: [
-					30.000000, 30.400000, 31.000000, 31.500000, 32.123456,
-					32.234567, 33.000000, 34.000000, 35.000000, 36.000000,
+					30.0,
+					30.4,
+					31.0,
+					31.5,
+					32.123456,
+					32.234567,
+					33.0,
+					34.0,
+					35.0,
+					36.0,
 					...Array(40).fill(38.5),
 				],
 				personalBests: 50,
@@ -117,8 +140,16 @@ describe('levelScoreCompetitivenessMultiplier', () => {
 			input: {
 				wrTime: 30,
 				topTimes: [
-					30.000000, 31.000000, 32.500000, 35.000000, 38.000000,
-					40.000000, 42.000000, 45.000000, 48.000000, 50.000000,
+					30.0,
+					31.0,
+					32.5,
+					35.0,
+					38.0,
+					40.0,
+					42.0,
+					45.0,
+					48.0,
+					50.0,
 					...Array(40).fill(60.0),
 				],
 				personalBests: 5,
@@ -131,8 +162,16 @@ describe('levelScoreCompetitivenessMultiplier', () => {
 			input: {
 				wrTime: 30,
 				topTimes: [
-					30.000000, 30.300000, 30.600000, 30.900000, 31.200000,
-					31.500000, 31.800000, 32.100000, 32.400000, 32.700000,
+					30.0,
+					30.3,
+					30.6,
+					30.9,
+					31.2,
+					31.5,
+					31.8,
+					32.1,
+					32.4,
+					32.7,
 					...Array(40).fill(34.0),
 				],
 				personalBests: 50,
@@ -155,8 +194,16 @@ describe('levelScoreCompetitivenessMultiplier', () => {
 			input: {
 				wrTime: 30,
 				topTimes: [
-					30.000000, 32.000000, 35.000000, 38.000000, 40.000000,
-					41.000000, 42.000000, 43.000000, 44.000000, 45.000000,
+					30.0,
+					32.0,
+					35.0,
+					38.0,
+					40.0,
+					41.0,
+					42.0,
+					43.0,
+					44.0,
+					45.0,
 					...Array(40).fill(60.0),
 				],
 				personalBests: 5,
@@ -167,19 +214,19 @@ describe('levelScoreCompetitivenessMultiplier', () => {
 		{
 			name: 'H) Extremely tight top 5, slightly spread top 10, moderate spread top 50 — highly competitive',
 			input: {
-				wrTime: 30.000000,
+				wrTime: 30.0,
 				topTimes: [
-					30.000000,
+					30.0,
 					30.000381,
 					30.001024,
 					30.001768,
 					30.002491,
-					30.004000,
-					30.006500,
-					30.010000,
-					30.015000,
-					30.020000,
-					...Array.from({ length: 40 }, (_, i) => 30.020000 + (i + 1) * 0.005), // +5ms steps
+					30.004,
+					30.0065,
+					30.01,
+					30.015,
+					30.02,
+					...Array.from({ length: 40 }, (_, i) => 30.02 + (i + 1) * 0.005), // +5ms steps
 				],
 				personalBests: 50,
 				totalRecords: 200,
@@ -189,19 +236,19 @@ describe('levelScoreCompetitivenessMultiplier', () => {
 		{
 			name: 'I) Extremely tight top 5, moderate leaderboard spread, sparse PBs — very grindy',
 			input: {
-				wrTime: 30.000000,
+				wrTime: 30.0,
 				topTimes: [
-					30.000000,
-					30.000200,
-					30.000450,
-					30.000810,
-					30.001100,
-					30.003000,
-					30.006000,
-					30.010000,
-					30.020000,
-					30.030000,
-					...Array.from({ length: 40 }, (_, i) => 30.030000 + (i + 1) * 0.005),
+					30.0,
+					30.0002,
+					30.00045,
+					30.00081,
+					30.0011,
+					30.003,
+					30.006,
+					30.01,
+					30.02,
+					30.03,
+					...Array.from({ length: 40 }, (_, i) => 30.03 + (i + 1) * 0.005),
 				],
 				personalBests: 5,
 				totalRecords: 200,
@@ -211,8 +258,8 @@ describe('levelScoreCompetitivenessMultiplier', () => {
 		{
 			name: 'J) Uniform 200ms spread from WR to 50th — tight overall leaderboard',
 			input: {
-				wrTime: 30.000000,
-				topTimes: Array.from({ length: 50 }, (_, i) => 30.000000 + i * 0.004), // 0.004s (4ms) steps = 200ms spread
+				wrTime: 30.0,
+				topTimes: Array.from({ length: 50 }, (_, i) => 30.0 + i * 0.004), // 0.004s (4ms) steps = 200ms spread
 				personalBests: 50,
 				totalRecords: 200,
 			},
@@ -221,21 +268,21 @@ describe('levelScoreCompetitivenessMultiplier', () => {
 		{
 			name: 'K) Top 5 within microseconds, rest flat — extremely easy leaderboard',
 			input: {
-				wrTime: 30.000000,
+				wrTime: 30.0,
 				topTimes: [
-					30.000000,
+					30.0,
 					30.000001,
 					30.000002,
 					30.000003,
 					30.000004,
-					...Array(45).fill(30.000010),
+					...Array(45).fill(30.00001),
 				],
 				personalBests: 50,
 				totalRecords: 300,
 			},
 			expected: 1.0209273843647828, // very flat = likely near lower bound
 		},
-	]
+	];
 
 	for (const { name, input, expected } of testCases) {
 		it(name, () => {
@@ -273,14 +320,14 @@ describe('levelScoreRatingModifier', () => {
 		90: 1.2200000000000002,
 		95: 1.26,
 		100: 1.3,
-	}
+	};
 
 	for (const [rating, expected] of Object.entries(ratings)) {
 		it(`should return ${expected} for rating ${rating}`, () => {
 			const result = levelScoreRatingModifier(Number(rating));
 			expect(result).toEqual(expected);
 		});
-	};
+	}
 });
 
 describe('levelScorePopularityModifier', () => {
@@ -344,7 +391,6 @@ describe('calculateLevelPoints', () => {
 			},
 		});
 	});
-
 
 	it('should calculate points correctly 2', () => {
 		const result = calculateLevelPoints({

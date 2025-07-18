@@ -24,7 +24,7 @@ interface getOrCreateZslSeasonOptions {
 
 export async function getOrCreateZslSeason(
 	name: string,
-	{ idPointsStructure, startDate, endDate }: getOrCreateZslSeasonOptions
+	{ idPointsStructure, startDate, endDate }: getOrCreateZslSeasonOptions,
 ) {
 	const existingSeason = await db
 		.select({
@@ -36,7 +36,7 @@ export async function getOrCreateZslSeason(
 		})
 		.from(zslSeason)
 		.where(eq(zslSeason.name, name))
-		.then(rows => rows[0]);
+		.then((rows) => rows[0]);
 
 	if (existingSeason) {
 		return existingSeason;

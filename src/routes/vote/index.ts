@@ -19,33 +19,25 @@ const handleVoteRequest = async (
 		const { user: authUser } = req;
 
 		if (!authUser) {
-			return reply
-				.status(401)
-				.send(handleError(ERROR_CODES.AUTH_USER_NOT_FOUND));
+			return reply.status(401).send(handleError(ERROR_CODES.AUTH_USER_NOT_FOUND));
 		}
 
 		const { Level } = req.body;
 
 		if (!Level) {
-			return reply
-				.status(400)
-				.send(handleError(ERROR_CODES.VOTE_MISSING_PARAMS));
+			return reply.status(400).send(handleError(ERROR_CODES.VOTE_MISSING_PARAMS));
 		}
 
 		const user = await getUser(authUser.steamid);
 
 		if (!user) {
-			return reply
-				.status(401)
-				.send(handleError(ERROR_CODES.AUTH_USER_NOT_FOUND));
+			return reply.status(401).send(handleError(ERROR_CODES.AUTH_USER_NOT_FOUND));
 		}
 
 		const level = await getLevel(Level);
 
 		if (!level) {
-			return reply
-				.status(400)
-				.send(handleError(ERROR_CODES.LEVEL_NOT_FOUND));
+			return reply.status(400).send(handleError(ERROR_CODES.LEVEL_NOT_FOUND));
 		}
 
 		await upsertVote(user.id, level.id, value);
@@ -54,9 +46,7 @@ const handleVoteRequest = async (
 	} catch (error) {
 		if (!reply.sent) {
 			console.error('Error handling vote request:', error);
-			return reply
-				.status(500)
-				.send(handleError(ERROR_CODES.INTERNAL_SERVER_ERROR, error));
+			return reply.status(500).send(handleError(ERROR_CODES.INTERNAL_SERVER_ERROR, error));
 		}
 	}
 };

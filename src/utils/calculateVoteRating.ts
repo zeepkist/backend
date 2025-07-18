@@ -31,7 +31,7 @@ export function calculateVoteRating(votes: number[]): number {
 	 * Map 1 to 0.75 (+)
 	 * Map 2 to 1.0 (++)
 	 */
-	const mapped = votes.map(value => (value + 2) / 4);
+	const mapped = votes.map((value) => (value + 2) / 4);
 	const average = mapped.reduce((sum, value) => sum + value, 0) / mapped.length;
 
 	const upvotes = average * votes.length;

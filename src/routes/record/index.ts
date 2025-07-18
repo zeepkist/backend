@@ -31,9 +31,7 @@ export const recordRoutes: FastifyPluginAsync = async (app) => {
 				const { user: authUser } = req;
 
 				if (!authUser) {
-					return reply
-						.status(401)
-						.send(handleError(ERROR_CODES.AUTH_USER_NOT_FOUND));
+					return reply.status(401).send(handleError(ERROR_CODES.AUTH_USER_NOT_FOUND));
 				}
 
 				const { Level, Time, Splits, Speeds, GhostData, GameVersion, ModVersion } =
@@ -48,17 +46,13 @@ export const recordRoutes: FastifyPluginAsync = async (app) => {
 				const user = await getUser(authUser.steamid);
 
 				if (!user) {
-					return reply
-						.status(401)
-						.send(handleError(ERROR_CODES.AUTH_USER_NOT_FOUND));
+					return reply.status(401).send(handleError(ERROR_CODES.AUTH_USER_NOT_FOUND));
 				}
 
 				const level = await getOrInsertLevel(Level);
 
 				if (!level) {
-					return reply
-						.status(400)
-						.send(handleError(ERROR_CODES.LEVEL_NOT_FOUND));
+					return reply.status(400).send(handleError(ERROR_CODES.LEVEL_NOT_FOUND));
 				}
 
 				const record = await insertRecord({
@@ -72,9 +66,7 @@ export const recordRoutes: FastifyPluginAsync = async (app) => {
 				});
 
 				if (!record) {
-					return reply
-						.status(400)
-						.send(handleError(ERROR_CODES.RECORD_SUBMIT_FAILED));
+					return reply.status(400).send(handleError(ERROR_CODES.RECORD_SUBMIT_FAILED));
 				}
 
 				await Promise.all([
@@ -98,9 +90,7 @@ export const recordRoutes: FastifyPluginAsync = async (app) => {
 			} catch (error) {
 				if (!reply.sent) {
 					console.trace('Error handling record request:', error);
-					return reply
-						.status(500)
-						.send(handleError(ERROR_CODES.INTERNAL_SERVER_ERROR));
+					return reply.status(500).send(handleError(ERROR_CODES.INTERNAL_SERVER_ERROR));
 				}
 			}
 		},

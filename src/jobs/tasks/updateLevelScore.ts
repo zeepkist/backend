@@ -1,9 +1,10 @@
 import { type Task, addJob, defaultJobOptions } from '..';
 import {
+	getPersonalBestCount90thPercentile,
 	getPersonalBestsWithRecord,
 	getTotalRecords,
 	getVoteValues,
-	updateLevelPoints
+	updateLevelPoints,
 } from '../../services';
 import { calculateLevelPoints, calculateVoteRating } from '../../utils';
 
@@ -18,20 +19,28 @@ const task: Task<Payload> = async (payload, helpers) => {
 	const personalBests = await getPersonalBestsWithRecord({ idLevel, limit: 50 });
 	const totalRecords = await getTotalRecords({ idLevel });
 	const voteValues = await getVoteValues({ idLevel });
+	const personalBestCountPercentile = await getPersonalBestCount90thPercentile();
 
 	const topTimes = personalBests.map((pb) => pb.time);
 	const pbCount = Number(personalBests.at(0)?.totalCount) ?? 0;
 
-	const rating = calculateVoteRating(voteValues)
+	const rating = calculateVoteRating(voteValues);
 
 	const { points, modifiers } = calculateLevelPoints({
 		topTimes,
 		personalBests: pbCount,
 		totalRecords,
 		rating,
+		personalBestCountPercentile,
 	});
 
-	const { lengthModifier, competitivenessModifier, ratingModifier, popularityModifier } = modifiers;
+	const {
+		lengthModifier,
+		competitivenessModifier,
+		ratingModifier,
+		popularityModifier,
+		cutPenalty,
+	} = modifiers;
 
 	await updateLevelPoints({
 		idLevel,
@@ -41,7 +50,8 @@ const task: Task<Payload> = async (payload, helpers) => {
 		competitivenessModifier,
 		ratingModifier,
 		popularityModifier,
-	})
+		cutPenalty,
+	});
 
 	// If job is triggered by a new personal best, we need to update the player score
 	if (idUser) {

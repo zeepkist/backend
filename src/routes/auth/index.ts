@@ -1,14 +1,9 @@
 import type { FastifyPluginAsync, FastifyReply, FastifySchema } from 'fastify';
 import type { user } from '../../db';
 import { verifyModVersion } from '../../hooks';
-import { deleteAuth, getAuth, getUser, getOrInsertUser, insertAuth } from '../../services';
+import { deleteAuth, getAuth, getOrInsertUser, getUser, insertAuth } from '../../services';
 import { authenticateSteamUser } from '../../steam/authenticate';
-import {
-	ERROR_CODES,
-	generateAccessToken,
-	generateRefreshToken,
-	handleError
-} from '../../utils';
+import { ERROR_CODES, generateAccessToken, generateRefreshToken, handleError } from '../../utils';
 
 interface LoginRequest {
 	ModVersion: string;
@@ -28,9 +23,7 @@ export const replyWithJwt = async (
 	userData: typeof user.$inferSelect,
 ): Promise<never> => {
 	if (!userData?.steamId) {
-		return reply
-			.status(401)
-			.send(handleError(ERROR_CODES.AUTH_USER_NOT_FOUND));
+		return reply.status(401).send(handleError(ERROR_CODES.AUTH_USER_NOT_FOUND));
 	}
 
 	const { accessToken, accessTokenExpiry } = await generateAccessToken(
@@ -87,7 +80,7 @@ export const authRoutes: FastifyPluginAsync = async (app) => {
 					ModVersion: '1.0.0',
 					SteamId: '12345678901234567',
 					AuthenticationTicket: 'exampleAuthenticationTicket',
-				}
+				},
 			],
 		},
 		response: {
@@ -111,7 +104,7 @@ export const authRoutes: FastifyPluginAsync = async (app) => {
 							details: { type: 'array', items: { type: 'string' } },
 						},
 						required: ['code', 'message'],
-					}
+					},
 				},
 			},
 			401: {
@@ -125,7 +118,7 @@ export const authRoutes: FastifyPluginAsync = async (app) => {
 							details: { type: 'array', items: { type: 'string' } },
 						},
 						required: ['code', 'message'],
-					}
+					},
 				},
 			},
 			500: {
@@ -139,7 +132,7 @@ export const authRoutes: FastifyPluginAsync = async (app) => {
 							details: { type: 'array', items: { type: 'string' } },
 						},
 						required: ['code', 'message'],
-					}
+					},
 				},
 			},
 		},
@@ -177,9 +170,7 @@ export const authRoutes: FastifyPluginAsync = async (app) => {
 				const steamIdFromAuth = BigInt(authResponse.steamId);
 
 				if (steamIdFromAuth !== steamIdFromRequest) {
-					return reply
-						.status(401)
-						.send(handleError(ERROR_CODES.AUTH_STEAM_ID_MISMATCH));
+					return reply.status(401).send(handleError(ERROR_CODES.AUTH_STEAM_ID_MISMATCH));
 				}
 
 				const user = await getOrInsertUser(steamIdFromAuth);
@@ -234,8 +225,8 @@ export const authRoutes: FastifyPluginAsync = async (app) => {
 					SteamId: '12345678901234567',
 					LoginToken: 'exampleLoginToken',
 					RefreshToken: 'exampleRefreshToken',
-				}
-			]
+				},
+			],
 		},
 		response: {
 			200: {
@@ -258,7 +249,7 @@ export const authRoutes: FastifyPluginAsync = async (app) => {
 							details: { type: 'array', items: { type: 'string' } },
 						},
 						required: ['code', 'message'],
-					}
+					},
 				},
 			},
 			401: {
@@ -272,7 +263,7 @@ export const authRoutes: FastifyPluginAsync = async (app) => {
 							details: { type: 'array', items: { type: 'string' } },
 						},
 						required: ['code', 'message'],
-					}
+					},
 				},
 			},
 			500: {
@@ -284,10 +275,10 @@ export const authRoutes: FastifyPluginAsync = async (app) => {
 							code: { type: 'string' },
 							message: { type: 'string' },
 							details: { type: 'array', items: { type: 'string' } },
-						}
-					}
-				}
-			}
+						},
+					},
+				},
+			},
 		},
 	};
 
@@ -324,9 +315,7 @@ export const authRoutes: FastifyPluginAsync = async (app) => {
 				const user = await getUser(steamIdFromRequest);
 
 				if (!user) {
-					return reply
-						.status(401)
-						.send(handleError(ERROR_CODES.AUTH_USER_NOT_FOUND));
+					return reply.status(401).send(handleError(ERROR_CODES.AUTH_USER_NOT_FOUND));
 				}
 
 				const auth = await getAuth(user.id, RefreshToken);
@@ -336,9 +325,7 @@ export const authRoutes: FastifyPluginAsync = async (app) => {
 					(auth.refreshTokenExpiry !== null &&
 						Date.now() > Number(auth.refreshTokenExpiry * 1000n))
 				) {
-					return reply
-						.status(401)
-						.send(handleError(ERROR_CODES.AUTH_INVALID_TOKEN))
+					return reply.status(401).send(handleError(ERROR_CODES.AUTH_INVALID_TOKEN));
 				}
 
 				await deleteAuth(RefreshToken);

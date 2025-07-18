@@ -51,5 +51,5 @@ export async function getVoteValues({ idLevel }: { idLevel: number }): Promise<n
 		.limit(1)
 		.then((rows) => rows[0]?.values ?? []);
 
-	return voteValues
+	return voteValues;
 }
