@@ -87,16 +87,16 @@ export const levelScoreCompetitivenessMultiplier = (
 		}
 	}
 
-	//const top5 = topTimes.slice(0, 5);
+	const top5 = topTimes.slice(0, 5);
 	const top10 = topTimes.slice(0, 10);
 	const top50 = topTimes.slice(0, 50);
 
-	//const avgTop5Time = average(top5);
+	const avgTop5Time = average(top5);
 	const avgTop10Time = average(top10);
 	const avgTop50Time = average(top50);
 
 	// How far the average of the top 5 is from the WR (tighter is better)
-	// const tightnessScore = (avgTop5Time - wrTime) / wrTime;
+	const tightnessScore = 1 - (avgTop5Time - wrTime) / wrTime;
 
 	// How much the top 50 spreads from the top 10 (larger is better)
 	const spreadScore  = (avgTop50Time - avgTop10Time) / avgTop50Time;
@@ -107,8 +107,8 @@ export const levelScoreCompetitivenessMultiplier = (
 	const grindinessScore = 1 + Math.log(2 * pbRatio);
 
 	const weightedScore =
-		// 0.45 * tightnessScore +
-		0.65 * spreadScore +
+		0.25 * tightnessScore +
+		0.55 * spreadScore +
 		0.2 * grindinessScore;
 
 	const modifier = normaliseNumber(clamp(1 + weightedScore, -3, 3));
