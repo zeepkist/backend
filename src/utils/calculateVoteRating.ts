@@ -34,8 +34,6 @@ export function calculateVoteRating(votes: number[]): number {
 	const mapped = votes.map(value => (value + 2) / 4);
 	const average = mapped.reduce((sum, value) => sum + value, 0) / mapped.length;
 
-	console.debug(`Vote average: ${average} for votes: ${votes}`);
-
 	const upvotes = average * votes.length;
 	const totalVotes = votes.length;
 
