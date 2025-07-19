@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  build-and-test:
+  test:
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -29,23 +29,19 @@ jobs:
           JWT_AUDIENCE: ${{ secrets.TEST_JWT_AUDIENCE }}
           JWT_ISSUER: ${{ secrets.TEST_JWT_ISSUER }}
 
-  docker-login:
+  build-backend:
     runs-on: ubuntu-latest
-    needs: build-and-test
+    needs: [test]
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
       - name: Log in to GitHub Container Registry
         uses: docker/login-action@v2
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-
-  build-main:
-    runs-on: ubuntu-latest
-    needs: [build-and-test, docker-login]
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
 
       - name: Build and push Docker image
         run: |
@@ -56,10 +52,17 @@ jobs:
 
   build-migrate:
     runs-on: ubuntu-latest
-    needs: [build-and-test, docker-login]
+    needs: [test]
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build and push Docker image for Drizzle Kit migrations
         run: |
@@ -70,7 +73,7 @@ jobs:
 
   build-zsl:
     runs-on: ubuntu-latest
-    needs: [build-and-test, docker-login]
+    needs: [test]
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -78,6 +81,13 @@ jobs:
       - name: Clone Super League Data
         run: |
           git clone --branch data https://github.com/zeepkist/super-league.git super_league_data
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build and push Docker image for ZSL import
         run: |
