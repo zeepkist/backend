@@ -51,20 +51,26 @@ const createRunner = () => {
 const cronJobs: CronJob[] = [];
 
 const cronTimes = {
+	every5MinutesOffset30Seconds: '30 */5 * * * *',
+	// 00, 10, 20, 30, 40, 50 minutes past the hour
+	every10Minutes: '*/10 * * * *',
+	// 5, 15, 25, 35, 45, 55 minutes past the hour
+	every10MinutesOffset5Minutes: '5-59/10 * * * *',
 	everyHour: '0 * * * *',
 	everyHourAt30: '30 * * * *',
 	every6Hours: '0 1,7,13,19 * * *',
+	every12Hours: '0 0,12 * * *',
 	everyDayAtMidnight: '0 0 * * *',
 	everyMondayAt1am: '0 1 * * 1',
 } as const;
 
 const cronTasks: CronTask[] = [
-	//{ task: 'updateLevelScores', cronTime: cronTimes.everyMondayAt1am, payload: { all: true } },
-	{ task: 'updateLevelScores', cronTime: cronTimes.every6Hours, payload: { all: true } },
-	//{ task: 'updateLevelScores', cronTime: cronTimes.everyHourAt30, payload: { all: false }  },
-	{ task: 'updatePlayerScores', cronTime: cronTimes.everyHour },
-	{ task: 'updateLevelPointsHistory', cronTime: cronTimes.everyDayAtMidnight },
-	{ task: 'updateUserPointsHistory', cronTime: cronTimes.everyDayAtMidnight },
+	{ task: 'updateLevelScores', cronTime: cronTimes.everyMondayAt1am, payload: { all: true } },
+	// { task: 'updateLevelScores', cronTime: cronTimes.every6Hours, payload: { all: true } },
+	{ task: 'updateLevelScores', cronTime: cronTimes.every10Minutes, payload: { all: false }  },
+	{ task: 'updatePlayerScores', cronTime: cronTimes.every5MinutesOffset30Seconds },
+	{ task: 'updateLevelPointsHistory', cronTime: cronTimes.every12Hours },
+	{ task: 'updateUserPointsHistory', cronTime: cronTimes.every12Hours },
 ];
 
 export const defaultJobOptions: TaskSpec = {
