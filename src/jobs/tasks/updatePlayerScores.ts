@@ -33,7 +33,7 @@ const task: Task<never> = async (payload, helpers) => {
 		}
 	}
 
-	for (const userBatch of batchUsers(users, 500)) {
+	for (const userBatch of batchUsers(users, 50)) {
 		await Promise.all(
 			userBatch.map(async ({ idUser }) => {
 				const personalBests = await getUserPersonalBestsWithLevelPointsAndPosition({
