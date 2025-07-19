@@ -1,75 +1,87 @@
 name: Deploy to Docker
 
 on:
-    push:
-        branches: [develop]
-    workflow_dispatch:
-
+  push:
+    branches: [develop]
+  workflow_dispatch:
 
 jobs:
-    build:
-        runs-on: ubuntu-latest
+  build-and-test:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-        permissions:
-            contents: read
-            packages: write
+      - name: Set up Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
 
-        steps:
-            - name: Checkout code
-              uses: actions/checkout@v4
+      - name: Install dependencies
+        run: bun install
 
-            - name: Set up Bun
-              uses: oven-sh/setup-bun@v2
-              with:
-                bun-version: latest
+      - name: Run Tests
+        run: bun test
+        env:
+          JWT_AUDIENCE: ${{ secrets.TEST_JWT_AUDIENCE }}
+          JWT_ISSUER: ${{ secrets.TEST_JWT_ISSUER }}
 
-            - name: Install dependencies
-              run: bun install
+  docker-login:
+    runs-on: ubuntu-latest
+    needs: build-and-test
+    steps:
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
-            - name: Run Tests
-              run: bun test
-              env:
-                JWT_AUDIENCE: ${{ secrets.TEST_JWT_AUDIENCE }}
-                JWT_ISSUER: ${{ secrets.TEST_JWT_ISSUER }}
+  build-main:
+    runs-on: ubuntu-latest
+    needs: [build-and-test, docker-login]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-            - name: Log in to GitHub Container Registry
-              uses: docker/login-action@v2
-              with:
-                registry: ghcr.io
-                username: ${{ github.actor }}
-                password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Build and push Docker image
+        run: |
+          docker build -t ghcr.io/${{ github.repository }}:latest .
+          docker push ghcr.io/${{ github.repository }}:latest
+        env:
+          NODE_ENV: production
 
-            #- name: Build and push Docker image
-            #  uses: docker/build-push-action@v4
-            #  with:
-            #    context: .
-            #    file: Dockerfile
-            #    push: true
-            #    tags: ghcr.io/${{ github.repository_owner }}/${{ github.event.repository.name }}:latest
-            #    cache-from: type=registry,ref=ghcr.io/${{ github.repository_owner }}/${{ github.event.repository.name }}:cache
-            #    cache-to: type=registry,ref=ghcr.io/${{ github.repository_owner }}/${{ github.event.repository.name }}:cache,mode=max
+  build-migrate:
+    runs-on: ubuntu-latest
+    needs: [build-and-test, docker-login]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-            - name: Build and push Docker image
-              run: |
-                docker build -t ghcr.io/${{ github.repository }}:latest .
-                docker push ghcr.io/${{ github.repository }}:latest
-              env:
-                NODE_ENV: production
+      - name: Build and push Docker image for Drizzle Kit migrations
+        run: |
+          docker build -f Dockerfile.migrate -t ghcr.io/${{ github.repository }}/migrate:latest .
+          docker push ghcr.io/${{ github.repository }}/migrate:latest
+        env:
+          NODE_ENV: production
 
-            - name: Build and push Docker image for Drizzle Kit migrations
-              run: |
-                docker build -f Dockerfile.migrate -t ghcr.io/${{ github.repository }}/migrate:latest .
-                docker push ghcr.io/${{ github.repository }}/migrate:latest
-              env:
-                NODE_ENV: production
+  build-zsl:
+    runs-on: ubuntu-latest
+    needs: [build-and-test, docker-login]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-            - name: Clone Super League Data
-              run: |
-                git clone --branch data https://github.com/zeepkist/super-league.git super_league_data
+      - name: Clone Super League Data
+        run: |
+          git clone --branch data https://github.com/zeepkist/super-league.git super_league_data
 
-            - name: Build and push Docker image for ZSL import
-              run: |
-                docker build -f Dockerfile.zsl -t ghcr.io/${{ github.repository }}/zsl:latest .
-                docker push ghcr.io/${{ github.repository }}/zsl:latest
-              env:
-                NODE_ENV: production
+      - name: Build and push Docker image for ZSL import
+        run: |
+          docker build -f Dockerfile.zsl -t ghcr.io/${{ github.repository }}/zsl:latest .
+          docker push ghcr.io/${{ github.repository }}/zsl:latest
+        env:
+          NODE_ENV: production

@@ -283,27 +283,27 @@ describe('levelScoreCompetitivenessMultiplier', () => {
 
 describe('levelScoreRatingModifier', () => {
 	const ratings = {
-		0.00: 0.7,
+		0.0: 0.7,
 		0.05: 0.73,
-		0.10: 0.76,
+		0.1: 0.76,
 		0.15: 0.7899999999999999,
-		0.20: 0.82,
+		0.2: 0.82,
 		0.25: 0.85,
-		0.30: 0.88,
+		0.3: 0.88,
 		0.35: 0.9099999999999999,
-		0.40: 0.94,
+		0.4: 0.94,
 		0.45: 0.97,
-		0.50: 1,
+		0.5: 1,
 		0.55: 1.03,
-		0.60: 1.06,
+		0.6: 1.06,
 		0.65: 1.09,
-		0.70: 1.12,
+		0.7: 1.12,
 		0.75: 1.15,
-		0.80: 1.1800000000000002,
+		0.8: 1.1800000000000002,
 		0.85: 1.21,
-		0.90: 1.2400000000000002,
+		0.9: 1.2400000000000002,
 		0.95: 1.27,
-		1.00: 1.3,
+		1.0: 1.3,
 	};
 
 	for (const [rating, expected] of Object.entries(ratings)) {
@@ -346,7 +346,7 @@ describe('calculateLevelPoints', () => {
 			personalBests: 0,
 			totalRecords: 0,
 			rating: 0,
-			personalBestCountPercentile: 30
+			personalBestCountPercentile: 30,
 		});
 		expect(result).toEqual({
 			points: 0,
@@ -366,7 +366,7 @@ describe('calculateLevelPoints', () => {
 			personalBests: 10,
 			totalRecords: 100,
 			rating: 0.5,
-			personalBestCountPercentile: 30
+			personalBestCountPercentile: 30,
 		});
 		expect(result).toEqual({
 			points: 572,
@@ -386,7 +386,7 @@ describe('calculateLevelPoints', () => {
 			personalBests: 10,
 			totalRecords: 100,
 			rating: 0.5,
-			personalBestCountPercentile: 30
+			personalBestCountPercentile: 30,
 		});
 		expect(result).toEqual({
 			points: 3790,
@@ -406,7 +406,7 @@ describe('calculateLevelPoints', () => {
 			personalBests: 10,
 			totalRecords: 100,
 			rating: 0.86,
-			personalBestCountPercentile: 30
+			personalBestCountPercentile: 30,
 		});
 		expect(result).toEqual({
 			points: 696,

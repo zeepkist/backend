@@ -67,7 +67,7 @@ const cronTimes = {
 const cronTasks: CronTask[] = [
 	{ task: 'updateLevelScores', cronTime: cronTimes.everyMondayAt1am, payload: { all: true } },
 	// { task: 'updateLevelScores', cronTime: cronTimes.every6Hours, payload: { all: true } },
-	{ task: 'updateLevelScores', cronTime: cronTimes.every10Minutes, payload: { all: false }  },
+	{ task: 'updateLevelScores', cronTime: cronTimes.every10Minutes, payload: { all: false } },
 	{ task: 'updatePlayerScores', cronTime: cronTimes.every5MinutesOffset30Seconds },
 	{ task: 'updateLevelPointsHistory', cronTime: cronTimes.every12Hours },
 	{ task: 'updateUserPointsHistory', cronTime: cronTimes.every12Hours },
