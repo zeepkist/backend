@@ -24,15 +24,16 @@ const task: Task<never> = async (payload, helpers) => {
 
 	// Map<userId, points>
 	const pointsMap: PointsMap[] = [];
+	let usersUpdated = 0;
 
-	// Helper generator to yield users in batches of 3
+	// Helper generator to yield users in batches
 	function* batchUsers<T>(arr: T[], batchSize: number) {
 		for (let i = 0; i < arr.length; i += batchSize) {
 			yield arr.slice(i, i + batchSize);
 		}
 	}
 
-	for (const userBatch of batchUsers(users, 2)) {
+	for (const userBatch of batchUsers(users, 500)) {
 		await Promise.all(
 			userBatch.map(async ({ idUser }) => {
 				const personalBests = await getUserPersonalBestsWithLevelPointsAndPosition({
@@ -61,7 +62,14 @@ const task: Task<never> = async (payload, helpers) => {
 				});
 			}),
 		);
+
+		usersUpdated += userBatch.length;
+
+		helpers.logger.info(`Processed ${userBatch.length} users, updated ${usersUpdated} users so far.`);
+		users
 	}
+
+	helpers.logger.info(`User points updated for ${usersUpdated} users.`);
 
 	const usersSortedByHighestPoints = pointsMap.sort((a, b) => b.points - a.points);
 
@@ -87,7 +95,7 @@ const task: Task<never> = async (payload, helpers) => {
 		actualRank++;
 	}
 
-	helpers.logger.info('User points and ranks updated successfully.');
+	helpers.logger.info(`User ranks updated for ${usersSortedByHighestPoints.length} users.`);
 };
 
 export default task;

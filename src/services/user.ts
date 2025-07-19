@@ -1,4 +1,4 @@
-import { eq, sql } from 'drizzle-orm';
+import { eq, sql, asc } from 'drizzle-orm';
 import { db, user } from '../db';
 import { getSteamUser } from '../steam/user.ts';
 
@@ -110,7 +110,7 @@ export async function getTotalUsers(): Promise<number> {
 }
 
 export async function getAllUsers() {
-	const users = await db.select({ idUser: user.id }).from(user).orderBy(user.id);
+	const users = await db.select({ idUser: user.id }).from(user).orderBy(asc(user.id));
 
 	return users;
 }
