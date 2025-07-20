@@ -1,12 +1,14 @@
 import { FastifyOtelInstrumentation } from '@fastify/otel';
 import { getNodeAutoInstrumentations } from '@opentelemetry/auto-instrumentations-node';
-// import { NodeSDK } from "@opentelemetry/sdk-node"
+import { NodeSDK } from "@opentelemetry/sdk-node"
 import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-grpc';
-import { registerInstrumentations } from '@opentelemetry/instrumentation';
+// import { registerInstrumentations } from '@opentelemetry/instrumentation';
 import { resourceFromAttributes } from '@opentelemetry/resources';
-import { BatchSpanProcessor } from '@opentelemetry/sdk-trace-base';
-import { NodeTracerProvider } from '@opentelemetry/sdk-trace-node';
+// import { BatchSpanProcessor } from '@opentelemetry/sdk-trace-base';
+// import { NodeTracerProvider } from '@opentelemetry/sdk-trace-node';
 import { ATTR_SERVICE_NAME } from '@opentelemetry/semantic-conventions';
+import { PeriodicExportingMetricReader } from '@opentelemetry/sdk-metrics';
+import { OTLPMetricExporter } from '@opentelemetry/exporter-metrics-otlp-grpc';
 import { OPENTELEMETRY_COLLECTOR_URL, OPENTELEMETRY_SERVICE_NAME } from '../config';
 
 // Configure OTLP Exporter
@@ -14,6 +16,25 @@ const traceExporter = new OTLPTraceExporter({
 	url: OPENTELEMETRY_COLLECTOR_URL, // Signoz OpenTelemetry Collector
 });
 
+const metricExporter = new OTLPMetricExporter({
+	url: OPENTELEMETRY_COLLECTOR_URL, // Signoz OpenTelemetry Collector
+});
+
+const sdk = new NodeSDK({
+	resource: resourceFromAttributes({
+		[ATTR_SERVICE_NAME]: OPENTELEMETRY_SERVICE_NAME ?? 'backend-dev',
+	}),
+	traceExporter,
+	metricReader: new PeriodicExportingMetricReader({
+		exporter: metricExporter,
+		exportIntervalMillis: 60000, // Export metrics every 60 seconds
+	}),
+	instrumentations: [getNodeAutoInstrumentations()],
+});
+
+sdk.start();
+
+/*
 const provider = new NodeTracerProvider({
 	resource: resourceFromAttributes({
 		[ATTR_SERVICE_NAME]: OPENTELEMETRY_SERVICE_NAME ?? 'backend-dev',
@@ -27,13 +48,17 @@ registerInstrumentations({
 	tracerProvider: provider,
 	instrumentations: [getNodeAutoInstrumentations()],
 });
+*/
 
 export const fastifyOtelInstrumentation = new FastifyOtelInstrumentation({
 	servername: 'backend-fastify',
 	registerOnInitialization: false,
 });
 
-fastifyOtelInstrumentation.setTracerProvider(provider);
+// fastifyOtelInstrumentation.setTracerProvider(provider);
 
-process.on('SIGTERM', () => provider.shutdown());
-process.on('SIGINT', () => provider.shutdown());
+//process.on('SIGTERM', () => provider.shutdown());
+//process.on('SIGINT', () => provider.shutdown());
+
+process.on('SIGTERM', () => sdk.shutdown());
+process.on('SIGINT', () => sdk.shutdown());
