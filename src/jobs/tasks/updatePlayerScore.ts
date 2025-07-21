@@ -24,8 +24,10 @@ const task: Task<Payload> = async (payload, helpers) => {
 			totalPoints,
 		});
 	} catch (error) {
-		helpers.logger.error(`Error updating player score: ${error}`);
-		console.trace(error);
+		helpers.logger.error(`Error updating player score for idUser ${payload.idUser}: ${error}`, {
+			idUser: payload.idUser,
+			error: error instanceof Error ? error.message : String(error)
+		});
 	}
 };
 

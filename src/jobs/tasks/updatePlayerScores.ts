@@ -5,14 +5,14 @@ import {
 	updateUserPoints,
 	updateUserRank,
 } from '../../services';
-import { calculatePlayerPoints } from '../../utils';
+import { batchProcess, calculatePlayerPoints } from '../../utils';
 
-interface PointsMap {
+interface PointsList {
 	idUser: number;
 	points: number;
 }
 
-const task: Task<never> = async (payload, helpers) => {
+const task: Task<never> = async (_payload, helpers) => {
 	const users = await getAllUsers();
 
 	if (users.length === 0) {
@@ -23,17 +23,10 @@ const task: Task<never> = async (payload, helpers) => {
 	helpers.logger.info(`Found ${users.length} users with personal bests.`);
 
 	// Map<userId, points>
-	const pointsMap: PointsMap[] = [];
+	const pointsList: PointsList[] = [];
 	let usersUpdated = 0;
 
-	// Helper generator to yield users in batches
-	function* batchUsers<T>(arr: T[], batchSize: number) {
-		for (let i = 0; i < arr.length; i += batchSize) {
-			yield arr.slice(i, i + batchSize);
-		}
-	}
-
-	for (const userBatch of batchUsers(users, 50)) {
+	for (const userBatch of batchProcess(users)) {
 		await Promise.all(
 			userBatch.map(async ({ idUser }) => {
 				const personalBests = await getUserPersonalBestsWithLevelPointsAndPosition({
@@ -41,7 +34,7 @@ const task: Task<never> = async (payload, helpers) => {
 				});
 
 				if (personalBests.length === 0) {
-					pointsMap.push({ idUser, points: 0 });
+					pointsList.push({ idUser, points: 0 });
 
 					await updateUserPoints({
 						idUser,
@@ -53,7 +46,7 @@ const task: Task<never> = async (payload, helpers) => {
 				}
 
 				const { points, totalPoints } = calculatePlayerPoints(personalBests);
-				pointsMap.push({ idUser, points });
+				pointsList.push({ idUser, points });
 
 				await updateUserPoints({
 					idUser,
@@ -66,15 +59,14 @@ const task: Task<never> = async (payload, helpers) => {
 		usersUpdated += userBatch.length;
 
 		helpers.logger.info(`Processed ${userBatch.length} users, updated ${usersUpdated} users so far.`);
-		users
 	}
 
 	helpers.logger.info(`User points updated for ${usersUpdated} users.`);
 
-	const usersSortedByHighestPoints = pointsMap.sort((a, b) => b.points - a.points);
+	const usersSortedByHighestPoints = pointsList.sort((a, b) => b.points - a.points);
 
 	let currentRank = 1;
-	let previousPoints = 0;
+	let previousPoints: number | undefined = undefined;
 	let actualRank = 1;
 
 	// write rank to userPoints table with dense ranking (equal points get same rank)
@@ -82,7 +74,7 @@ const task: Task<never> = async (payload, helpers) => {
 		const userPoint = usersSortedByHighestPoints[i];
 		if (!userPoint) continue;
 
-		if (previousPoints !== userPoint.points) {
+		if (previousPoints === undefined || previousPoints !== userPoint.points) {
 			currentRank = actualRank;
 		}
 

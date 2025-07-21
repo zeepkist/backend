@@ -11,11 +11,20 @@ const task: Task<Payload> = async (payload, helpers) => {
 
 	const points = await getUserPointsPaginated(offset, limit);
 
+	// No points to process
 	if (points.length === 0) {
 		return;
 	}
 
-	await insertUserPointsHistories(points);
+	try {
+		await insertUserPointsHistories(points);
+	} catch (error) {
+		helpers.logger.error(`Failed to process user points batch at offset ${offset}:`, {
+			error,
+			offset,
+			limit,
+		});
+	}
 };
 
 export default task;

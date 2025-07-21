@@ -1,31 +1,28 @@
 import { type Task, addJob, defaultJobOptions } from '..';
 import { getAllLevelIds, getAllLevelIdsWithRecordsSince } from '../../services';
-
-async function* getLevelIdsGenerator(all: boolean): AsyncGenerator<number> {
-	if (all) {
-		for (const id of await getAllLevelIds()) yield id;
-	} else {
-		// Get level IDs with records in the last 2 hours
-		// const since = new Date(Date.now() - 2 * 60 * 60 * 1000);
-
-		// Get level IDs with records in the last 20 minutes
-		const since = new Date(Date.now() - 20 * 60 * 1000);
-
-		for (const id of await getAllLevelIdsWithRecordsSince(since)) yield id;
-	}
-}
+import { batchProcess } from '../../utils';
 
 interface Payload {
-	all: boolean;
+	all?: boolean;
 }
 
 const task: Task<Payload> = async (payload, helpers) => {
 	const { all = false } = payload;
 
-	helpers.logger.info(`Starting updateLevelScores task with all=${all}`);
+	const levelIds = all
+		? await getAllLevelIds()
+		: await getAllLevelIdsWithRecordsSince(new Date(Date.now() - 20 * 60 * 1000));
 
-	for await (const idLevel of getLevelIdsGenerator(all)) {
-		addJob('updateLevelScore', { idLevel }, defaultJobOptions);
+	helpers.logger.info(
+		`Starting updateLevelScores task with all=${all}. Processing ${levelIds.length} levels.`
+	);
+
+	for (const batchIds of batchProcess(levelIds)) {
+		await Promise.all(
+			batchIds.map(idLevel =>
+				addJob('updateLevelScore', { idLevel }, defaultJobOptions)
+			)
+		);
 	}
 };
 

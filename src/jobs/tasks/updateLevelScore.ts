@@ -22,7 +22,7 @@ const task: Task<Payload> = async (payload, helpers) => {
 	const personalBestCountPercentile = await getPersonalBestCount90thPercentile();
 
 	const topTimes = personalBests.map((pb) => pb.time);
-	const pbCount = Number(personalBests.at(0)?.totalCount) ?? 0;
+	const pbCount = Number(personalBests.at(0)?.totalCount ?? 0);
 
 	const rating = calculateVoteRating(voteValues);
 
@@ -55,7 +55,7 @@ const task: Task<Payload> = async (payload, helpers) => {
 
 	// If job is triggered by a new personal best, we need to update the player score
 	if (idUser) {
-		addJob('updatePlayerScore', { idUser }, defaultJobOptions);
+		await addJob('updatePlayerScore', { idUser }, defaultJobOptions);
 	}
 };
 
