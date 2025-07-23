@@ -241,23 +241,24 @@ export const levelScorePopularityModifier = (
 };
 
 /**
- * Applies a penalty only if the world record (WR) is less than or equal to half the average of the top 10 times (excluding 1st).
- * - If WR > 0.5 × avg top 10 (excluding 1st), no penalty.
+ * Applies a penalty only if the world record (WR) is less than or equal to half the average of the
+ * top 5 times after the WR (1st place).
+ * - If WR > 0.5 × avg top, no penalty.
  * - Penalty scales down from 1.0 to 0.5 as suspicion increases.
  *
- * This discourages exploit farming, but still rewards legitimate levels.
+ * This discourages exploit farming, without punishing players for improving the WR time.
  */
 export const levelScoreCutPenalty = (topTimes: number[], wrTime: number): number => {
-	const top10ExcludingWR = topTimes.slice(1, 10);
-	const avgTop10ExcludingWR = top10ExcludingWR.length
-		? average(top10ExcludingWR)
+	const times = topTimes.slice(1, 6); // Exclude WR and take next 5 times
+	const averageTimes = times.length
+		? average(times)
 		: 0;
 
-	if (avgTop10ExcludingWR === 0 || wrTime > avgTop10ExcludingWR * 0.5) {
+	if (averageTimes === 0 || wrTime > averageTimes * 0.5) {
 		return 1;
 	}
 
-	const cutSuspicion = clamp((avgTop10ExcludingWR * 0.5 - wrTime) / (avgTop10ExcludingWR * 0.5), 0, 1);
+	const cutSuspicion = clamp((averageTimes * 0.5 - wrTime) / (averageTimes * 0.5), 0, 1);
 
 	return 1 - MODIFIERS.CUT_PENALTY * cutSuspicion;
 };
