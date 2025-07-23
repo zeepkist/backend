@@ -1,5 +1,5 @@
 import type { Task } from '..';
-import { getLevelPointsPaginated, insertLevelPointsHistories } from '../../services';
+import { getChangedLevelPointsPaginated, insertLevelPointsHistories } from '../../services';
 
 interface Payload {
 	offset: number;
@@ -17,7 +17,7 @@ const task: Task<Payload> = async (payload, helpers) => {
 	const { offset, limit } = payload;
 
 	try {
-		const points = await getLevelPointsPaginated(offset, limit);
+		const points = await getChangedLevelPointsPaginated(offset, limit);
 
 		if (points.length === 0) {
 			return;

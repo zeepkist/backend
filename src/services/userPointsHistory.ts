@@ -8,6 +8,10 @@ type UserPoints = Pick<
 type UserPointsHistory = typeof userPointsHistory.$inferInsert;
 
 export async function insertUserPointsHistories(entries: UserPoints[]) {
+	if (entries.length === 0) {
+		return;
+	}
+
 	const now = new Date().toISOString();
 
 	const histories: UserPointsHistory[] = entries.map(

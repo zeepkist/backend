@@ -1,5 +1,5 @@
-import { eq, sql } from 'drizzle-orm';
-import { db, levelPoints, personalBestGlobal, record } from '../db';
+import { ne, eq, sql } from 'drizzle-orm';
+import { db, levelPoints, levelPointsHistory, personalBestGlobal, record } from '../db';
 
 export async function getTotalLevelPoints() {
 	const totalPoints = await db
@@ -10,8 +10,24 @@ export async function getTotalLevelPoints() {
 	return totalPoints ?? 0;
 }
 
-export async function getLevelPointsPaginated(offset: number, limit: number) {
-	const batch = await db
+export async function getChangedLevelPointsPaginated(offset: number, limit: number) {
+	// Step 1: Subquery to get the latest history entry per level
+	const latestHistory = db
+		.select({
+			idLevel: levelPointsHistory.idLevel,
+			points: levelPointsHistory.points,
+		})
+		.from(levelPointsHistory)
+		.where(sql`
+			(${levelPointsHistory.idLevel}, ${levelPointsHistory.dateCreated}) IN (
+				SELECT ${levelPointsHistory.idLevel}, MAX(${levelPointsHistory.dateCreated})
+				FROM ${levelPointsHistory}
+				GROUP BY ${levelPointsHistory.idLevel}
+			)
+		`)
+		.as('latest_history');
+
+	const result  = await db
 		.select({
 			idLevel: levelPoints.idLevel,
 			points: levelPoints.points,
@@ -23,10 +39,14 @@ export async function getLevelPointsPaginated(offset: number, limit: number) {
 			cutPenalty: levelPoints.cutPenalty,
 		})
 		.from(levelPoints)
-		.limit(limit)
-		.offset(offset);
+		.innerJoin(latestHistory, eq(levelPoints.idLevel, latestHistory.idLevel))
+		.where(ne(levelPoints.points, latestHistory.points))
+		.offset(offset)
+		.limit(limit);
 
-	return batch;
+	console.debug(`Fetched ${result.length} changed level points from offset ${offset} with limit ${limit}`);
+
+	return result;
 }
 
 interface UpdateLevelPointsPayload {

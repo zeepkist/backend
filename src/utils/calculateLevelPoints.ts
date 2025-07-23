@@ -241,15 +241,23 @@ export const levelScorePopularityModifier = (
 };
 
 /**
- * Applies a penalty if the world record (WR) is suspiciously faster than the median time.
- * - Large gap suggests a shortcut or exploit.
+ * Applies a penalty only if the world record (WR) is less than or equal to half the average of the top 10 times (excluding 1st).
+ * - If WR > 0.5 × avg top 10 (excluding 1st), no penalty.
  * - Penalty scales down from 1.0 to 0.5 as suspicion increases.
  *
- * This discourages levels with unintended shortcuts.
+ * This discourages exploit farming, but still rewards legitimate levels.
  */
 export const levelScoreCutPenalty = (topTimes: number[], wrTime: number): number => {
-	const medianTime = topTimes[Math.floor(topTimes.length / 2)] ?? 0;
-	const cutSuspicion = clamp((medianTime - wrTime) / medianTime, 0, 1);
+	const top10ExcludingWR = topTimes.slice(1, 10);
+	const avgTop10ExcludingWR = top10ExcludingWR.length
+		? average(top10ExcludingWR)
+		: 0;
+
+	if (avgTop10ExcludingWR === 0 || wrTime > avgTop10ExcludingWR * 0.5) {
+		return 1;
+	}
+
+	const cutSuspicion = clamp((avgTop10ExcludingWR * 0.5 - wrTime) / (avgTop10ExcludingWR * 0.5), 0, 1);
 
 	return 1 - MODIFIERS.CUT_PENALTY * cutSuspicion;
 };
