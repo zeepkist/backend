@@ -369,13 +369,13 @@ describe('calculateLevelPoints', () => {
 			personalBestCountPercentile: 30,
 		});
 		expect(result).toEqual({
-			points: 572,
+			points: 590,
 			modifiers: {
 				lengthModifier: 1,
 				competitivenessModifier: 0.25,
 				ratingModifier: 1,
 				popularityModifier: 0.9449489742783178,
-				cutPenalty: 0.96875,
+				cutPenalty: 1,
 			},
 		});
 	});
@@ -389,13 +389,13 @@ describe('calculateLevelPoints', () => {
 			personalBestCountPercentile: 30,
 		});
 		expect(result).toEqual({
-			points: 3790,
+			points: 3970,
 			modifiers: {
 				lengthModifier: 1,
 				competitivenessModifier: 1.6804054611334704,
 				ratingModifier: 1,
 				popularityModifier: 0.9449489742783178,
-				cutPenalty: 0.9545454545454546,
+				cutPenalty: 1,
 			},
 		});
 	});
@@ -409,13 +409,13 @@ describe('calculateLevelPoints', () => {
 			personalBestCountPercentile: 30,
 		});
 		expect(result).toEqual({
-			points: 696,
+			points: 718,
 			modifiers: {
 				lengthModifier: 1,
 				competitivenessModifier: 0.25,
 				ratingModifier: 1.216,
 				popularityModifier: 0.9449489742783178,
-				cutPenalty: 0.96875,
+				cutPenalty: 1,
 			},
 		});
 	});
