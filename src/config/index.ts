@@ -20,6 +20,7 @@ const {
 	OPENTELEMETRY_COLLECTOR_URL = '',
 	OPENTELEMETRY_SERVICE_NAME = '',
 	ENABLE_WORKERS = false,
+	TRIGGER_JOB_TOKEN = '',
 } = process.env;
 
 export const STEAM_API_BASE_URL = 'https://api.steampowered.com';
@@ -52,4 +53,5 @@ export {
 	OPENTELEMETRY_COLLECTOR_URL,
 	OPENTELEMETRY_SERVICE_NAME,
 	ENABLE_WORKERS,
+	TRIGGER_JOB_TOKEN,
 };

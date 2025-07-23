@@ -3,6 +3,7 @@ import { authRoutes } from './auth';
 import { recordRoutes } from './record';
 import { userRoutes } from './user';
 import { voteRoutes } from './vote';
+import { jobRoutes } from './job';
 
 export async function registerRoutes(app: FastifyInstance) {
 	app.log.info('Registering routes...');
@@ -11,6 +12,7 @@ export async function registerRoutes(app: FastifyInstance) {
 	app.register(userRoutes, { prefix: '/user' });
 	app.register(recordRoutes, { prefix: '/record' });
 	app.register(voteRoutes, { prefix: '/vote' });
+	app.register(jobRoutes, { prefix: '/job' });
 
 	// Ignore favicon in documentation
 	app.get(
