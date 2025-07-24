@@ -2,7 +2,6 @@ import { type Task, addJob, defaultJobOptions } from '..';
 import {
 	getPersonalBestCount90thPercentile,
 	getPersonalBestsWithRecord,
-	getTotalRecords,
 	getVoteValues,
 	updateLevelPoints,
 } from '../../services';
@@ -16,10 +15,15 @@ interface Payload {
 const task: Task<Payload> = async (payload, helpers) => {
 	const { idLevel, idUser } = payload;
 
-	const personalBests = await getPersonalBestsWithRecord({ idLevel, limit: 50 });
-	const totalRecords = await getTotalRecords({ idLevel });
-	const voteValues = await getVoteValues({ idLevel });
-	const personalBestCountPercentile = await getPersonalBestCount90thPercentile();
+	const [
+		personalBests,
+		voteValues,
+		personalBestCountPercentile
+	] = await Promise.all([
+		getPersonalBestsWithRecord({ idLevel, limit: 50 }),
+		getVoteValues({ idLevel }),
+		getPersonalBestCount90thPercentile(),
+	]);
 
 	const topTimes = personalBests.map((pb) => pb.time);
 	const pbCount = Number(personalBests.at(0)?.totalCount ?? 0);
@@ -29,7 +33,6 @@ const task: Task<Payload> = async (payload, helpers) => {
 	const { points, modifiers } = calculateLevelPoints({
 		topTimes,
 		personalBests: pbCount,
-		totalRecords,
 		rating,
 		personalBestCountPercentile,
 	});

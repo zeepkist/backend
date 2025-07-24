@@ -1,14 +1,14 @@
 /**
  * Calculate points for a level based on various factors.
  *
- * Theoretical multipliers are 0.006x to 3.3x:
+ * Theoretical multipliers are 0.0021x to 3.094x:
  * - Level length: 0.1x to 1.0x
- * - Competitiveness: 0.25x to 2.0x
- * - Community rating: 0.7x to 1.3x
+ * - Competitiveness: 0.1x to 1.8x
+ * - Community rating: 0.6x to 1.4x
  * - Popularity: 0.7x to 1.3x
  * - Cut penalty: 0.5x to 1.0x
  *
- * This means the final score can range from 16 to 8,450 points.
+ * This means the final score can range from 6 to 8,190 points.
  *
  * If the level has no records, it gets 0 points.
  */
@@ -29,12 +29,12 @@ const MODIFIERS = {
 		MAX_SECONDS: 120,
 	},
 	COMPETITIVENESS: {
-		MIN: 0.25,
+		MIN: 0.1,
 		MAX: 2.0,
 	},
 	RATING: {
-		MIN: 0.7,
-		MAX: 1.3,
+		MIN: 0.6,
+		MAX: 1.4,
 	},
 	POPULARITY: {
 		MIN: 0.7,
@@ -73,6 +73,15 @@ const normaliseNumber = (value: number) => (Number.isNaN(value) ? 0 : value);
  */
 const toEven = (value: number): number => Math.round(value / 2) * 2;
 
+const round = (value: number, precision = 7): number => {
+	if (!Number.isFinite(value)) {
+		return Number.NaN;
+	}
+
+	const factor = 10 ** precision;
+	return Math.round(value * factor) / factor;
+}
+
 /**
  * See `levelScoreLengthMultiplier` for details.
  *
@@ -88,8 +97,11 @@ function shortLengthMultiplier(wrTime: number): number {
 	const END = MODIFIERS.LENGTH_SHORT.MAX_SECONDS;
 
 	if (wrTime < END) {
-		const eased = Math.sqrt(Math.max(0, wrTime - START) / (END - START));
-		return MIN + eased * MAX;
+		const clampedTime = Math.max(0, wrTime - START);
+		const progress = clampedTime / (END - START);
+		const eased = Math.sqrt(progress);
+
+		return round(MIN + eased * MAX);
 	}
 
 	return 1;
@@ -110,9 +122,11 @@ function longLengthMultiplier(wrTime: number): number {
 	const LONG_MAX = MODIFIERS.LENGTH_LONG.MAX - LONG_MIN;
 
 	if (wrTime > LONG_START) {
-		const eased =
-			1 - Math.sqrt((Math.min(wrTime, LONG_END) - LONG_START) / (LONG_END - LONG_START));
-		return LONG_MIN + eased * LONG_MAX;
+		const clampedTime = Math.min(wrTime, LONG_END);
+		const progress = (clampedTime - LONG_START) / (LONG_END - LONG_START);
+		const eased = 1 - Math.sqrt(progress);
+
+		return round(LONG_MIN + eased * LONG_MAX);
 	}
 
 	return 1;
@@ -143,8 +157,7 @@ interface LevelScoreCompetitivenessMultiplierResult {
 	modifier: number;
 	tightnessScore: number;
 	spreadScore: number;
-	pbRatio: number;
-	grindinessScore: number;
+	easinessFactor: number;
 }
 
 /**
@@ -159,8 +172,6 @@ interface LevelScoreCompetitivenessMultiplierResult {
 export const levelScoreCompetitivenessMultiplier = (
 	wrTime: number,
 	topTimes: number[],
-	personalBests: number,
-	totalRecords: number,
 ): LevelScoreCompetitivenessMultiplierResult => {
 	const MIN = MODIFIERS.COMPETITIVENESS.MIN;
 	const MAX = MODIFIERS.COMPETITIVENESS.MAX;
@@ -170,31 +181,41 @@ export const levelScoreCompetitivenessMultiplier = (
 			modifier: MIN,
 			tightnessScore: 0,
 			spreadScore: 0,
-			pbRatio: 0,
-			grindinessScore: 0,
+			easinessFactor: 0,
 		};
 	}
 
-	const avgTop5 = average(topTimes.slice(0, 5));
+	const avgTop5 = average(topTimes.slice(0, 5))
 	const avgTop10 = average(topTimes.slice(0, 10));
 	const avgTop50 = average(topTimes.slice(0, 50));
+	const slowestTime = topTimes.at(-1) ?? wrTime;
 
 	// Tightness: How close top 5 are to WR (closer = more competitive)
-	const tightnessScore = clamp(1 - (avgTop5 - wrTime) / wrTime, 0, 1);
+	const tightnessScore = round(clamp(1 - (avgTop5 - wrTime) / wrTime, 0, 1));
 
-	// Spread: How much top 50 differ from top 10 (bigger = harder)
-	const spreadScore = clamp((avgTop50 - avgTop10) / avgTop10, 0, 1);
+	// Smaller difference = better (more consistent skill depth)
+	const spreadScore = round(clamp(1 - (avgTop50 - avgTop10) / avgTop10, 0, 1));
 
-	// Grindiness: How many PBs per record (more = more approachable)
-	const pbRatio = personalBests > 0 ? personalBests / totalRecords : 0;
-	const grindinessScore = clamp(1 + Math.log(1 + pbRatio), 0, 2);
+	/**
+	 * If the slowest best time is incredibly close to the WR, we assume it's a very
+	 * easy level to set a good time on.
+	 */
+	const easyThreshold = 0.025; // 2.5% of WR time
+	const isVeryEasy = slowestTime <= wrTime * (1 + easyThreshold);
 
-	// Weighted sum for final modifier
-	const weightedScore = 1 + 0.33 * tightnessScore + 0.33 * spreadScore + 0.34 * grindinessScore;
+	/**
+	 * Clamped [0,1] factor based on how close to WR the slowest time is.
+	 * - If very easy, scales down from 1.0 to 0.0 (WR and slowest time are very close).
+	 * - If not very easy, stays at 1.0.
+	 */
+	const easinessFactor = round(clamp(isVeryEasy ? (slowestTime - wrTime * (1 + easyThreshold)) / (wrTime * easyThreshold) : 1, 0, 1));
 
-	const modifier = normaliseNumber(clamp(weightedScore, MIN, MAX));
+	// Weighted sum for final modifier = 1.8x max multiplier
+	const weightedScore = 0.55 * tightnessScore + 0.4 * spreadScore + 0.85 * easinessFactor;
 
-	return { modifier, tightnessScore, spreadScore, pbRatio, grindinessScore };
+	const modifier = normaliseNumber(round(clamp(weightedScore, MIN, MAX)));
+
+	return { modifier, tightnessScore, spreadScore, easinessFactor };
 };
 
 /**
@@ -209,7 +230,7 @@ export const levelScoreRatingModifier = (rating: number): number => {
 	const MIN = MODIFIERS.RATING.MIN;
 	const MAX = MODIFIERS.RATING.MAX - MIN;
 
-	return MIN + clamp(rating, 0, 1) * MAX;
+	return round(MIN + clamp(rating, 0, 1) * MAX);
 };
 
 /**
@@ -226,7 +247,7 @@ export const levelScorePopularityModifier = (
 ): number => {
 	const MIN = MODIFIERS.POPULARITY.MIN;
 	const MAX = MODIFIERS.POPULARITY.MAX - MIN;
-	const CAP = countPercentile * 2;
+	const CAP = countPercentile * 3;
 
 	if (personalBests < MINIMUM_PBS) {
 		return MIN;
@@ -234,7 +255,7 @@ export const levelScorePopularityModifier = (
 
 	if (personalBests < CAP) {
 		const eased = Math.sqrt(clamp(personalBests / CAP, 0, 1));
-		return MIN + eased * MAX;
+		return round(MIN + eased * MAX);
 	}
 
 	return MIN + MAX;
@@ -260,13 +281,12 @@ export const levelScoreCutPenalty = (topTimes: number[], wrTime: number): number
 
 	const cutSuspicion = clamp((averageTimes * 0.5 - wrTime) / (averageTimes * 0.5), 0, 1);
 
-	return 1 - MODIFIERS.CUT_PENALTY * cutSuspicion;
+	return round(1 - MODIFIERS.CUT_PENALTY * cutSuspicion);
 };
 
 interface CalculateLevelScore {
 	topTimes: number[];
 	personalBests: number;
-	totalRecords: number;
 	rating: number;
 	personalBestCountPercentile: number;
 }
@@ -301,11 +321,10 @@ interface CalculateLevelPointsResult {
 export const calculateLevelPoints = ({
 	topTimes,
 	personalBests,
-	totalRecords,
 	rating,
 	personalBestCountPercentile,
 }: CalculateLevelScore): CalculateLevelPointsResult => {
-	if (totalRecords === 0) {
+	if (!topTimes.length) {
 		return {
 			points: 0,
 			modifiers: {
@@ -323,8 +342,6 @@ export const calculateLevelPoints = ({
 	const { modifier: competitivenessModifier } = levelScoreCompetitivenessMultiplier(
 		wrTime,
 		topTimes,
-		personalBests,
-		totalRecords,
 	);
 	const ratingModifier = normaliseNumber(levelScoreRatingModifier(rating));
 	const popularityModifier = normaliseNumber(
