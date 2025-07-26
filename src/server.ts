@@ -17,8 +17,8 @@ const openapi: OpenApi = {
 	openapi: '3.0.0',
 	info: {
 		title: 'Zeepkist Community Hub API',
-		description: 'API documentation for the Zeepkist Community Hub',
-		version: '1.0.0',
+		description: 'Private API documentation for the Zeepkist Community Hub. This REST interface powers internal services such as the GTR mod in Zeepkist and Web client. If you\'re looking to integrate with Zeepkist Community Hub as a third-party developer, refer to the public [GraphQL API](https://graphql.zeepki.st) instead.',
+		version: '1.1.0',
 	},
 	servers: [
 		{
@@ -26,6 +26,25 @@ const openapi: OpenApi = {
 			description: 'Production',
 		},
 	],
+	components: {
+		securitySchemes: {
+			Web: {
+				type: 'http',
+				scheme: 'bearer',
+				description: 'Web authentication token for API access.',
+			},
+			GTR: {
+				type: 'http',
+				scheme: 'bearer',
+				description: 'GTR authentication token for API access.',
+			},
+			Job: {
+				type: 'http',
+				scheme: 'bearer',
+				description: 'Job authentication token for triggering jobs.',
+			}
+		}
+	}
 };
 
 if (IS_DEBUG_MODE) {
@@ -71,11 +90,30 @@ export async function buildServer(db = realDb) {
 		openapi,
 	});
 
+	/**
+	 * Register Swagger UI to the root path
+	 */
 	await app.register(swaggerUi, {
-		routePrefix: '/docs',
+		routePrefix: '/',
 		uiConfig: {
 			docExpansion: 'list',
 			deepLinking: true,
+			tagsSorter: 'alpha',
+			operationsSorter: 'alpha',
+			tryItOutEnabled: false,
+			showCommonExtensions: true,
+			showExtensions: true,
+			syntaxHighlight: {
+				activate: true,
+				theme: 'agate',
+			},
+			defaultModelExpandDepth: 2,
+			defaultModelsExpandDepth: 2,
+			defaultModelRendering: 'model',
+			displayRequestDuration: true,
+			displayOperationId: false,
+			filter: false,
+			layout: 'BaseLayout',
 		},
 		staticCSP: false,
 		transformStaticCSP: () => '',

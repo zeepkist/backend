@@ -1,7 +1,7 @@
 import type { FastifyPluginAsync, FastifySchema } from 'fastify';
 import { authenticateRequest } from '../../hooks';
 import { updateDiscordId, updateUserName } from '../../services';
-import { ERROR_CODES, handleError } from '../../utils';
+import { ERROR_CODES, handleError, errorSchema } from '../../utils';
 
 interface UpdateNameBody {
 	Name: string;
@@ -12,22 +12,38 @@ interface UpdateDiscordIdBody {
 }
 
 const updateSteamNameSchema: FastifySchema = {
+	deprecated: true,
 	tags: ['User'],
 	operationId: 'updateSteamName',
 	summary: 'Update the Steam name of the authenticated user',
 	description:
-		'Allows the authenticated user to update their Steam name. If no name is provided, it will not perform any action.',
+		'Update the logged in user\'s Steam name. If no name is provided, it will not perform any action.',
 	produces: ['application/json'],
 	consumes: ['application/json'],
+	security: [{ GTR: [] }],
 	body: {
 		type: 'object',
+		required: ['Name'],
 		properties: {
 			Name: {
 				type: 'string',
 				description: 'New Steam name of the user',
 			},
 		},
-		required: ['Name'],
+		examples: [
+			{
+				Name: 'John Doe',
+			},
+		]
+	},
+	response: {
+		200: {
+			type: 'object',
+			properties: {},
+		},
+		400: errorSchema(ERROR_CODES.AUTH_MISSING_TOKEN),
+		401: errorSchema(ERROR_CODES.AUTH_INVALID_TOKEN),
+		500: errorSchema(ERROR_CODES.INTERNAL_SERVER_ERROR),
 	},
 };
 
@@ -36,21 +52,48 @@ const updateDiscordIdSchema: FastifySchema = {
 	operationId: 'updateDiscordId',
 	summary: 'Update the Discord ID of the authenticated user',
 	description:
-		'Allows the authenticated user to update their Discord ID. If no ID is provided, it will not perform any action.',
+		'Link or unlink a Discord account to the logged in user. If the ID is "-1", it will unlink the existing Discord account, otherwise it will link the provided Discord ID to the user.',
 	produces: ['application/json'],
 	consumes: ['application/json'],
+	security: [{ GTR: [], Web: [] }],
 	body: {
 		type: 'object',
+		required: ['Id'],
 		properties: {
 			Id: {
 				type: 'string',
-				maxLength: 18,
-				minLength: 18,
-				pattern: '^[0-9]{18}$', // Discord IDs are 18 digits
-				description: 'Discord ID of the user',
+				description: 'Discord ID of the user or "-1" to unset',
+				oneOf: [
+					{
+						type: 'string',
+						pattern: '^[0-9]{18}$',
+						description: 'Link Discord ID',
+					},
+					{
+						type: 'string',
+						const: '-1',
+						description: 'Unset Discord ID',
+					},
+				],
 			},
 		},
-		required: ['Id'],
+		examples: [
+			{
+				Id: '000000000000000000'
+			},
+			{
+				Id: '-1'
+			},
+		]
+	},
+	response: {
+		200: {
+			type: 'object',
+			properties: {},
+		},
+		400: errorSchema(ERROR_CODES.AUTH_MISSING_TOKEN),
+		401: errorSchema(ERROR_CODES.AUTH_INVALID_TOKEN),
+		500: errorSchema(ERROR_CODES.INTERNAL_SERVER_ERROR),
 	},
 };
 

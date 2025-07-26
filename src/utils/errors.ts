@@ -1,3 +1,22 @@
+import type { FastifySchema } from 'fastify';
+
+export type ErrorCode = (typeof ERROR_CODES)[keyof typeof ERROR_CODES];
+export type ErrorMessage = (typeof ERROR_MESSAGES)[keyof typeof ERROR_MESSAGES];
+
+interface GetErrorMessageOptions {
+	isConsole?: boolean;
+	reportError?: boolean;
+	error?: unknown;
+}
+
+interface ErrorResponse {
+	error: {
+		message: ErrorMessage;
+		code: ErrorCode;
+		details?: string[];
+	};
+}
+
 export const ERROR_CODES = {
 	INTERNAL_SERVER_ERROR: 0,
 	// Steam Authentication errors
@@ -62,14 +81,6 @@ export const ERROR_MESSAGES = {
 	[ERROR_CODES.GENERIC_NOT_FOUND]: 'Not found',
 };
 
-export type ErrorCode = (typeof ERROR_CODES)[keyof typeof ERROR_CODES];
-export type ErrorMessage = (typeof ERROR_MESSAGES)[keyof typeof ERROR_MESSAGES];
-
-interface GetErrorMessageOptions {
-	isConsole: boolean;
-	error?: unknown;
-}
-
 export function getErrorMessage(code: ErrorCode, options?: GetErrorMessageOptions): ErrorMessage {
 	const message = ERROR_MESSAGES[code];
 	if (!message) {
@@ -78,19 +89,11 @@ export function getErrorMessage(code: ErrorCode, options?: GetErrorMessageOption
 
 	const errorMessage = options?.isConsole ? `${message} (ERR #${code})` : message;
 
-	console.error(errorMessage);
-
-	if (options?.error) console.error(options.error);
+	if (options?.reportError !== false) {
+		console.error(`Error Code: ${code}, Message: ${errorMessage}`, options?.error);
+	}
 
 	return errorMessage;
-}
-
-interface ErrorResponse {
-	error: {
-		message: ErrorMessage;
-		code: ErrorCode;
-		details?: string[];
-	};
 }
 
 export function handleError(code: ErrorCode, error?: unknown): ErrorResponse {
@@ -100,8 +103,27 @@ export function handleError(code: ErrorCode, error?: unknown): ErrorResponse {
 	});
 	return {
 		error: {
-			message,
 			code,
+			message,
+		},
+	};
+}
+
+/**
+ * Generates an error schema for Fastify Swagger documentation.
+ */
+export function errorSchema(code: ErrorCode): FastifySchema["response"] {
+	return {
+		type: 'object',
+		properties: {
+			error: {
+				type: 'object',
+				properties: {
+					code: { type: 'string', enum: [code.toString()] },
+					message: { type: 'string', enum: [getErrorMessage(code, { reportError: false })] },
+				},
+				required: ['code', 'message'],
+			},
 		},
 	};
 }
