@@ -1,10 +1,11 @@
 import { and, eq, sql } from 'drizzle-orm';
 import { db, vote } from '../db';
+import type { VoteValue } from '../types/enums';
 
 export async function upsertVote(
 	idUser: number,
 	idLevel: number,
-	value: -2 | -1 | 1 | 2,
+	value: VoteValue,
 ): Promise<typeof vote.$inferSelect> {
 	const result = await db.transaction(async (tx) => {
 		// Try to update existing vote

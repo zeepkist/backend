@@ -1,19 +1,98 @@
-import type { FastifyPluginAsync, FastifyReply, FastifyRequest } from 'fastify';
+import type { FastifyPluginAsync, FastifyReply, FastifyRequest, FastifySchema } from 'fastify';
 import { authenticateRequest } from '../../hooks';
 import { getLevel, getUser, upsertVote } from '../../services';
-import { ERROR_CODES, handleError } from '../../utils';
-
-// --, -, +, ++
-type VoteType = -2 | -1 | 1 | 2;
+import { ERROR_CODES, handleError, errorSchema } from '../../utils';
+import type { VoteValue } from '../../types/enums';
 
 interface VoteBody {
 	Level: string;
+	Value: VoteValue;
 }
 
+interface VoteBodyDeprecated extends Omit<VoteBody, 'Value'> {
+	Value?: VoteValue; // Optional for deprecated routes
+}
+
+const voteSchema: FastifySchema = {
+	tags: ['Vote'],
+	operationId: 'voteOnLevel',
+	summary: 'Vote on a level',
+	description: 'Allows users to vote on a level with a specific value.',
+	produces: ['application/json'],
+	consumes: ['application/json'],
+	security: [{ Web: [], GTR : [] }],
+	body: {
+		type: 'object',
+		required: ['Level', 'Value'],
+		properties: {
+			Level: {
+				type: 'string',
+				description: 'Level hash of the level being voted on',
+			},
+			Value: {
+				type: 'integer',
+				enum: [-2, -1, 0, 1, 2],
+				description: 'Vote value: -2 for --, -1 for -, 0 for -+/+-, 1 for +, 2 for ++',
+			},
+		},
+		examples: [
+			{
+				Level: '61C096367AFC76A1D2E8024AA638F516912444CC',
+				Value: 2, // Example of a ++ vote
+			}
+		],
+	},
+	response: {
+		200: {
+			type: 'object',
+			properties: {},
+		},
+		400: errorSchema(ERROR_CODES.AUTH_MISSING_TOKEN),
+		401: errorSchema(ERROR_CODES.AUTH_INVALID_TOKEN),
+		500: errorSchema(ERROR_CODES.INTERNAL_SERVER_ERROR),
+	}
+}
+
+const voteSchemaDeprecated = (operationId: string, value: string): FastifySchema => ({
+	deprecated: true,
+	tags: ['Vote'],
+	operationId,
+	summary: `Vote on a level with ${value}`,
+	description: `Allows users to vote on a level with a ${value}.`,
+	produces: ['application/json'],
+	consumes: ['application/json'],
+	security: [{ GTR : [] }],
+	body: {
+		type: 'object',
+		required: ['Level'],
+		properties: {
+			Level: {
+				type: 'string',
+				description: 'Level hash of the level being voted on',
+			}
+		},
+		examples: [
+			{
+				Level: '61C096367AFC76A1D2E8024AA638F516912444CC',
+				// Value will be set by the route handler
+			}
+		],
+	},
+	response: {
+		200: {
+			type: 'object',
+			properties: {},
+		},
+		400: errorSchema(ERROR_CODES.AUTH_MISSING_TOKEN),
+		401: errorSchema(ERROR_CODES.AUTH_INVALID_TOKEN),
+		500: errorSchema(ERROR_CODES.INTERNAL_SERVER_ERROR),
+	}
+});
+
+
 const handleVoteRequest = async (
-	req: FastifyRequest<{ Body: VoteBody }>,
-	reply: FastifyReply,
-	value: VoteType,
+	req: FastifyRequest<{ Body: VoteBody | VoteBodyDeprecated }>,
+	reply: FastifyReply
 ) => {
 	try {
 		const { user: authUser } = req;
@@ -22,9 +101,9 @@ const handleVoteRequest = async (
 			return reply.status(401).send(handleError(ERROR_CODES.AUTH_USER_NOT_FOUND));
 		}
 
-		const { Level } = req.body;
+		const { Level, Value } = req.body;
 
-		if (!Level) {
+		if (!Level || Value === undefined) {
 			return reply.status(400).send(handleError(ERROR_CODES.VOTE_MISSING_PARAMS));
 		}
 
@@ -40,7 +119,7 @@ const handleVoteRequest = async (
 			return reply.status(400).send(handleError(ERROR_CODES.LEVEL_NOT_FOUND));
 		}
 
-		await upsertVote(user.id, level.id, value);
+		await upsertVote(user.id, level.id, Value);
 
 		return reply.status(200).send();
 	} catch (error) {
@@ -52,39 +131,80 @@ const handleVoteRequest = async (
 };
 
 export const voteRoutes: FastifyPluginAsync = async (app) => {
-	// User votes ++ on level
 	app.post<{ Body: VoteBody }>(
+		'/submit',
+		{
+			preValidation: [authenticateRequest],
+			schema: voteSchema,
+		},
+		async (req, reply) => await handleVoteRequest(req, reply),
+	)
+
+	/**
+	 * Handle ++ vote request for level
+	 *
+	 * @deprecated Use `/vote` instead with `Value` set to `2`
+	 */
+	app.post<{ Body: VoteBodyDeprecated }>(
 		'/dupvote',
 		{
 			preValidation: [authenticateRequest],
+			schema: voteSchemaDeprecated('voteOnLevelDoubleUpvotevote', '++'),
 		},
-		async (req, reply) => await handleVoteRequest(req, reply, 2),
+		async (req, reply) => {
+			req.body.Value = 2; // Set default value for upvote
+			await handleVoteRequest(req, reply)
+		}
 	);
 
-	// User votes + on level
-	app.post<{ Body: VoteBody }>(
+	/**
+	 * Handle + vote request for level
+	 *
+	 * @deprecated Use `/vote` instead with `Value` set to `1`
+	 */
+	app.post<{ Body: VoteBodyDeprecated }>(
 		'/upvote',
 		{
 			preValidation: [authenticateRequest],
+			schema: voteSchemaDeprecated('voteOnLevelUpvotevote', '+'),
 		},
-		async (req, reply) => await handleVoteRequest(req, reply, 1),
+		async (req, reply) => {
+			req.body.Value = 1; // Set default value for upvote
+			await handleVoteRequest(req, reply)
+		}
 	);
 
-	// User votes - on level
-	app.post<{ Body: VoteBody }>(
+	/**
+	 * Handle - vote request for level
+	 *
+	 * @deprecated Use `/vote` instead with `Value` set to `-1`
+	 */
+	app.post<{ Body: VoteBodyDeprecated }>(
 		'/downvote',
 		{
 			preValidation: [authenticateRequest],
+			schema: voteSchemaDeprecated('voteOnLevelDownvote', '-'),
 		},
-		async (req, reply) => await handleVoteRequest(req, reply, -1),
+		async (req, reply) => {
+			req.body.Value = -1; // Set default value for downvote
+			await handleVoteRequest(req, reply)
+		}
 	);
 
-	// User votes -- on level
-	app.post<{ Body: VoteBody }>(
+	/**
+	 * Handle -- vote request for level
+	 *
+	 * @deprecated Use `/vote` instead with `Value` set to `-2`
+	 */
+	app.post<{ Body: VoteBodyDeprecated }>(
 		'/ddownvote',
 		{
 			preValidation: [authenticateRequest],
+			schema: voteSchemaDeprecated('voteOnLevelDoubleDownvote', '--'),
 		},
-		async (req, reply) => await handleVoteRequest(req, reply, -2),
+		async (req, reply) => {
+			req.body.Value = -2; // Set default value for double downvote
+			await handleVoteRequest(req, reply)
+		}
 	);
 };
