@@ -8,27 +8,27 @@ import {
 	handleError,
 	jwtProvider,
 	setWebCookies,
+	errorSchema
 } from '../../../utils';
 
-interface DiscordCallbackRequest {
-	code: string;
-}
-
 const webRefreshSchema: FastifySchema = {
-	tags: ['Authentication'],
-	operationId: 'discordRedirect',
-	summary: 'Discord OAuth2 Redirect',
-	description: 'Redirects to Discord OAuth2 for authentication.',
+	tags: ['Authentication (Web)'],
+	operationId: 'webRefresh',
+	summary: 'Refresh access tokens for Steam/Discord authentication',
+	description: 'Refreshes the access token and refresh token for the authenticated user using cookies.',
 	produces: ['application/json'],
 	consumes: ['application/json'],
-	security: [],
+	security: [{ Web: [] }],
 	response: {
-		302: {},
+		200: {},
+		400: errorSchema(ERROR_CODES.AUTH_MISSING_TOKEN),
+		401: errorSchema(ERROR_CODES.AUTH_INVALID_TOKEN),
+		500: errorSchema(ERROR_CODES.INTERNAL_SERVER_ERROR),
 	},
 };
 
 export const webAuthRoutes: FastifyPluginAsync = async (app) => {
-	app.post<{ Querystring: DiscordCallbackRequest }>(
+	app.post(
 		'/refresh',
 		{
 			preValidation: [],
@@ -85,6 +85,8 @@ export const webAuthRoutes: FastifyPluginAsync = async (app) => {
 				refreshTokenExpiry,
 				shouldRedirect: false,
 			});
+
+			return reply.status(200).send();
 		},
 	);
 };

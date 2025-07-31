@@ -12,10 +12,11 @@ import {
 	handleError,
 	jwtProvider,
 	setWebCookies,
+	errorSchema
 } from '../../../utils';
 
 const steamRedirectSchema: FastifySchema = {
-	tags: ['Authentication'],
+	tags: ['Authentication (Web)'],
 	operationId: 'steamRedirect',
 	summary: 'Steam OpenID Redirect',
 	description: 'Redirects to Steam OpenID for authentication.',
@@ -24,6 +25,32 @@ const steamRedirectSchema: FastifySchema = {
 	security: [],
 	response: {
 		302: {},
+	},
+};
+
+const steamCallbackSchema: FastifySchema = {
+	tags: ['Authentication (Web)'],
+	operationId: 'steamCallback',
+	summary: 'Steam OpenID Callback',
+	description: 'Handles the callback from Steam OpenID after user authentication.',
+	produces: ['application/json'],
+	consumes: ['application/json'],
+	security: [],
+	querystring: {
+		type: 'object',
+		required: ['openid.identity'],
+		properties: {
+			'openid.identity': {
+				type: 'string',
+				description: 'Steam OpenID identity URL',
+			},
+		},
+	},
+	response: {
+		302: {},
+		400: errorSchema(ERROR_CODES.AUTH_MISSING_TOKEN),
+		401: errorSchema(ERROR_CODES.AUTH_INVALID_TOKEN),
+		500: errorSchema(ERROR_CODES.INTERNAL_SERVER_ERROR),
 	},
 };
 
@@ -43,7 +70,7 @@ export const steamAuthRoutes: FastifyPluginAsync = async (app) => {
 		'/callback',
 		{
 			preValidation: [],
-			schema: {},
+			schema: steamCallbackSchema,
 		},
 		async (req, reply) => {
 			const { 'openid.identity': steamIdentity } = req.query;

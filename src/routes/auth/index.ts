@@ -29,7 +29,7 @@ interface RefreshRequest {
 }
 
 const loginSchema: FastifySchema = {
-	tags: ['Authentication'],
+	tags: ['Authentication (GTR)'],
 	operationId: 'loginGtrMod',
 	summary: 'GTR Mod Login',
 	description: 'Authenticates a user in the GTR mod client using Steam.',
@@ -81,7 +81,7 @@ const loginSchema: FastifySchema = {
 };
 
 const refreshSchema: FastifySchema = {
-	tags: ['Authentication'],
+	tags: ['Authentication (GTR)'],
 	operationId: 'refreshGtrMod',
 	summary: 'GTR Mod Refresh',
 	description: 'Refreshes the authentication token for the GTR mod client.',
