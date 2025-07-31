@@ -28,6 +28,7 @@ jobs:
         env:
           JWT_AUDIENCE: ${{ secrets.TEST_JWT_AUDIENCE }}
           JWT_ISSUER: ${{ secrets.TEST_JWT_ISSUER }}
+          FRONTEND_URL: ${{ secrets.TEST_FRONTEND_URL }}
 
   build-backend:
     runs-on: ubuntu-latest

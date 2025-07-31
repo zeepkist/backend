@@ -31,6 +31,8 @@ interface AccessTokenResponse {
 interface AbstractAccessTokenPayload {
 	jti: `${string}-${string}-${string}-${string}-${string}`;
 	aud: string;
+	exp: number;
+	iat: number;
 	iss: string;
 	sub: string;
 	steamid: string;
@@ -68,13 +70,15 @@ export async function generateAccessToken({
 }: GenerateAccessTokenParams): Promise<AccessTokenResponse> {
 	const payload: AbstractAccessTokenPayload = {
 		jti: crypto.randomUUID(),
+		exp: Math.floor(Date.now() / 1000) + JWT_EXPIRY,
+		iat: Math.floor(Date.now() / 1000),
 		aud: JWT_AUDIENCE,
 		iss: JWT_ISSUER,
 		sub: steamId,
 		steamid: steamId,
 	};
 
-	console.debug(`Generating access token for user ${steamId} with provider ${provider}`);
+	// console.debug(`Generating access token for user ${steamId} with provider ${provider}`);
 
 	const accessTokenExpiry = BigInt(Date.now() + JWT_EXPIRY) / 1000n;
 

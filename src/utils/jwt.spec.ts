@@ -1,10 +1,14 @@
 import { describe, expect, it } from 'bun:test';
 import { generateAccessToken, generateRefreshToken, verifyAccessToken } from './jwt.ts';
+import { JWT_EXPIRY } from '../config';
 
 describe('generateAccessToken', () => {
 	it('should generate a valid access token', async () => {
 		const steamId = '12345678901234567';
-		const { accessToken, accessTokenExpiry } = await generateAccessToken(steamId);
+		const { accessToken, accessTokenExpiry } = await generateAccessToken({
+			provider: 'gtr',
+			steamId
+		});
 		expect(accessToken).toBeString();
 		expect(accessTokenExpiry).toBeGreaterThan(BigInt(Date.now()) / 1000n);
 
@@ -31,11 +35,12 @@ describe('generateAccessToken', () => {
 			jti: expect.any(String),
 			sub: steamId,
 			steamid: steamId,
+			provider: 'gtr',
 		});
 
 		expect(decodedPayload.exp).toBeGreaterThan(Date.now() / 1000);
 		expect(decodedPayload.iat).toBeLessThan(Date.now() / 1000);
-		expect(decodedPayload.iat).toBeGreaterThan(decodedPayload.exp - 60 * 60);
+		expect(decodedPayload.iat).toBeGreaterThanOrEqual(decodedPayload.exp - JWT_EXPIRY);
 
 		expect(decodedPayload.sub).toBe(steamId);
 		expect(decodedPayload.steamid).toBe(decodedPayload.sub);
@@ -52,7 +57,10 @@ describe('generateAccessToken', () => {
 describe('verifyAccessToken', () => {
 	it('should verify a valid access token', async () => {
 		const steamId = '12345678901234567';
-		const { accessToken } = await generateAccessToken(steamId);
+		const { accessToken } = await generateAccessToken({
+			provider: 'gtr',
+			steamId
+		});
 		const verifiedPayload = await verifyAccessToken(accessToken);
 		expect(verifiedPayload).toBeObject();
 		expect(verifiedPayload).toEqual({
@@ -62,7 +70,8 @@ describe('verifyAccessToken', () => {
 			iss: 'https://zeepki.st',
 			jti: expect.any(String),
 			sub: steamId,
-			steamid: BigInt(steamId),
+			steamid: steamId,
+			provider: 'gtr'
 		});
 	});
 
@@ -73,7 +82,10 @@ describe('verifyAccessToken', () => {
 	});
 
 	it.skip('should return null for an expired access token', async () => {
-		const { accessToken } = await generateAccessToken('12345678901234567');
+		const { accessToken } = await generateAccessToken({
+			provider: 'gtr',
+			steamId: '12345678901234567',
+		});
 
 		const [header, payload, signature] = accessToken.split('.');
 
