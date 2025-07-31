@@ -33,7 +33,7 @@ export const JWT_EXPIRY = parse('5m') ?? 0;
 export const JWT_REFRESH_EXPIRY = parse('7d') ?? 0;
 export const IS_DEBUG_MODE = Number(DEBUG) === 1;
 export const SERVER_PORT = Number(PORT);
-export const SERVER_URL = IS_DEBUG_MODE ? `http://localhost:${SERVER_PORT}` : `https://${HOST}`;
+export const SERVER_URL = IS_DEBUG_MODE ? `http://localhost:${SERVER_PORT}` : 'https://backend.zeepki.st';
 export const DEFAULT_VOTE_RATING = 0.5;
 
 export {
