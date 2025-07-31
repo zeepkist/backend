@@ -35,6 +35,8 @@ export const ERROR_CODES = {
 	AUTH_MISSING_TOKEN: 14,
 	AUTH_INVALID_TOKEN: 15,
 	AUTH_USER_NOT_FOUND: 16,
+	AUTH_INVALID_PROVIDER: 23,
+	AUTH_DISCORD_NOT_LINKED: 24,
 	// Steam User errors
 	STEAM_USER_REQUEST_FAILED: 12,
 	STEAM_USER_NOT_FOUND: 13,
@@ -67,6 +69,8 @@ export const ERROR_MESSAGES = {
 	[ERROR_CODES.AUTH_MISSING_TOKEN]: 'Not authenticated',
 	[ERROR_CODES.AUTH_INVALID_TOKEN]: 'Invalid or expired token',
 	[ERROR_CODES.AUTH_USER_NOT_FOUND]: 'User not found',
+	[ERROR_CODES.AUTH_INVALID_PROVIDER]: 'Invalid authentication provider',
+	[ERROR_CODES.AUTH_DISCORD_NOT_LINKED]: 'Discord account not linked',
 	// Steam User errors
 	[ERROR_CODES.STEAM_USER_REQUEST_FAILED]: 'Steam user request failed',
 	[ERROR_CODES.STEAM_USER_NOT_FOUND]: 'Steam user not found',
@@ -90,7 +94,7 @@ export function getErrorMessage(code: ErrorCode, options?: GetErrorMessageOption
 	const errorMessage = options?.isConsole ? `${message} (ERR #${code})` : message;
 
 	if (options?.reportError !== false) {
-		console.error(`Error Code: ${code}, Message: ${errorMessage}`, options?.error);
+		console.trace(`Error Code: ${code}, Message: ${errorMessage}`, options?.error);
 	}
 
 	return errorMessage;
@@ -112,7 +116,7 @@ export function handleError(code: ErrorCode, error?: unknown): ErrorResponse {
 /**
  * Generates an error schema for Fastify Swagger documentation.
  */
-export function errorSchema(code: ErrorCode): FastifySchema["response"] {
+export function errorSchema(code: ErrorCode): FastifySchema['response'] {
 	return {
 		type: 'object',
 		properties: {
@@ -120,7 +124,10 @@ export function errorSchema(code: ErrorCode): FastifySchema["response"] {
 				type: 'object',
 				properties: {
 					code: { type: 'string', enum: [code.toString()] },
-					message: { type: 'string', enum: [getErrorMessage(code, { reportError: false })] },
+					message: {
+						type: 'string',
+						enum: [getErrorMessage(code, { reportError: false })],
+					},
 				},
 				required: ['code', 'message'],
 			},

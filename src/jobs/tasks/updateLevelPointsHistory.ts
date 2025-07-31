@@ -10,7 +10,11 @@ const task: Task<never> = async (_payload, _helpers) => {
 	for (let index = 0; index < totalBatches; index++) {
 		const offset = index * BATCH_SIZE;
 
-		await addJob('updateLevelPointsHistoryBatch', { offset, limit: BATCH_SIZE }, defaultJobOptions);
+		await addJob(
+			'updateLevelPointsHistoryBatch',
+			{ offset, limit: BATCH_SIZE },
+			defaultJobOptions,
+		);
 	}
 };
 

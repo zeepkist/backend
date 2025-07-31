@@ -1,7 +1,7 @@
 import type { FastifyPluginAsync, FastifySchema } from 'fastify';
-import { authenticateRequest } from '../../hooks';
-import { updateDiscordId, updateUserName } from '../../services';
-import { ERROR_CODES, handleError, errorSchema } from '../../utils';
+import { authenticateGtr, authenticateRequest } from '../../hooks';
+import { updateDiscordId } from '../../services';
+import { ERROR_CODES, errorSchema, handleError } from '../../utils';
 
 interface UpdateNameBody {
 	Name: string;
@@ -17,7 +17,7 @@ const updateSteamNameSchema: FastifySchema = {
 	operationId: 'updateSteamName',
 	summary: 'Update the Steam name of the authenticated user',
 	description:
-		'Update the logged in user\'s Steam name. If no name is provided, it will not perform any action.',
+		"Update the logged in user's Steam name. If no name is provided, it will not perform any action.",
 	produces: ['application/json'],
 	consumes: ['application/json'],
 	security: [{ GTR: [] }],
@@ -34,13 +34,10 @@ const updateSteamNameSchema: FastifySchema = {
 			{
 				Name: 'John Doe',
 			},
-		]
+		],
 	},
 	response: {
-		200: {
-			type: 'object',
-			properties: {},
-		},
+		200: {},
 		400: errorSchema(ERROR_CODES.AUTH_MISSING_TOKEN),
 		401: errorSchema(ERROR_CODES.AUTH_INVALID_TOKEN),
 		500: errorSchema(ERROR_CODES.INTERNAL_SERVER_ERROR),
@@ -79,18 +76,15 @@ const updateDiscordIdSchema: FastifySchema = {
 		},
 		examples: [
 			{
-				Id: '000000000000000000'
+				Id: '000000000000000000',
 			},
 			{
-				Id: '-1'
+				Id: '-1',
 			},
-		]
+		],
 	},
 	response: {
-		200: {
-			type: 'object',
-			properties: {},
-		},
+		200: {},
 		400: errorSchema(ERROR_CODES.AUTH_MISSING_TOKEN),
 		401: errorSchema(ERROR_CODES.AUTH_INVALID_TOKEN),
 		500: errorSchema(ERROR_CODES.INTERNAL_SERVER_ERROR),
@@ -101,7 +95,7 @@ export const userRoutes: FastifyPluginAsync = async (app) => {
 	app.post<{ Body: UpdateNameBody }>(
 		'/updateSteamName',
 		{
-			preValidation: [authenticateRequest],
+			preValidation: [authenticateGtr],
 			schema: updateSteamNameSchema,
 		},
 		async (req, reply) => {
@@ -112,14 +106,7 @@ export const userRoutes: FastifyPluginAsync = async (app) => {
 					return reply.status(401).send(handleError(ERROR_CODES.AUTH_USER_NOT_FOUND));
 				}
 
-				const { Name } = req.body;
-
-				if (!Name) {
-					return reply.status(200).send();
-				}
-
-				await updateUserName(authUser.steamid, Name);
-
+				// This route is deprecated and performs no action.
 				return reply.status(200).send();
 			} catch (error) {
 				if (!reply.sent) {

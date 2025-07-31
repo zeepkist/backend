@@ -1,19 +1,54 @@
-import { eq, sql, asc } from 'drizzle-orm';
+import { asc, eq, sql } from 'drizzle-orm';
 import { db, user } from '../db';
 import { getSteamUser } from '../steam/user.ts';
 
-export async function getUser(steamId: bigint): Promise<typeof user.$inferSelect | null> {
+export async function getUser(steamId: string): Promise<typeof user.$inferSelect | null> {
 	const existingUser = await db.query.user.findFirst({
-		where: eq(user.steamId, steamId),
+		where: eq(user.steamId, BigInt(steamId)),
 	});
 
 	return existingUser || null;
 }
 
-export async function getOrInsertUser(steamId: bigint): Promise<typeof user.$inferSelect> {
+export async function getUserByDiscordId(
+	discordId: string,
+): Promise<typeof user.$inferSelect | null> {
+	const existingUser = await db.query.user.findFirst({
+		where: eq(user.discordId, BigInt(discordId)),
+	});
+
+	return existingUser || null;
+}
+
+export async function getUserSteamIdByDiscordId(discordId: string): Promise<bigint> {
+	const steamId = await db
+		.select({
+			steamId: user.steamId,
+		})
+		.from(user)
+		.where(eq(user.discordId, BigInt(discordId)))
+		.limit(1)
+		.then((rows) => rows[0]?.steamId);
+
+	// If no user found, return -1
+	if (!steamId) {
+		return BigInt(-1);
+	}
+
+	return steamId;
+}
+
+export async function getOrInsertUser(steamId: string): Promise<typeof user.$inferSelect> {
 	const existingUser = await getUser(steamId);
 
+	// If user already exists, check if the name needs to be updated
 	if (existingUser) {
+		const { personaname: steamName } = await getSteamUser(steamId);
+
+		if (existingUser.steamName !== steamName) {
+			return updateUserName(steamId, steamName);
+		}
+
 		return existingUser;
 	}
 
@@ -23,7 +58,7 @@ export async function getOrInsertUser(steamId: bigint): Promise<typeof user.$inf
 	const now = new Date().toISOString();
 
 	const userData: typeof user.$inferInsert = {
-		steamId,
+		steamId: BigInt(steamId),
 		steamName,
 		dateCreated: now,
 		dateUpdated: now,
@@ -45,7 +80,7 @@ export async function getOrInsertUser(steamId: bigint): Promise<typeof user.$inf
 }
 
 export async function updateUserName(
-	steamId: bigint,
+	steamId: string,
 	newName: string,
 ): Promise<typeof user.$inferSelect> {
 	const updatedUser = await db.transaction(async (tx) => {
@@ -57,7 +92,7 @@ export async function updateUserName(
 				steamName: newName,
 				dateUpdated: now,
 			})
-			.where(eq(user.steamId, steamId))
+			.where(eq(user.steamId, BigInt(steamId)))
 			.returning();
 
 		return updated;
@@ -73,7 +108,7 @@ export async function updateUserName(
 }
 
 export async function updateDiscordId(
-	steamId: bigint,
+	steamId: string,
 	discordId: bigint,
 ): Promise<typeof user.$inferSelect> {
 	const updatedUser = await db.transaction(async (tx) => {
@@ -85,7 +120,7 @@ export async function updateDiscordId(
 				discordId,
 				dateUpdated: now,
 			})
-			.where(eq(user.steamId, steamId))
+			.where(eq(user.steamId, BigInt(steamId)))
 			.returning();
 
 		return updated;

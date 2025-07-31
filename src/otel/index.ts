@@ -1,14 +1,14 @@
 import { FastifyOtelInstrumentation } from '@fastify/otel';
 import { getNodeAutoInstrumentations } from '@opentelemetry/auto-instrumentations-node';
-import { NodeSDK } from "@opentelemetry/sdk-node"
+import { OTLPMetricExporter } from '@opentelemetry/exporter-metrics-otlp-grpc';
 import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-grpc';
 // import { registerInstrumentations } from '@opentelemetry/instrumentation';
 import { resourceFromAttributes } from '@opentelemetry/resources';
+import { PeriodicExportingMetricReader } from '@opentelemetry/sdk-metrics';
+import { NodeSDK } from '@opentelemetry/sdk-node';
 // import { BatchSpanProcessor } from '@opentelemetry/sdk-trace-base';
 // import { NodeTracerProvider } from '@opentelemetry/sdk-trace-node';
 import { ATTR_SERVICE_NAME } from '@opentelemetry/semantic-conventions';
-import { PeriodicExportingMetricReader } from '@opentelemetry/sdk-metrics';
-import { OTLPMetricExporter } from '@opentelemetry/exporter-metrics-otlp-grpc';
 import { OPENTELEMETRY_COLLECTOR_URL, OPENTELEMETRY_SERVICE_NAME } from '../config';
 
 // Configure OTLP Exporter
@@ -34,31 +34,10 @@ const sdk = new NodeSDK({
 
 sdk.start();
 
-/*
-const provider = new NodeTracerProvider({
-	resource: resourceFromAttributes({
-		[ATTR_SERVICE_NAME]: OPENTELEMETRY_SERVICE_NAME ?? 'backend-dev',
-	}),
-	spanProcessors: [new BatchSpanProcessor(traceExporter)],
-});
-
-provider.register();
-
-registerInstrumentations({
-	tracerProvider: provider,
-	instrumentations: [getNodeAutoInstrumentations()],
-});
-*/
-
 export const fastifyOtelInstrumentation = new FastifyOtelInstrumentation({
 	servername: 'backend-fastify',
 	registerOnInitialization: false,
 });
-
-// fastifyOtelInstrumentation.setTracerProvider(provider);
-
-//process.on('SIGTERM', () => provider.shutdown());
-//process.on('SIGINT', () => provider.shutdown());
 
 process.on('SIGTERM', () => sdk.shutdown());
 process.on('SIGINT', () => sdk.shutdown());

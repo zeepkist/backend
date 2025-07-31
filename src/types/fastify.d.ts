@@ -1,9 +1,9 @@
 import 'fastify';
-import type { VerifyResponse } from '../utils/jwt';
+import type { AccessTokenPayload } from '../utils/jwt';
 
 declare module 'fastify' {
 	interface FastifyRequest {
-		user?: VerifyResponse;
+		user?: AccessTokenPayload;
 		authorisedJob?: boolean;
 	}
 }

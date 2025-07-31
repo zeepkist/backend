@@ -80,7 +80,7 @@ const round = (value: number, precision = 7): number => {
 
 	const factor = 10 ** precision;
 	return Math.round(value * factor) / factor;
-}
+};
 
 /**
  * See `levelScoreLengthMultiplier` for details.
@@ -185,7 +185,7 @@ export const levelScoreCompetitivenessMultiplier = (
 		};
 	}
 
-	const avgTop5 = average(topTimes.slice(0, 5))
+	const avgTop5 = average(topTimes.slice(0, 5));
 	const avgTop10 = average(topTimes.slice(0, 10));
 	const avgTop50 = average(topTimes.slice(0, 50));
 	const slowestTime = topTimes.at(-1) ?? wrTime;
@@ -208,7 +208,15 @@ export const levelScoreCompetitivenessMultiplier = (
 	 * - If very easy, scales down from 1.0 to 0.0 (WR and slowest time are very close).
 	 * - If not very easy, stays at 1.0.
 	 */
-	const easinessFactor = round(clamp(isVeryEasy ? (slowestTime - wrTime * (1 + easyThreshold)) / (wrTime * easyThreshold) : 1, 0, 1));
+	const easinessFactor = round(
+		clamp(
+			isVeryEasy
+				? (slowestTime - wrTime * (1 + easyThreshold)) / (wrTime * easyThreshold)
+				: 1,
+			0,
+			1,
+		),
+	);
 
 	// Weighted sum for final modifier = 1.8x max multiplier
 	const weightedScore = 0.55 * tightnessScore + 0.4 * spreadScore + 0.85 * easinessFactor;
@@ -271,9 +279,7 @@ export const levelScorePopularityModifier = (
  */
 export const levelScoreCutPenalty = (topTimes: number[], wrTime: number): number => {
 	const times = topTimes.slice(1, 6); // Exclude WR and take next 5 times
-	const averageTimes = times.length
-		? average(times)
-		: 0;
+	const averageTimes = times.length ? average(times) : 0;
 
 	if (averageTimes === 0 || wrTime > averageTimes * 0.5) {
 		return 1;

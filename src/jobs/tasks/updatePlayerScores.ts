@@ -58,7 +58,9 @@ const task: Task<never> = async (_payload, helpers) => {
 
 		usersUpdated += userBatch.length;
 
-		helpers.logger.info(`Processed ${userBatch.length} users, updated ${usersUpdated} users so far.`);
+		helpers.logger.info(
+			`Processed ${userBatch.length} users, updated ${usersUpdated} users so far.`,
+		);
 	}
 
 	helpers.logger.info(`User points updated for ${usersUpdated} users.`);

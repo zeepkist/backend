@@ -12,14 +12,10 @@ interface Payload {
 	idUser?: number;
 }
 
-const task: Task<Payload> = async (payload, helpers) => {
+const task: Task<Payload> = async (payload, _helpers) => {
 	const { idLevel, idUser } = payload;
 
-	const [
-		personalBests,
-		voteValues,
-		personalBestCountPercentile
-	] = await Promise.all([
+	const [personalBests, voteValues, personalBestCountPercentile] = await Promise.all([
 		getPersonalBestsWithRecord({ idLevel, limit: 50 }),
 		getVoteValues({ idLevel }),
 		getPersonalBestCount90thPercentile(),

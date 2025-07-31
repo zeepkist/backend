@@ -65,10 +65,12 @@ const cronTimes = {
 } as const;
 
 const cronTasks: CronTask[] = [
+	// Weekly task to keep level points up-to-date
 	{ task: 'updateLevelScores', cronTime: cronTimes.everyMondayAt1am, payload: { all: true } },
-	// { task: 'updateLevelScores', cronTime: cronTimes.every6Hours, payload: { all: true } },
+	// Near-real-time tasks to keep level points and player points up-to-date
 	{ task: 'updateLevelScores', cronTime: cronTimes.every10Minutes, payload: { all: false } },
 	{ task: 'updatePlayerScores', cronTime: cronTimes.every5MinutesOffset30Seconds },
+	// Daily tasks to keep points histories for levels and users up-to-date
 	{ task: 'updateLevelPointsHistory', cronTime: cronTimes.everyHour },
 	{ task: 'updateUserPointsHistory', cronTime: cronTimes.every12Hours },
 ];

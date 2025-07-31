@@ -21,17 +21,19 @@ const {
 	OPENTELEMETRY_SERVICE_NAME = '',
 	ENABLE_WORKERS = false,
 	TRIGGER_JOB_TOKEN = '',
+	DISCORD_CLIENT_ID = '',
+	DISCORD_CLIENT_SECRET = '',
+	FRONTEND_URL = '',
 } = process.env;
 
 export const STEAM_API_BASE_URL = 'https://api.steampowered.com';
+export const STEAM_AUTH_BASE_URL = 'https://steamcommunity.com/openid';
 export const JWT_ALGORITHM = 'HS256';
 export const JWT_EXPIRY = parse('5m') ?? 0;
 export const JWT_REFRESH_EXPIRY = parse('7d') ?? 0;
-
-export const SERVER_PORT = Number(PORT);
-
 export const IS_DEBUG_MODE = Number(DEBUG) === 1;
-
+export const SERVER_PORT = Number(PORT);
+export const SERVER_URL = IS_DEBUG_MODE ? `http://localhost:${SERVER_PORT}` : `https://${HOST}`;
 export const DEFAULT_VOTE_RATING = 0.5;
 
 export {
@@ -54,4 +56,13 @@ export {
 	OPENTELEMETRY_SERVICE_NAME,
 	ENABLE_WORKERS,
 	TRIGGER_JOB_TOKEN,
+	DISCORD_CLIENT_ID,
+	DISCORD_CLIENT_SECRET,
+	FRONTEND_URL,
 };
+
+export const COOKIES = {
+	AccessToken: 'zeepcentral_access_token',
+	RefreshToken: 'zeepcentral_refresh_token',
+	SteamId: 'zeepcentral_steam_id',
+} as const;

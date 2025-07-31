@@ -1,5 +1,6 @@
 import { eq } from 'drizzle-orm';
 import { auth, db, type user } from '../db';
+import type { JwtProvider } from '../utils';
 
 interface AuthData {
 	user: Pick<typeof user.$inferInsert, 'id'>;
@@ -7,6 +8,7 @@ interface AuthData {
 	accessTokenExpiry: bigint;
 	refreshToken: string;
 	refreshTokenExpiry: bigint;
+	provider: JwtProvider;
 }
 
 export async function insertAuth({
@@ -15,6 +17,7 @@ export async function insertAuth({
 	accessTokenExpiry,
 	refreshToken,
 	refreshTokenExpiry,
+	provider,
 }: AuthData) {
 	await db.transaction(async (tx) => {
 		await tx.insert(auth).values({
@@ -24,6 +27,7 @@ export async function insertAuth({
 			refreshToken,
 			refreshTokenExpiry,
 			type: 0,
+			provider,
 			dateCreated: new Date().toISOString(),
 		});
 	});

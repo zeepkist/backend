@@ -22,6 +22,7 @@
 		"zsl:run": "docker run --rm --env-file .env --network zeepkist-network zsl:local"
 	},
 	"dependencies": {
+		"@fastify/cookie": "^11.0.2",
 		"@fastify/cors": "^11.0.1",
 		"@fastify/helmet": "^13.0.1",
 		"@fastify/oauth2": "^8.1.2",

@@ -155,6 +155,13 @@
 			"when": 1752874378499,
 			"tag": "0022_watery_madame_hydra",
 			"breakpoints": true
+		},
+		{
+			"idx": 23,
+			"version": "7",
+			"when": 1753571255669,
+			"tag": "0023_bright_roland_deschain",
+			"breakpoints": true
 		}
 	]
 }

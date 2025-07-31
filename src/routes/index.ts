@@ -1,9 +1,9 @@
 import type { FastifyInstance } from 'fastify';
 import { authRoutes } from './auth';
+import { jobRoutes } from './job';
 import { recordRoutes } from './record';
 import { userRoutes } from './user';
 import { voteRoutes } from './vote';
-import { jobRoutes } from './job';
 
 export async function registerRoutes(app: FastifyInstance) {
 	app.log.info('Registering routes...');

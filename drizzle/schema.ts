@@ -360,6 +360,7 @@ export const auth = pgTable(
 		refreshToken: text('refresh_token'),
 		refreshTokenExpiry: bigint('refresh_token_expiry', { mode: 'bigint' }),
 		type: integer(),
+		provider: varchar().notNull().default('invalid'),
 		dateCreated: timestamp('date_created', { withTimezone: true, mode: 'string' })
 			.notNull()
 			.defaultNow(),

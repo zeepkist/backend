@@ -95,7 +95,7 @@ describe('levelScoreCompetitivenessMultiplier', () => {
 				spreadScore: 0,
 				tightnessScore: 0,
 				easinessFactor: 0,
-			}
+			},
 		},
 		{
 			name: 'B) Very tight top 5 and dense leaderboard — low spread, competitive but not difficult',
@@ -122,7 +122,7 @@ describe('levelScoreCompetitivenessMultiplier', () => {
 				spreadScore: 0.9903665,
 				tightnessScore: 0.9992213,
 				easinessFactor: 0,
-			}
+			},
 		},
 		{
 			name: 'C) Spread leaderboard (easy WR, more difficult after top 5)',
@@ -149,7 +149,7 @@ describe('levelScoreCompetitivenessMultiplier', () => {
 				spreadScore: 0.8368292,
 				tightnessScore: 0.9806667,
 				easinessFactor: 1,
-			}
+			},
 		},
 		{
 			name: 'D) Massive spread, sparse PBs — likely grindy or unpopular',
@@ -176,7 +176,7 @@ describe('levelScoreCompetitivenessMultiplier', () => {
 				spreadScore: 0.5133244,
 				tightnessScore: 0.9433333,
 				easinessFactor: 1,
-			}
+			},
 		},
 		{
 			name: 'E) Moderate spread, high PB density — well-contested level',
@@ -203,7 +203,7 @@ describe('levelScoreCompetitivenessMultiplier', () => {
 				spreadScore: 0.9256757,
 				tightnessScore: 0.988,
 				easinessFactor: 1,
-			}
+			},
 		},
 		{
 			name: 'F) Flat top 50 — no spread, very easy level',
@@ -218,7 +218,7 @@ describe('levelScoreCompetitivenessMultiplier', () => {
 				spreadScore: 0.9997341,
 				tightnessScore: 0.9973333,
 				easinessFactor: 0,
-			}
+			},
 		},
 		{
 			name: 'G) Wide top 50, loose top 5, sparse PBs — difficult but grindy',
@@ -245,7 +245,7 @@ describe('levelScoreCompetitivenessMultiplier', () => {
 				spreadScore: 0.528,
 				tightnessScore: 0.9,
 				easinessFactor: 1,
-			}
+			},
 		},
 		{
 			name: 'H) Extremely tight top 5, slightly spread top 10, moderate spread top 50 — highly competitive',
@@ -272,7 +272,7 @@ describe('levelScoreCompetitivenessMultiplier', () => {
 				spreadScore: 0.9969769,
 				tightnessScore: 0.9999788,
 				easinessFactor: 0,
-			}
+			},
 		},
 		{
 			name: 'I) Extremely tight top 5, moderate leaderboard spread, sparse PBs — very grindy',
@@ -299,7 +299,7 @@ describe('levelScoreCompetitivenessMultiplier', () => {
 				spreadScore: 0.9967113,
 				tightnessScore: 0.9999903,
 				easinessFactor: 0,
-			}
+			},
 		},
 		{
 			name: 'J) Uniform 200ms spread from WR to 50th — tight overall leaderboard',
@@ -314,13 +314,16 @@ describe('levelScoreCompetitivenessMultiplier', () => {
 				spreadScore: 0.9973453,
 				tightnessScore: 0.99984,
 				easinessFactor: 0,
-			}
+			},
 		},
 		{
 			name: 'REAL 1) 30 Second AFK Level (All times practically identical)',
 			input: {
 				wrTime: 30.454699,
-				topTimes: [30.454699, 30.454699, 30.454699, 30.454699, 30.454699, 30.454699, 30.454699, 30.454699, 30.454699, 30.454699, 30.454699, 30.454699],
+				topTimes: [
+					30.454699, 30.454699, 30.454699, 30.454699, 30.454699, 30.454699, 30.454699,
+					30.454699, 30.454699, 30.454699, 30.454699, 30.454699,
+				],
 				personalBests: 12,
 				totalRecords: 26,
 			},
@@ -329,16 +332,16 @@ describe('levelScoreCompetitivenessMultiplier', () => {
 				spreadScore: 1,
 				tightnessScore: 1,
 				easinessFactor: 0,
-			}
+			},
 		},
 	];
 
 	for (const { name, input, expected } of testCases) {
 		it(name, () => {
-			const result = levelScoreCompetitivenessMultiplier(
+			const result = levelScoreCompetitivenessMultiplier(input.wrTime, [
 				input.wrTime,
-				[input.wrTime, ...input.topTimes],
-			);
+				...input.topTimes,
+			]);
 			expect(result).toEqual(expected);
 		});
 	}

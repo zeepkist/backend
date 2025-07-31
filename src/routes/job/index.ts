@@ -1,7 +1,7 @@
 import type { FastifyPluginAsync, FastifySchema } from 'fastify';
 import { authenticateJob } from '../../hooks';
-import { ERROR_CODES, handleError, errorSchema } from '../../utils';
 import { addJob } from '../../jobs';
+import { ERROR_CODES, errorSchema, handleError } from '../../utils';
 
 interface SubmitBody {
 	Task: string;
@@ -41,15 +41,12 @@ const jobTriggerSchema: FastifySchema = {
 		],
 	},
 	response: {
-		200: {
-			type: 'object',
-			properties: {},
-		},
-		400: errorSchema(ERROR_CODES.GENERIC_INVALID_REQUEST),
+		200: {},
+		400: errorSchema(ERROR_CODES.AUTH_MISSING_TOKEN),
 		401: errorSchema(ERROR_CODES.AUTH_INVALID_TOKEN),
 		500: errorSchema(ERROR_CODES.INTERNAL_SERVER_ERROR),
-	}
-}
+	},
+};
 
 export const jobRoutes: FastifyPluginAsync = async (app) => {
 	app.post<{ Body: SubmitBody }>(

@@ -1,3 +1,4 @@
+import cookie from '@fastify/cookie';
 import cors from '@fastify/cors';
 import helmet from '@fastify/helmet';
 import swagger from '@fastify/swagger';
@@ -5,7 +6,7 @@ import swaggerUi from '@fastify/swagger-ui';
 import Fastify from 'fastify';
 import type { OpenAPIV3, OpenAPIV3_1 } from 'openapi-types';
 import JSONB from 'when-json-met-bigint';
-import { HOST, IS_DEBUG_MODE, PORT } from './config';
+import { FRONTEND_URL, HOST, IS_DEBUG_MODE, PORT } from './config';
 import { db as realDb } from './db';
 import { fastifyOtelInstrumentation } from './otel';
 import { registerRoutes } from './routes';
@@ -17,7 +18,8 @@ const openapi: OpenApi = {
 	openapi: '3.0.0',
 	info: {
 		title: 'Zeepkist Community Hub API',
-		description: 'Private API documentation for the Zeepkist Community Hub. This REST interface powers internal services such as the GTR mod in Zeepkist and Web client. If you\'re looking to integrate with Zeepkist Community Hub as a third-party developer, refer to the public [GraphQL API](https://graphql.zeepki.st) instead.',
+		description:
+			"Private API documentation for the Zeepkist Community Hub. This REST interface powers internal services such as the GTR mod in Zeepkist and Web client. If you're looking to integrate with Zeepkist Community Hub as a third-party developer, refer to the public [GraphQL API](https://graphql.zeepki.st) instead.",
 		version: '1.1.0',
 	},
 	servers: [
@@ -42,9 +44,9 @@ const openapi: OpenApi = {
 				type: 'http',
 				scheme: 'bearer',
 				description: 'Job authentication token for triggering jobs.',
-			}
-		}
-	}
+			},
+		},
+	},
 };
 
 if (IS_DEBUG_MODE) {
@@ -82,9 +84,11 @@ export async function buildServer(db = realDb) {
 	});
 
 	await app.register(cors, {
-		origin: '*',
-		maxAge: 86400,
+		origin: FRONTEND_URL,
+		credentials: true, // Allow web auth cookies to be sent
 	});
+
+	app.register(cookie);
 
 	await app.register(swagger, {
 		openapi,

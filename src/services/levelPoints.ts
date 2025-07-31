@@ -1,4 +1,4 @@
-import { ne, eq, sql } from 'drizzle-orm';
+import { eq, ne, sql } from 'drizzle-orm';
 import { db, levelPoints, levelPointsHistory, personalBestGlobal, record } from '../db';
 
 export async function getTotalLevelPoints() {
@@ -27,7 +27,7 @@ export async function getChangedLevelPointsPaginated(offset: number, limit: numb
 		`)
 		.as('latest_history');
 
-	const result  = await db
+	const result = await db
 		.select({
 			idLevel: levelPoints.idLevel,
 			points: levelPoints.points,
@@ -44,7 +44,9 @@ export async function getChangedLevelPointsPaginated(offset: number, limit: numb
 		.offset(offset)
 		.limit(limit);
 
-	console.debug(`Fetched ${result.length} changed level points from offset ${offset} with limit ${limit}`);
+	console.debug(
+		`Fetched ${result.length} changed level points from offset ${offset} with limit ${limit}`,
+	);
 
 	return result;
 }

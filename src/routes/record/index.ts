@@ -1,5 +1,5 @@
 import type { FastifyPluginAsync, FastifySchema } from 'fastify';
-import { authenticateRequest, verifyModVersion } from '../../hooks';
+import { authenticateGtr, verifyModVersion } from '../../hooks';
 import {
 	getOrInsertLevel,
 	getUser,
@@ -8,7 +8,7 @@ import {
 	upsertPersonalBest,
 	upsertWorldRecord,
 } from '../../services';
-import { ERROR_CODES, handleError, errorSchema } from '../../utils';
+import { ERROR_CODES, errorSchema, handleError } from '../../utils';
 
 interface SubmitBody {
 	Level: string;
@@ -80,21 +80,18 @@ const recordSubmitSchema: FastifySchema = {
 		],
 	},
 	response: {
-		200: {
-			type: 'object',
-			properties: {},
-		},
+		200: {},
 		400: errorSchema(ERROR_CODES.AUTH_MISSING_TOKEN),
 		401: errorSchema(ERROR_CODES.AUTH_INVALID_TOKEN),
 		500: errorSchema(ERROR_CODES.INTERNAL_SERVER_ERROR),
-	}
-}
+	},
+};
 
 export const recordRoutes: FastifyPluginAsync = async (app) => {
 	app.post<{ Body: SubmitBody }>(
 		'/submit',
 		{
-			preValidation: [verifyModVersion, authenticateRequest],
+			preValidation: [verifyModVersion, authenticateGtr],
 			schema: recordSubmitSchema,
 		},
 		async (req, reply) => {

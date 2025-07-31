@@ -2,7 +2,7 @@ import type { FastifyReply, FastifyRequest } from 'fastify';
 import { COOKIES } from '../config';
 import { ERROR_CODES, handleError, jwtProvider, verifyAccessToken } from '../utils';
 
-export async function authenticateRequest(req: FastifyRequest, reply: FastifyReply) {
+export async function authenticateWeb(req: FastifyRequest, reply: FastifyReply) {
 	// Split `Bearer <token>` to get the token
 	const authHeaderToken = req.headers.authorization?.split(' ')[1];
 	const cookieToken = req.cookies[COOKIES.AccessToken];
@@ -18,8 +18,8 @@ export async function authenticateRequest(req: FastifyRequest, reply: FastifyRep
 		return reply.status(401).send(handleError(ERROR_CODES.AUTH_INVALID_TOKEN));
 	}
 
-	const isAllowedProvider = [jwtProvider.steam, jwtProvider.discord, jwtProvider.gtr].includes(
-		verifiedToken.provider,
+	const isAllowedProvider = [jwtProvider.discord, jwtProvider.steam].includes(
+		verifiedToken.provider as typeof jwtProvider.steam | typeof jwtProvider.discord,
 	);
 
 	if (!isAllowedProvider) {

@@ -3,7 +3,17 @@ import type { user } from '../../db';
 import { verifyModVersion } from '../../hooks';
 import { deleteAuth, getAuth, getOrInsertUser, getUser, insertAuth } from '../../services';
 import { authenticateSteamUser } from '../../steam/authenticate';
-import { ERROR_CODES, generateAccessToken, generateRefreshToken, handleError, errorSchema } from '../../utils';
+import {
+	ERROR_CODES,
+	errorSchema,
+	generateAccessToken,
+	generateRefreshToken,
+	handleError,
+	jwtProvider,
+} from '../../utils';
+import { discordAuthRoutes } from './discord';
+import { steamAuthRoutes } from './steam';
+import { webAuthRoutes } from './web';
 
 interface LoginRequest {
 	ModVersion: string;
@@ -136,9 +146,10 @@ export const replyWithJwt = async (
 		return reply.status(401).send(handleError(ERROR_CODES.AUTH_USER_NOT_FOUND));
 	}
 
-	const { accessToken, accessTokenExpiry } = await generateAccessToken(
-		userData.steamId.toString(),
-	);
+	const { accessToken, accessTokenExpiry } = await generateAccessToken({
+		provider: jwtProvider.gtr,
+		steamId: userData.steamId.toString(),
+	});
 	const { refreshToken, refreshTokenExpiry } = generateRefreshToken();
 
 	await insertAuth({
@@ -147,6 +158,7 @@ export const replyWithJwt = async (
 		accessTokenExpiry,
 		refreshToken,
 		refreshTokenExpiry,
+		provider: jwtProvider.gtr,
 	});
 
 	return reply.status(200).send({
@@ -158,6 +170,10 @@ export const replyWithJwt = async (
 };
 
 export const authRoutes: FastifyPluginAsync = async (app) => {
+	app.register(discordAuthRoutes, { prefix: '/discord' });
+	app.register(steamAuthRoutes, { prefix: '/steam' });
+	app.register(webAuthRoutes, { prefix: '/web' });
+
 	app.post<{ Body: LoginRequest }>(
 		'/login',
 		{
@@ -186,14 +202,11 @@ export const authRoutes: FastifyPluginAsync = async (app) => {
 						.send(handleError(ERROR_CODES.AUTH_STEAM_AUTHENTICATION_FAILED));
 				}
 
-				const steamIdFromRequest = BigInt(SteamId);
-				const steamIdFromAuth = BigInt(authResponse.steamId);
-
-				if (steamIdFromAuth !== steamIdFromRequest) {
+				if (authResponse.steamId !== SteamId) {
 					return reply.status(401).send(handleError(ERROR_CODES.AUTH_STEAM_ID_MISMATCH));
 				}
 
-				const user = await getOrInsertUser(steamIdFromAuth);
+				const user = await getOrInsertUser(authResponse.steamId);
 
 				await replyWithJwt(reply, user);
 			} catch (error) {
@@ -227,17 +240,7 @@ export const authRoutes: FastifyPluginAsync = async (app) => {
 						.send(handleError(ERROR_CODES.AUTH_MISSING_REQUIRED_FIELDS));
 				}
 
-				let steamIdFromRequest: bigint;
-
-				try {
-					steamIdFromRequest = BigInt(SteamId);
-				} catch (error) {
-					return reply
-						.status(400)
-						.send(handleError(ERROR_CODES.GENERIC_INVALID_REQUEST, error));
-				}
-
-				const user = await getUser(steamIdFromRequest);
+				const user = await getUser(SteamId);
 
 				if (!user) {
 					return reply.status(401).send(handleError(ERROR_CODES.AUTH_USER_NOT_FOUND));
