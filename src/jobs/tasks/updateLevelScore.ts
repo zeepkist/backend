@@ -3,7 +3,7 @@ import {
 	getPersonalBestCount90thPercentile,
 	getPersonalBestsWithRecord,
 	getVoteValues,
-	updateLevelPoints,
+	upsertLevelPoints,
 } from '../../services';
 import { calculateLevelPoints, calculateVoteRating } from '../../utils';
 
@@ -41,7 +41,7 @@ const task: Task<Payload> = async (payload, _helpers) => {
 		cutPenalty,
 	} = modifiers;
 
-	await updateLevelPoints({
+	await upsertLevelPoints({
 		idLevel,
 		points,
 		rating,

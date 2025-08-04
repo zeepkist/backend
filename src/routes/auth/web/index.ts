@@ -3,19 +3,20 @@ import { COOKIES } from '../../../config';
 import { deleteAuth, getAuth, getUser, insertAuth } from '../../../services';
 import {
 	ERROR_CODES,
+	errorSchema,
 	generateAccessToken,
 	generateRefreshToken,
 	handleError,
 	jwtProvider,
 	setWebCookies,
-	errorSchema
 } from '../../../utils';
 
 const webRefreshSchema: FastifySchema = {
 	tags: ['Authentication (Web)'],
 	operationId: 'webRefresh',
 	summary: 'Refresh access tokens for Steam/Discord authentication',
-	description: 'Refreshes the access token and refresh token for the authenticated user using cookies.',
+	description:
+		'Refreshes the access token and refresh token for the authenticated user using cookies.',
 	produces: ['application/json'],
 	consumes: ['application/json'],
 	security: [{ Web: [] }],

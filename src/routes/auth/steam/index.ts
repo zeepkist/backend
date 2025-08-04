@@ -7,12 +7,12 @@ import {
 } from '../../../steam';
 import {
 	ERROR_CODES,
+	errorSchema,
 	generateAccessToken,
 	generateRefreshToken,
 	handleError,
 	jwtProvider,
 	setWebCookies,
-	errorSchema
 } from '../../../utils';
 
 const steamRedirectSchema: FastifySchema = {

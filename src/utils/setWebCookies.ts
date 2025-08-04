@@ -55,14 +55,14 @@ export const setWebCookies = ({
 		reply,
 		name: COOKIES.AccessToken,
 		value: accessToken,
-		expiresIn: accessTokenExpires
+		expiresIn: accessTokenExpires,
 	});
 
 	setCookie({
 		reply,
 		name: COOKIES.RefreshToken,
 		value: refreshToken,
-		expiresIn: refreshTokenExpires
+		expiresIn: refreshTokenExpires,
 	});
 
 	setCookie({

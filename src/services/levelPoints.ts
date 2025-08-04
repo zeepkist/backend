@@ -62,7 +62,7 @@ interface UpdateLevelPointsPayload {
 	cutPenalty: number;
 }
 
-export async function updateLevelPoints({
+export async function upsertLevelPoints({
 	idLevel,
 	points,
 	rating,
@@ -72,21 +72,42 @@ export async function updateLevelPoints({
 	popularityModifier,
 	cutPenalty,
 }: UpdateLevelPointsPayload): Promise<void> {
+	const dateUpdated = new Date().toISOString();
+
 	await db.transaction(async (tx) => {
-		await tx
-			.update(levelPoints)
-			.set({
+		const existing = await tx
+			.select({ idLevel: levelPoints.idLevel })
+			.from(levelPoints)
+			.where(eq(levelPoints.idLevel, idLevel))
+			.limit(1);
+
+		if (existing.length > 0) {
+			await tx
+				.update(levelPoints)
+				.set({
+					points,
+					dateUpdated,
+					rating,
+					lengthModifier,
+					competitivenessModifier,
+					ratingModifier,
+					popularityModifier,
+					cutPenalty,
+				})
+				.where(eq(levelPoints.idLevel, idLevel));
+		} else {
+			await tx.insert(levelPoints).values({
+				idLevel,
 				points,
-				dateUpdated: new Date().toISOString(),
+				dateUpdated,
 				rating,
 				lengthModifier,
 				competitivenessModifier,
 				ratingModifier,
 				popularityModifier,
 				cutPenalty,
-			})
-			.where(eq(levelPoints.idLevel, idLevel))
-			.then((rows) => rows[0]);
+			});
+		}
 	});
 }
 

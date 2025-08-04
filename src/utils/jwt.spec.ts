@@ -1,13 +1,13 @@
 import { describe, expect, it } from 'bun:test';
-import { generateAccessToken, generateRefreshToken, verifyAccessToken } from './jwt.ts';
 import { JWT_EXPIRY } from '../config';
+import { generateAccessToken, generateRefreshToken, verifyAccessToken } from './jwt.ts';
 
 describe('generateAccessToken', () => {
 	it('should generate a valid access token', async () => {
 		const steamId = '12345678901234567';
 		const { accessToken, accessTokenExpiry } = await generateAccessToken({
 			provider: 'gtr',
-			steamId
+			steamId,
 		});
 		expect(accessToken).toBeString();
 		expect(accessTokenExpiry).toBeGreaterThan(BigInt(Date.now()) / 1000n);
@@ -59,7 +59,7 @@ describe('verifyAccessToken', () => {
 		const steamId = '12345678901234567';
 		const { accessToken } = await generateAccessToken({
 			provider: 'gtr',
-			steamId
+			steamId,
 		});
 		const verifiedPayload = await verifyAccessToken(accessToken);
 		expect(verifiedPayload).toBeObject();
@@ -71,7 +71,7 @@ describe('verifyAccessToken', () => {
 			jti: expect.any(String),
 			sub: steamId,
 			steamid: steamId,
-			provider: 'gtr'
+			provider: 'gtr',
 		});
 	});
 

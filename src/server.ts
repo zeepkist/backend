@@ -6,7 +6,7 @@ import swaggerUi from '@fastify/swagger-ui';
 import Fastify from 'fastify';
 import type { OpenAPIV3, OpenAPIV3_1 } from 'openapi-types';
 import JSONB from 'when-json-met-bigint';
-import { FRONTEND_URL, HOST, IS_DEBUG_MODE, PORT, COOKIES } from './config';
+import { COOKIES, FRONTEND_URL, HOST, IS_DEBUG_MODE, PORT } from './config';
 import { db as realDb } from './db';
 import { fastifyOtelInstrumentation } from './otel';
 import { registerRoutes } from './routes';
@@ -34,7 +34,8 @@ const openapi: OpenApi = {
 				type: 'apiKey',
 				in: 'cookie',
 				name: COOKIES.AccessToken,
-				description: 'Web authentication token for API access.\n\n**Note:** This cookie is set with the `HttpOnly` flag and is not accessible via JavaScript.',
+				description:
+					'Web authentication token for API access.\n\n**Note:** This cookie is set with the `HttpOnly` flag and is not accessible via JavaScript.',
 			},
 			GTR: {
 				type: 'http',

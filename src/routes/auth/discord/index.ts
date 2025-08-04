@@ -3,12 +3,12 @@ import { getDiscordAccessToken, getDiscordRedirectUrl, getDiscordUser } from '..
 import { getUserByDiscordId, insertAuth } from '../../../services';
 import {
 	ERROR_CODES,
+	errorSchema,
 	generateAccessToken,
 	generateRefreshToken,
 	handleError,
 	jwtProvider,
 	setWebCookies,
-	errorSchema
 } from '../../../utils';
 
 interface DiscordCallbackRequest {
