@@ -11,6 +11,7 @@ import { db as realDb } from './db';
 import { fastifyOtelInstrumentation } from './otel';
 import { registerRoutes } from './routes';
 import { ERROR_CODES, handleError } from './utils';
+import { collectHeaderMetrics } from './middleware';
 
 type OpenApi = Partial<OpenAPIV3.Document<object> | OpenAPIV3_1.Document<object>> | undefined;
 
@@ -79,6 +80,8 @@ export async function buildServer(db = realDb) {
 	});
 
 	await app.register(fastifyOtelInstrumentation.plugin());
+
+	app.addHook('onRequest', collectHeaderMetrics);
 
 	app.register(helmet, {
 		global: true,
