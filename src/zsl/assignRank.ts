@@ -23,21 +23,17 @@ export function assignRank<
     }
 
     const pointsEqual = row.points === lastPoints;
+    const timeEqual =
+      options?.useTime && "time" in row
+        ? row.time === (lastTime as number)
+        : false;
 
-    // If using time, only tie if both points and time are equal
-    if (options?.useTime && "time" in row) {
-      if (pointsEqual && row.time === lastTime) {
+    if (options?.useTime) {
+      if (pointsEqual && timeEqual) {
         return { ...row, position: rank };
       }
-
-      // New rank if points are same but time is different
-      rank = idx + 1;
-      lastPoints = row.points;
-      lastTime = row.time;
-      return { ...row, position: rank };
     }
 
-    // If not using time, tie only on points
     if (pointsEqual) {
       return { ...row, position: rank };
     }
