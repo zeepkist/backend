@@ -1,4 +1,4 @@
-import { eq, gte } from 'drizzle-orm';
+import { eq, gte, inArray } from 'drizzle-orm';
 import { db, level, levelItem, record } from '../db';
 
 export async function getLevel(hash: string): Promise<typeof level.$inferSelect | null> {
@@ -21,6 +21,19 @@ export async function getLevelByUuid(uuid: string): Promise<{ id: number } | nul
 		.then((rows) => rows[0]);
 
 	return existingLevel || null;
+}
+
+export async function getLevelsByUuidsBulk(uuids: string[]) {
+	const levels = await db
+		.select({
+			id: level.id,
+			uuid: levelItem.fileUid,
+		})
+		.from(level)
+		.innerJoin(levelItem, eq(level.id, levelItem.idLevel))
+		.where(inArray(levelItem.fileUid, uuids));
+
+	return new Map(levels.map((level) => [level.uuid, level]));
 }
 
 export async function getOrInsertLevel(hash: string): Promise<typeof level.$inferSelect | null> {

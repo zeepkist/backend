@@ -1,15 +1,15 @@
 import { join } from 'node:path';
 import {
-	getLevelByUuid,
+	getLevelsByUuidsBulk,
 	getOrCreateZslLevel,
 	getOrCreateZslRound,
-	getOrInsertUser,
-	getRecordFromZsl,
-	upsertZslLevelResult,
-	upsertZslRoundResult,
+	// getRecordFromZsl,
+	upsertZslLevelResults,
+	upsertZslRoundResults,
 } from '../services';
 import { SUPER_LEAGUE_DATA } from './config';
 import type { TournamentEvent } from './types';
+import { assignRank } from './assignRank';
 
 interface ImportRoundOptions {
 	seasonName: string;
@@ -18,6 +18,7 @@ interface ImportRoundOptions {
 	round: number;
 	workshopId: string;
 	eventDate: string;
+	userIdMap: Map<string, number>;
 }
 
 export const importRound = async ({
@@ -27,6 +28,7 @@ export const importRound = async ({
 	round,
 	workshopId,
 	eventDate,
+	userIdMap
 }: ImportRoundOptions) => {
 	console.debug(`Processing round: ${name}`);
 
@@ -58,33 +60,43 @@ export const importRound = async ({
 		return dbRound;
 	}
 
+	const levelUuids = levels.map(level => level.level);
+	const levelMap = await getLevelsByUuidsBulk(levelUuids);
+
+	console.debug(`Found ${users.length} users and ${levels.length} levels for round "${name}"`);
+
 	const sortedRoundStandings = users
 		.filter((u) => u.totalPoints !== null)
 		.sort((a, b) => b.totalPoints - a.totalPoints);
 
-	for await (const [index, user] of sortedRoundStandings.entries()) {
-		const { totalPoints, steamId } = user;
-		const { id: idUser } = await getOrInsertUser(BigInt(steamId));
-
-		await upsertZslRoundResult({
+	const roundRows = assignRank(
+		sortedRoundStandings.map((standing, index) => ({
 			idRound: dbRound.id,
-			idUser,
-			position: index + 1, // position is 1-indexed
-			points: totalPoints,
-		});
-	}
+			idUser: userIdMap.get(standing.steamId) ?? -1,
+			points: standing.totalPoints,
+		}))
+	);
 
-	console.debug(`Processed ${users.length} users for round "${name}"`);
+	console.debug(`Prepared ${roundRows.length} results for round "${name}"`);
 
-	for await (const [index, level] of levels.entries()) {
+	// filter out users with idUser -1 (not found)
+	const filteredRoundRows = roundRows.filter(row => row.idUser !== -1);
+
+	await upsertZslRoundResults(filteredRoundRows);
+
+	console.debug(`Round "${name}" results imported successfully`);
+
+	for await (const level of levels) {
 		const { level: uuid, standings } = level;
-		const dbLevel = await getLevelByUuid(uuid);
+		const dbLevel = levelMap.get(uuid);
 		const dbLevelId = dbLevel?.id;
 
 		if (!dbLevelId) {
 			console.warn(`Level "${uuid}" not found, skipping`);
 			continue;
 		}
+
+		console.debug(`Processing level "${uuid}" for round "${name}"`);
 
 		const dbZslLevel = await getOrCreateZslLevel({
 			idRound: dbRound.id,
@@ -96,33 +108,26 @@ export const importRound = async ({
 			continue;
 		}
 
-		console.debug(`Processing level "${uuid}" for round "${name}"`);
-
 		const sortedStandings = standings
 			.filter((s) => s.time !== null)
 			.sort((a, b) => a.time - b.time);
 
-		for await (const standing of sortedStandings) {
-			const { steamId, time, points } = standing;
-			const { id: idUser } = await getOrInsertUser(BigInt(steamId));
-
-			/*
-			const { id: idRecord } = await getRecordFromZsl({
-				idLevel: dbLevelId,
-				idUser,
-				time
-			}) ?? {}
-			*/
-
-			await upsertZslLevelResult({
+		const levelRows = assignRank(
+			sortedStandings.map(standing => ({
 				idLevel: dbZslLevel.id,
-				idUser,
-				idRecord: undefined,
-				position: index + 1, // position is 1-indexed
-				points,
-				time,
-			});
-		}
+				idUser: userIdMap.get(standing.steamId) ?? -1,
+				points: standing.points,
+				time: standing.time,
+			}))
+		);
+
+		console.debug(`Prepared ${levelRows.length} results for level "${uuid}"`);
+
+		const filteredLevelRows = levelRows.filter(row => row.idUser !== -1);
+
+		await upsertZslLevelResults(filteredLevelRows);
+
+		console.debug(`Level "${uuid}" results imported successfully`);
 	}
 
 	console.debug(`Processed ${levels.length} levels for round "${name}"`);

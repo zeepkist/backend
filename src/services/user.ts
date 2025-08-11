@@ -1,6 +1,6 @@
-import { asc, eq, sql } from 'drizzle-orm';
+import { asc, eq, inArray, sql } from 'drizzle-orm';
 import { db, user } from '../db';
-import { getSteamUser } from '../steam/user.ts';
+import { getSteamUser, type SteamUserData } from '../steam';
 
 export async function getUser(steamId: string): Promise<typeof user.$inferSelect | null> {
 	const existingUser = await db.query.user.findFirst({
@@ -77,6 +77,47 @@ export async function getOrInsertUser(steamId: string): Promise<typeof user.$inf
 	console.debug(`User ${steamId} created with ID ${newUser.id}`);
 
 	return newUser;
+}
+
+export async function getOrInsertUsersBulk(steamIds: string[]): Promise<Map<string, number>> {
+	const existingUsers = await db
+		.select({ id: user.id, steamId: user.steamId })
+		.from(user)
+		.where(inArray(user.steamId, steamIds.map(BigInt)));
+
+	const idMap = new Map(existingUsers.map(user => [String(user.steamId), user.id]));
+
+	const missing = steamIds.filter(id => !idMap.has(id));
+
+	if (missing.length) {
+		const now = new Date().toISOString();
+		const steamProfiles: SteamUserData[] = [];
+
+		for (const id of missing) {
+			steamProfiles.push(await getSteamUser(id));
+		}
+
+		console.debug(`Inserting ${steamProfiles.length} new users`);
+
+		const insertedUsers = await db.transaction(async (tx) => {
+			const inserted = await tx.insert(user).values(
+				steamProfiles.map(profile => ({
+					steamId: BigInt(profile.steamid),
+					steamName: profile.personaname,
+					dateCreated: now,
+					dateUpdated: now,
+				}))
+			).returning({ id: user.id, steamId: user.steamId });
+
+			return inserted;
+		});
+
+		for (const newUser of insertedUsers) {
+			idMap.set(String(newUser.steamId), newUser.id);
+		}
+	}
+
+	return idMap;
 }
 
 export async function updateUserName(

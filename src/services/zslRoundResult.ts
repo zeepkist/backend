@@ -1,34 +1,25 @@
-import { and, eq } from 'drizzle-orm';
+import { sql } from 'drizzle-orm';
 import { db, zslRoundResult } from '../db';
 
-export async function upsertZslRoundResult({
-	idRound,
-	idUser,
-	position,
-	points,
-}: {
+interface ZslRoundResult {
 	idRound: number;
 	idUser: number;
 	position: number;
 	points: number;
-}) {
-	await db.transaction(async (tx) => {
-		const [existing] = await tx
-			.select({
-				idRound: zslRoundResult.idRound,
-				position: zslRoundResult.position,
-				points: zslRoundResult.points,
-			})
-			.from(zslRoundResult)
-			.where(and(eq(zslRoundResult.idUser, idUser), eq(zslRoundResult.idRound, idRound)));
+}
 
-		if (existing) {
-			await tx
-				.update(zslRoundResult)
-				.set({ position, points })
-				.where(and(eq(zslRoundResult.idUser, idUser), eq(zslRoundResult.idRound, idRound)));
-		} else {
-			await tx.insert(zslRoundResult).values({ idRound, idUser, position, points });
-		}
-	});
+export async function upsertZslRoundResults(rows: ZslRoundResult[]) {
+	if (!rows.length) return;
+
+	await db.transaction(async (tx) => {
+		await tx.insert(zslRoundResult)
+			.values(rows)
+			.onConflictDoUpdate({
+				target: [zslRoundResult.idRound, zslRoundResult.idUser],
+				set: {
+					points: sql`EXCLUDED.points`,
+					position: sql`EXCLUDED.position`
+				}
+			})
+	})
 }

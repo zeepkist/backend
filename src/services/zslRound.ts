@@ -28,22 +28,42 @@ export async function getOrCreateZslRound({
 		.where(
 			and(
 				eq(zslRound.idSeason, idSeason),
-				eq(zslRound.round, round),
-				eq(zslRound.name, name),
+				eq(zslRound.round, round)
 			),
 		)
 		.then((rows) => rows[0]);
 
+	const adjustedWorkshopId = BigInt(workshopId);
+	const eventDate = new Date(date).toISOString();
+
 	if (existingRound) {
+		const needsUpdate =
+			new Date(existingRound.eventDate).getTime() !== new Date(eventDate).getTime() ||
+			existingRound.workshopId !== adjustedWorkshopId ||
+			existingRound.name !== name;
+
+		if (needsUpdate) {
+			await db
+				.update(zslRound)
+				.set({
+					eventDate,
+					workshopId: adjustedWorkshopId,
+					name,
+				})
+				.where(eq(zslRound.id, existingRound.id));
+
+			return {
+				...existingRound,
+				eventDate,
+				workshopId: adjustedWorkshopId,
+				name,
+			};
+		}
+
 		return existingRound;
 	}
 
 	console.warn(`ZSL round "${name}" not found, creating new one`);
-
-	const eventDate = new Date(date);
-	eventDate.setHours(18, 0, 0, 0);
-
-	const adjustedWorkshopId = workshopId === '' ? -1 : workshopId;
 
 	const [createdRound] = await db.transaction(async (tx) => {
 		const inserted = await tx

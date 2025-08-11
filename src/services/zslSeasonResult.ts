@@ -1,36 +1,25 @@
-import { and, eq } from 'drizzle-orm';
+import { sql } from 'drizzle-orm';
 import { db, zslSeasonResult } from '../db';
 
-export async function upsertZslSeasonResult({
-	idSeason,
-	idUser,
-	position,
-	points,
-}: {
+interface ZslSeasonResult {
 	idSeason: number;
 	idUser: number;
 	position: number;
 	points: number;
-}) {
-	await db.transaction(async (tx) => {
-		const [existing] = await tx
-			.select({
-				idSeason: zslSeasonResult.idSeason,
-				position: zslSeasonResult.position,
-				points: zslSeasonResult.points,
-			})
-			.from(zslSeasonResult)
-			.where(and(eq(zslSeasonResult.idUser, idUser), eq(zslSeasonResult.idSeason, idSeason)));
+}
 
-		if (existing) {
-			await tx
-				.update(zslSeasonResult)
-				.set({ position, points })
-				.where(
-					and(eq(zslSeasonResult.idUser, idUser), eq(zslSeasonResult.idSeason, idSeason)),
-				);
-		} else {
-			await tx.insert(zslSeasonResult).values({ idSeason, idUser, position, points });
-		}
-	});
+export async function upsertZslSeasonResults(rows: ZslSeasonResult[]) {
+	if (!rows.length) return;
+
+	await db.transaction(async (tx) => {
+		await tx.insert(zslSeasonResult)
+			.values(rows)
+			.onConflictDoUpdate({
+				target: [zslSeasonResult.idSeason, zslSeasonResult.idUser],
+				set: {
+					points: sql`EXCLUDED.points`,
+					position: sql`EXCLUDED.position`
+				}
+			})
+	})
 }

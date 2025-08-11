@@ -745,11 +745,9 @@ export const zslRound = pgTable(
 			name: 'zsl_round_season_fkey',
 		}).onDelete('cascade'),
 		unique('UQ_zsl_round_season_round').on(table.idSeason, table.round),
-		/*
 		index('IX_zsl_round_season').using('btree', table.idSeason.asc().nullsLast()),
 		index('IX_zsl_round_workshop_id').using('btree', table.workshopId.asc().nullsLast()),
 		index('IX_zsl_round_event_date').using('btree', table.eventDate.asc().nullsLast()),
-		*/
 	],
 );
 
@@ -787,10 +785,8 @@ export const zslLevel = pgTable(
 			foreignColumns: [level.id],
 			name: 'zsl_level_level_fkey',
 		}),
-		/*
 		index('IX_zsl_level_round').using('btree', table.idRound.asc().nullsLast()),
 		index('IX_zsl_level_id').using('btree', table.idLevel.asc().nullsLast()),
-		*/
 	],
 );
 
@@ -832,13 +828,11 @@ export const zslLevelResult = pgTable(
 			foreignColumns: [record.id],
 			name: 'zsl_level_result_record_fkey',
 		}).onDelete('cascade'),
-		/*
 		index('IX_zsl_level_result_level').using('btree', table.idLevel.asc().nullsLast()),
 		index('IX_zsl_level_result_user').using('btree', table.idUser.asc().nullsLast()),
 		index('IX_zsl_level_result_record').using('btree', table.idRecord.asc().nullsLast()),
 		index('IX_zsl_level_result_position').using('btree', table.position.asc().nullsLast()),
 		index('IX_zsl_level_result_date_created').using('btree', table.dateCreated.asc().nullsLast()),
-		*/
 	],
 );
 
@@ -873,12 +867,10 @@ export const zslRoundResult = pgTable(
 			foreignColumns: [user.id],
 			name: 'zsl_round_result_user_fkey',
 		}).onDelete('cascade'),
-		/*
 		index('IX_zsl_round_result_round').using('btree', table.idRound.asc().nullsLast()),
 		index('IX_zsl_round_result_user').using('btree', table.idUser.asc().nullsLast()),
 		index('IX_zsl_round_result_position').using('btree', table.position.asc().nullsLast()),
 		index('IX_zsl_round_result_date_created').using('btree', table.dateCreated.asc().nullsLast()),
-		*/
 	],
 );
 
@@ -913,11 +905,9 @@ export const zslSeasonResult = pgTable(
 			foreignColumns: [user.id],
 			name: 'zsl_season_result_user_fkey',
 		}).onDelete('cascade'),
-		/*
 		index('IX_zsl_season_result_season').using('btree', table.idSeason.asc().nullsLast()),
 		index('IX_zsl_season_result_user').using('btree', table.idUser.asc().nullsLast()),
 		index('IX_zsl_season_result_position').using('btree', table.position.asc().nullsLast()),
 		index('IX_zsl_season_result_date_created').using('btree', table.dateCreated.asc().nullsLast()),
-		*/
 	],
 );

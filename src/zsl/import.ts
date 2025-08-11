@@ -13,7 +13,7 @@ console.debug(`Loaded metadata for ${metadata.length} seasons`);
 for await (const [seasonName, seasonMetadata] of metadata) {
 	console.debug(`Processing season: ${seasonName}`);
 	const eventDates = Object.keys(seasonMetadata.events);
-	const season = await importSeason(seasonName, seasonMetadata, eventDates);
+	const { season, userIdMap } = await importSeason(seasonName, seasonMetadata, eventDates);
 
 	if (!season || !eventDates.length) {
 		console.warn(`Skipping season ${seasonName} due to missing data or events`);
@@ -30,6 +30,8 @@ for await (const [seasonName, seasonMetadata] of metadata) {
 			continue;
 		}
 
+		console.debug(`Importing round ${index + 1} for season ${seasonName}: ${eventMetadata.name}`);
+
 		await importRound({
 			seasonName,
 			idSeason: season.id,
@@ -37,6 +39,7 @@ for await (const [seasonName, seasonMetadata] of metadata) {
 			round: index + 1, // round is 1-indexed
 			workshopId: eventMetadata.workshopId || '',
 			eventDate: eventDates[index] || '',
+			userIdMap
 		});
 	}
 }

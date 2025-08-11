@@ -1,7 +1,8 @@
 import { join } from 'node:path';
-import { getOrCreateZslSeason, getOrInsertUser, upsertZslSeasonResult } from '../services';
+import { getOrCreateZslSeason, getOrInsertUsersBulk, upsertZslSeasonResults } from '../services';
 import { SUPER_LEAGUE_DATA } from './config';
 import type { SeasonMetadata, SeasonStanding } from './types';
+import { assignRank } from './assignRank';
 
 let previousPointsStructureId: number | null = null;
 
@@ -12,7 +13,10 @@ export const importSeason = async (
 ) => {
 	if (!metadata.events || Object.keys(metadata.events).length === 0) {
 		console.warn(`Season "${seasonName}" has no events, skipping`);
-		return;
+		return {
+			season: null,
+			userIdMap: new Map<string, number>()
+		};
 	}
 
 	const dbSeason = await getOrCreateZslSeason(seasonName, {
@@ -22,8 +26,13 @@ export const importSeason = async (
 	});
 
 	if (!dbSeason) {
-		return;
+		return {
+			season: null,
+			userIdMap: new Map<string, number>(),
+		}
 	}
+
+	console.debug(`Processing season: ${seasonName} (ID: ${dbSeason.id})`);
 
 	// Ensure newly created seasons carry the points structure ID forward
 	previousPointsStructureId = dbSeason.idPointsStructure;
@@ -35,20 +44,36 @@ export const importSeason = async (
 
 	if (!seasonStandings || seasonStandings.length === 0) {
 		console.warn(`No standings found for season "${seasonName}", skipping standings import`);
-		return dbSeason;
+		return {
+			season: dbSeason,
+			userIdMap: new Map<string, number>(),
+		};
 	}
 
-	for await (const [index, standing] of seasonStandings.entries()) {
-		const { totalPoints, steamId } = standing;
-		const { id: idUser } = await getOrInsertUser(BigInt(steamId));
+	const steamIds = seasonStandings.map(user => user.steamId);
+	const userIdMap = await getOrInsertUsersBulk(steamIds);
 
-		await upsertZslSeasonResult({
+	console.debug(`Found ${userIdMap.size} users for season "${seasonName}"`);
+
+	const rows = assignRank(
+		seasonStandings.map((standing, index) => ({
 			idSeason: dbSeason.id,
-			idUser,
-			position: index + 1, // position is 1-indexed
-			points: totalPoints,
-		});
-	}
+			idUser: userIdMap.get(standing.steamId) ?? -1,
+			points: standing.totalPoints,
+		}))
+	);
 
-	return dbSeason;
+	console.debug(`Prepared ${rows.length} results for season "${seasonName}"`);
+
+	// filter out users with idUser -1 (not found)
+	const filteredRows = rows.filter(row => row.idUser !== -1);
+
+	await upsertZslSeasonResults(filteredRows);
+
+	console.debug(`Season "${seasonName}" results imported successfully`);
+
+	return {
+		season: dbSeason,
+		userIdMap
+	};
 };

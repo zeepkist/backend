@@ -8,7 +8,7 @@ interface SteamUserPublicData {
 	 * 3: Public
 	 */
 	communityvisibilitystate: 3;
-	steamId: string;
+	steamid: string;
 	personaname: string;
 	profileurl: string;
 	avatar: string;
@@ -49,7 +49,7 @@ interface SteamUserPrivateData extends Omit<SteamUserPublicData, 'communityvisib
 	loccityid: number;
 }
 
-type SteamUserData = SteamUserPublicData | SteamUserPrivateData;
+export type SteamUserData = SteamUserPublicData | SteamUserPrivateData;
 
 interface GetPlayerSummariesResponse {
 	response: {
