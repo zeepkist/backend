@@ -65,12 +65,8 @@ export const importRound = async ({
 
 	console.debug(`Found ${users.length} users and ${levels.length} levels for round "${name}"`);
 
-	const sortedRoundStandings = users
-		.filter((u) => u.totalPoints !== null)
-		.sort((a, b) => b.totalPoints - a.totalPoints);
-
 	const roundRows = assignRank(
-		sortedRoundStandings.map((standing, index) => ({
+		users.map(standing => ({
 			idRound: dbRound.id,
 			idUser: userIdMap.get(standing.steamId) ?? -1,
 			points: standing.totalPoints,
@@ -108,12 +104,8 @@ export const importRound = async ({
 			continue;
 		}
 
-		const sortedStandings = standings
-			.filter((s) => s.time !== null)
-			.sort((a, b) => a.time - b.time);
-
 		const levelRows = assignRank(
-			sortedStandings.map(standing => ({
+			standings.map(standing => ({
 				idLevel: dbZslLevel.id,
 				idUser: userIdMap.get(standing.steamId) ?? -1,
 				points: standing.points,

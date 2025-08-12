@@ -17,6 +17,19 @@ export function assignRank<
   let lastTime: number | undefined =
     options?.useTime && "time" in firstRow ? firstRow.time : undefined;
 
+  // sort rows by points and then by time if applicable
+  rows.sort((a, b) => {
+    if (a.points !== b.points) {
+      return b.points - a.points; // descending order
+    }
+
+    if (options?.useTime && "time" in a && "time" in b) {
+      return a.time - b.time; // ascending order for time
+    }
+
+    return 0; // equal points and time
+  });
+
   return rows.map((row, idx) => {
     if (idx === 0) {
       return { ...row, position: rank };

@@ -56,7 +56,7 @@ export const importSeason = async (
 	console.debug(`Found ${userIdMap.size} users for season "${seasonName}"`);
 
 	const rows = assignRank(
-		seasonStandings.map((standing, index) => ({
+		seasonStandings.map(standing => ({
 			idSeason: dbSeason.id,
 			idUser: userIdMap.get(standing.steamId) ?? -1,
 			points: standing.totalPoints,
