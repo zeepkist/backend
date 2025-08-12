@@ -80,6 +80,12 @@ export const defaultJobOptions: TaskSpec = {
 	maxAttempts: 1,
 };
 
+export const priorityJobOptions: TaskSpec = {
+	...defaultJobOptions,
+	priority: 10,
+	maxAttempts: 3,
+}
+
 const runner = await createRunner();
 
 export const addJob = runner.addJob.bind(runner);

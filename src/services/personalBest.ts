@@ -1,7 +1,7 @@
 import { and, asc, eq, sql } from 'drizzle-orm';
 import { CACHE_KEY, CACHE_TTL_MS, getState, setState } from '../cache';
 import { db, levelPoints, personalBestGlobal, record } from '../db';
-import { addJob, defaultJobOptions } from '../jobs';
+import { addJob, priorityJobOptions } from '../jobs';
 
 interface PersonalBestWithRecord {
 	idUser: number;
@@ -63,7 +63,7 @@ export async function upsertPersonalBest({ idUser, idLevel, idRecord, time }: Up
 						idLevel,
 						idUser,
 					},
-					defaultJobOptions,
+					priorityJobOptions,
 				);
 
 				return updated;
@@ -89,7 +89,7 @@ export async function upsertPersonalBest({ idUser, idLevel, idRecord, time }: Up
 					idLevel,
 					idUser,
 				},
-				defaultJobOptions,
+				priorityJobOptions,
 			);
 
 			return inserted;
