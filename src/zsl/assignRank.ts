@@ -41,19 +41,14 @@ export function assignRank<
         ? row.time === (lastTime as number)
         : false;
 
-    if (options?.useTime) {
-      if (pointsEqual && timeEqual) {
-        return { ...row, position: rank };
-      }
-    }
-
-    if (pointsEqual) {
+    if (pointsEqual && (!options?.useTime || timeEqual)) {
       return { ...row, position: rank };
     }
 
-    // New rank (with gaps like SQL RANK)
+    // Otherwise new rank:
     rank = idx + 1;
     lastPoints = row.points;
+
     if (options?.useTime && "time" in row) {
       lastTime = row.time;
     }
