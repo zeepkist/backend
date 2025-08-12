@@ -1,5 +1,6 @@
 import { trace } from "@opentelemetry/api"
 import type {FastifyRequest, FastifyReply} from "fastify";
+import { OPENTELEMETRY_SERVICE_NAME } from '../config';
 
 const HEADERS_TO_COLLECT = [
     'X-Zeepkist-Version',
@@ -19,7 +20,7 @@ export function collectHeaderMetrics(request: FastifyRequest, _reply: FastifyRep
         for (const header of HEADERS_TO_COLLECT) {
             const value = request.headers[header.toLowerCase()];
             if (value) {
-                span.setAttribute(`backend.header.${header}`, value);
+                span.setAttribute(`${OPENTELEMETRY_SERVICE_NAME}.header.${header}`, value);
             }
         }
     }

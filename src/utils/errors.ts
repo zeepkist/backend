@@ -1,4 +1,6 @@
 import type { FastifySchema } from 'fastify';
+import { trace } from "@opentelemetry/api"
+import { OPENTELEMETRY_SERVICE_NAME } from '../config';
 
 export type ErrorCode = (typeof ERROR_CODES)[keyof typeof ERROR_CODES];
 export type ErrorMessage = (typeof ERROR_MESSAGES)[keyof typeof ERROR_MESSAGES];
@@ -15,6 +17,11 @@ interface ErrorResponse {
 		code: ErrorCode;
 		details?: string[];
 	};
+}
+
+const OPENTELEMETRY_ATTRIBUTES = {
+	errorCode: `${OPENTELEMETRY_SERVICE_NAME}.error.code`,
+	errorMessage: `${OPENTELEMETRY_SERVICE_NAME}.error.message`,
 }
 
 export const ERROR_CODES = {
@@ -87,6 +94,7 @@ export const ERROR_MESSAGES = {
 
 export function getErrorMessage(code: ErrorCode, options?: GetErrorMessageOptions): ErrorMessage {
 	const message = ERROR_MESSAGES[code];
+
 	if (!message) {
 		throw new Error(`Unknown error code: ${code}`);
 	}
@@ -95,6 +103,25 @@ export function getErrorMessage(code: ErrorCode, options?: GetErrorMessageOption
 
 	if (options?.reportError !== false) {
 		console.trace(`Error Code: ${code}, Message: ${errorMessage}`, options?.error);
+
+		const span = trace.getActiveSpan();
+		if (span) {
+			span.setAttribute(OPENTELEMETRY_ATTRIBUTES.errorCode, code.toString());
+			span.setAttribute(OPENTELEMETRY_ATTRIBUTES.errorMessage, message);
+
+			if (options?.error) {
+				span.recordException(
+					options.error instanceof Error
+						? options.error
+						: new Error(String(options.error))
+				);
+			}
+
+			span.setStatus({
+				code: 2, // Error status
+				message: errorMessage,
+			});
+		}
 	}
 
 	return errorMessage;
@@ -105,6 +132,7 @@ export function handleError(code: ErrorCode, error?: unknown): ErrorResponse {
 		isConsole: false,
 		error,
 	});
+
 	return {
 		error: {
 			code,
