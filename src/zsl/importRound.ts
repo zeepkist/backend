@@ -104,8 +104,13 @@ export const importRound = async ({
 			continue;
 		}
 
+		// Filter standings with null or undefined time
+		const standingsWithTime = standings.filter(
+			standing => standing.time !== null && standing.time !== undefined
+		);
+
 		const levelRows = assignRank(
-			standings.map(standing => ({
+			standingsWithTime.map(standing => ({
 				idLevel: dbZslLevel.id,
 				idUser: userIdMap.get(standing.steamId) ?? -1,
 				points: standing.points,
