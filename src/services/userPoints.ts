@@ -26,7 +26,7 @@ export async function getUserPointsPaginated(offset: number, limit: number) {
 	return batch;
 }
 
-export async function updateUserPoints({
+export async function upsertUserPoints({
 	idUser,
 	points,
 	totalPoints,
@@ -37,13 +37,21 @@ export async function updateUserPoints({
 }): Promise<void> {
 	await db.transaction(async (tx) => {
 		await tx
-			.update(userPoints)
-			.set({
+			.insert(userPoints)
+			.values({
+				idUser,
 				points,
 				totalPoints,
 				dateUpdated: new Date().toISOString(),
 			})
-			.where(eq(userPoints.idUser, idUser));
+			.onConflictDoUpdate({
+				target: [userPoints.idUser],
+				set: {
+					points,
+					totalPoints,
+					dateUpdated: new Date().toISOString(),
+				},
+			});
 	});
 }
 

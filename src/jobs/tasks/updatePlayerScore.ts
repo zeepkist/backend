@@ -1,5 +1,5 @@
 import type { Task } from '..';
-import { getUserPersonalBestsWithLevelPointsAndPosition, updateUserPoints } from '../../services';
+import { getUserPersonalBestsWithLevelPointsAndPosition, upsertUserPoints } from '../../services';
 import { calculatePlayerPoints } from '../../utils';
 
 interface Payload {
@@ -18,7 +18,7 @@ const task: Task<Payload> = async (payload, helpers) => {
 
 		const { points, totalPoints } = calculatePlayerPoints(personalBests);
 
-		await updateUserPoints({
+		await upsertUserPoints({
 			idUser,
 			points,
 			totalPoints,

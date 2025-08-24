@@ -2,7 +2,7 @@ import type { Task } from '..';
 import {
 	getAllUsers,
 	getUserPersonalBestsWithLevelPointsAndPosition,
-	updateUserPoints,
+	upsertUserPoints,
 	updateUserRank,
 } from '../../services';
 import { batchProcess, calculatePlayerPoints } from '../../utils';
@@ -36,7 +36,7 @@ const task: Task<never> = async (_payload, helpers) => {
 				if (personalBests.length === 0) {
 					pointsList.push({ idUser, points: 0 });
 
-					await updateUserPoints({
+					await upsertUserPoints({
 						idUser,
 						points: 0,
 						totalPoints: 0,
@@ -48,7 +48,7 @@ const task: Task<never> = async (_payload, helpers) => {
 				const { points, totalPoints } = calculatePlayerPoints(personalBests);
 				pointsList.push({ idUser, points });
 
-				await updateUserPoints({
+				await upsertUserPoints({
 					idUser,
 					points,
 					totalPoints,
