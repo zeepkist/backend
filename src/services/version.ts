@@ -1,7 +1,7 @@
 import { lt } from 'semver';
 import { db, version } from '../db';
 
-export async function isModOutdated(modVersion: string) {
+export async function isModOutdated(modVersion: string, steamId?: string): Promise<boolean> {
 	try {
 		const entry = await db.select().from(version).limit(1);
 
@@ -12,7 +12,7 @@ export async function isModOutdated(modVersion: string) {
 
 		const minimumVersion = entry[0].minimum;
 
-		console.debug(`Comparing mod version ${modVersion} with minimum version ${minimumVersion}`);
+		console.debug(`Comparing mod version ${modVersion} with minimum version ${minimumVersion} for steamId ${steamId}`);
 
 		// Check if the mod version is less than the minimum semver version (e.g "1.2.3 < "1.2.4")
 		return lt(modVersion, minimumVersion, {});

@@ -4,6 +4,7 @@ import { ERROR_CODES, handleError } from '../utils';
 
 interface ModVersionBody {
 	ModVersion: string;
+	SteamId?: string;
 }
 
 export async function verifyModVersion(
@@ -15,9 +16,9 @@ export async function verifyModVersion(
 		return;
 	}
 
-	const { ModVersion } = req.body;
+	const { ModVersion, SteamId } = req.body;
 
-	const isOutdated = await isModOutdated(String(ModVersion));
+	const isOutdated = await isModOutdated(String(ModVersion), String(SteamId));
 
 	if (isOutdated) {
 		reply.status(400).send(handleError(ERROR_CODES.AUTH_MOD_OUTDATED));
