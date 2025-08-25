@@ -76,13 +76,18 @@ const cronTasks: CronTask[] = [
 ];
 
 export const defaultJobOptions: TaskSpec = {
-	priority: 1,
+	priority: 5,
 	maxAttempts: 1,
 };
 
-export const priorityJobOptions: TaskSpec = {
+export const throttledJobOptions: TaskSpec = {
 	...defaultJobOptions,
 	priority: 10,
+}
+
+export const priorityJobOptions: TaskSpec = {
+	...defaultJobOptions,
+	priority: 0,
 	maxAttempts: 3,
 }
 
