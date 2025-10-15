@@ -20,7 +20,7 @@ export const calculatePlayerPointsDecayed = (
 	position: number,
 	decayFactor: number,
 ) => {
-	if (position < 1 || !Number.isFinite(points)) {
+	if (position < 1 || !Number.isFinite(points) || points <= 0) {
 		return 0;
 	}
 
