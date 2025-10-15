@@ -63,7 +63,7 @@ describe('calculatePlayerPointsDecayed', () => {
 		}
 	});
 
-	it('should return 0 for invalid inputs', () => {
+	describe('should return 0 for invalid inputs', () => {
 		const testCases = [
 			{ points: -1, position: 1 },
 			{ points: 100, position: 0 },
