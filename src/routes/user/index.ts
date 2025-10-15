@@ -63,7 +63,7 @@ const updateDiscordIdSchema: FastifySchema = {
 				oneOf: [
 					{
 						type: 'string',
-						pattern: '^[0-9]{18}$',
+						pattern: '^[0-9]{17,19}$',
 						description: 'Link Discord ID',
 					},
 					{
