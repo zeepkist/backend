@@ -1,4 +1,4 @@
-import { eq, sql } from 'drizzle-orm';
+import { eq, sql, inArray } from 'drizzle-orm';
 import { db, userPoints } from '../db';
 
 export async function getTotalUserPoints() {
@@ -70,5 +70,26 @@ export async function updateUserRank({
 				dateUpdated: new Date().toISOString(),
 			})
 			.where(eq(userPoints.idUser, idUser));
+	});
+}
+
+export async function bulkUpdateUserRanks({
+	idUsers,
+	points,
+	rank
+}: {
+	idUsers: number[];
+	points: number;
+	rank: number;
+}): Promise<void> {
+	await db.transaction(async (tx) => {
+		await tx
+			.update(userPoints)
+			.set({
+				points,
+				rank,
+				dateUpdated: new Date().toISOString(),
+			})
+			.where(inArray(userPoints.idUser, idUsers));
 	});
 }

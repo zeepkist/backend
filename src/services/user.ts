@@ -1,5 +1,5 @@
-import { asc, eq, inArray, sql } from 'drizzle-orm';
-import { db, user } from '../db';
+import { asc, eq, desc, inArray, sql } from 'drizzle-orm';
+import { db, user, record } from '../db';
 import { getSteamUser, type SteamUserData } from '../steam';
 
 export async function getUser(steamId: string): Promise<typeof user.$inferSelect | null> {
@@ -187,6 +187,25 @@ export async function getTotalUsers(): Promise<number> {
 
 export async function getAllUsers() {
 	const users = await db.select({ idUser: user.id }).from(user).orderBy(asc(user.id));
+
+	return users;
+}
+
+export interface UserWithLatestRecordDate {
+	idUser: number;
+	latestRecordDate: string | null;
+}
+
+export async function getAllUsersWithLatestRecordDate(): Promise<UserWithLatestRecordDate[]> {
+	const users = await db
+		.select({
+			idUser: user.id,
+			latestRecordDate: sql<string | null>`MAX(${record.dateCreated})`.as("latest_record_date"),
+		})
+		.from(user)
+		.leftJoin(record, eq(user.id, record.idUser))
+		.groupBy(user.id)
+		.orderBy(desc(sql`MAX(${record.dateCreated})`));
 
 	return users;
 }
