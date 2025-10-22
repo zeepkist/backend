@@ -45,11 +45,10 @@ export async function upsertVote(
 export async function getVoteValues({ idLevel }: { idLevel: number }): Promise<number[]> {
 	const voteValues = await db
 		.select({
-			values: sql<number[]>`ARRAY_AGG(${vote.value})`.as('values'),
+			values: sql<number[]>`ARRAY_AGG(${vote.value}::float8)`.as('values'),
 		})
 		.from(vote)
 		.where(eq(vote.idLevel, idLevel))
-		.limit(1)
 		.then((rows) => rows[0]?.values ?? []);
 
 	return voteValues;
