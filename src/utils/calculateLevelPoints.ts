@@ -1,19 +1,19 @@
 /**
  * Calculate points for a level based on various factors.
  *
- * Theoretical multipliers are 0.0021x to 3.094x:
+ * Theoretical multipliers are 0.00175x to 3.9x:
  * - Level length: 0.1x to 1.0x
- * - Competitiveness: 0.1x to 1.8x
- * - Community rating: 0.6x to 1.4x
+ * - Competitiveness: 0.1x to 2.0x
+ * - Community rating: 0.5x to 1.5x
  * - Popularity: 0.7x to 1.3x
  * - Cut penalty: 0.5x to 1.0x
  *
- * This means the final score can range from 6 to 8,190 points.
+ * This means the final score can range from 2 to 9984 points.
  *
  * If the level has no records, it gets 0 points.
  */
 
-const BASE_POINTS = 2_500;
+const BASE_POINTS = 2_560;
 const MINIMUM_PBS = 5;
 const MODIFIERS = {
 	LENGTH_SHORT: {
@@ -81,6 +81,23 @@ const round = (value: number, precision = 7): number => {
 	const factor = 10 ** precision;
 	return Math.round(value * factor) / factor;
 };
+
+const standardDeviation = (values: number[]): number => {
+	const mean = average(values);
+	const variance = average(values.map(value => (value - mean) ** 2));
+
+	return Math.sqrt(variance);
+}
+
+function modeFrequency<T>(arr: T[]): Map<T, number> {
+	const m = new Map<T, number>();
+	for (const v of arr) m.set(v, (m.get(v) ?? 0) + 1);
+	return m;
+}
+
+function uniqueValues<T>(arr: T[]): T[] {
+	return Array.from(new Set(arr));
+}
 
 /**
  * See `levelScoreLengthMultiplier` for details.
@@ -155,9 +172,10 @@ export const levelScoreLengthMultiplier = (wrTime: number): number => {
 
 interface LevelScoreCompetitivenessMultiplierResult {
 	modifier: number;
-	tightnessScore: number;
-	spreadScore: number;
-	easinessFactor: number;
+	tightness: number;
+	logTimeDispersion: number;
+	difficultyFactor: number;
+	informationScore: number;
 }
 
 /**
@@ -176,54 +194,83 @@ export const levelScoreCompetitivenessMultiplier = (
 	const MIN = MODIFIERS.COMPETITIVENESS.MIN;
 	const MAX = MODIFIERS.COMPETITIVENESS.MAX;
 
-	if (topTimes.length <= MINIMUM_PBS) {
+	const numPlayers = topTimes.length;
+	if (!Number.isFinite(wrTime) || numPlayers <= MINIMUM_PBS) {
 		return {
 			modifier: MIN,
-			tightnessScore: 0,
-			spreadScore: 0,
-			easinessFactor: 0,
+			tightness: 0,
+			logTimeDispersion: 0,
+			difficultyFactor: 0,
+			informationScore: 0,
 		};
 	}
 
-	const avgTop5 = average(topTimes.slice(0, 5));
-	const avgTop10 = average(topTimes.slice(0, 10));
-	const avgTop50 = average(topTimes.slice(0, 50));
-	const slowestTime = topTimes.at(-1) ?? wrTime;
+	const avgTimes = average(topTimes);
 
-	// Tightness: How close top 5 are to WR (closer = more competitive)
-	const tightnessScore = round(clamp(1 - (avgTop5 - wrTime) / wrTime, 0, 1));
+	// Logarithmic dispersion to measure leaderboard tightness
+	const safeWrTime = Math.max(wrTime, 1e-9);
+	const logTimeRatios = topTimes.map((t) => Math.log(Math.max(t, 1e-9) / safeWrTime));
+	const logTimeStdDev = standardDeviation(logTimeRatios);
+	const tightnessScoreBase = 1 / (1 + 12 * logTimeStdDev); // higher = more competitive
 
-	// Smaller difference = better (more consistent skill depth)
-	const spreadScore = round(clamp(1 - (avgTop50 - avgTop10) / avgTop10, 0, 1));
+	// Uniqueness and clustering
+	const numUniqueTimes = uniqueValues(topTimes).length;
+	const uniquenessRatio = numUniqueTimes / numPlayers;
 
-	/**
-	 * If the slowest best time is incredibly close to the WR, we assume it's a very
-	 * easy level to set a good time on.
-	 */
-	const easyThreshold = 0.025; // 2.5% of WR time
-	const isVeryEasy = slowestTime <= wrTime * (1 + easyThreshold);
+	const frequencyMap = modeFrequency(topTimes);
+	let maxTimeFrequency = 0;
+	for (const freq of frequencyMap.values()) maxTimeFrequency = Math.max(maxTimeFrequency, freq);
+	const modeFrequencyRatio = maxTimeFrequency / numPlayers;
 
-	/**
-	 * Clamped [0,1] factor based on how close to WR the slowest time is.
-	 * - If very easy, scales down from 1.0 to 0.0 (WR and slowest time are very close).
-	 * - If not very easy, stays at 1.0.
-	 */
-	const easinessFactor = round(
-		clamp(
-			isVeryEasy
-				? (slowestTime - wrTime * (1 + easyThreshold)) / (wrTime * easyThreshold)
-				: 1,
-			0,
-			1,
-		),
+	// Near-WR duplicates
+	const relativeEpsilon = 1e-6;
+	const nearWrCount = topTimes.filter(
+		(t) => Math.abs(t - wrTime) <= Math.max(relativeEpsilon * wrTime, 1e-9),
+	).length;
+	const nearWrRatio = nearWrCount / numPlayers;
+
+	// Near-mode duplicates
+	const modeValue = Array.from(frequencyMap.entries()).reduce(
+		(currentMode, [val, count]) => (count > (frequencyMap.get(currentMode as number) ?? 0) ? val : currentMode),
+		topTimes[0],
+	) as number;
+	const nearModeCount = topTimes.filter(
+		(t) => Math.abs(t - modeValue) <= Math.max(1e-6 * modeValue, 1e-9),
+	).length;
+	const nearModeRatio = nearModeCount / numPlayers;
+
+	// Information score: penalizes low-information / AFK levels
+	const informationScore = clamp(
+		uniquenessRatio ** 0.6 *
+		(1 - modeFrequencyRatio) ** 0.7 *
+		(1 - nearWrRatio) ** 0.8 *
+		(1 - nearModeRatio) ** 0.5,
+		0,
+		1,
 	);
 
-	// Weighted sum for final modifier = 1.8x max multiplier
-	const weightedScore = 0.55 * tightnessScore + 0.4 * spreadScore + 0.85 * easinessFactor;
+	// Difficulty factor: reward maps where average top 10 is slower than WR
+	const difficultyRaw = avgTimes / wrTime - 1;
+	const difficultyFactor = clamp(difficultyRaw / 0.05, 0, 1);
 
-	const modifier = normaliseNumber(round(clamp(weightedScore, MIN, MAX)));
+	// Combine into final competitiveness
+	const weightTightness = 0.6;
+	const weightDifficulty = 0.5;
 
-	return { modifier, tightnessScore, spreadScore, easinessFactor };
+	const rawModifier =
+		1.0 +
+		weightTightness * (tightnessScoreBase - 0.5) * informationScore +
+		weightDifficulty * difficultyFactor * informationScore;
+
+	const modifier = clamp(rawModifier, MIN, MAX);
+
+	return {
+		modifier: Number(modifier.toFixed(6)),
+		tightness: Number(tightnessScoreBase.toFixed(6)),
+		logTimeDispersion: Number(logTimeStdDev.toFixed(6)),
+		difficultyFactor: Number(difficultyFactor.toFixed(6)),
+		informationScore: Number(informationScore.toFixed(6)),
+	};
 };
 
 /**

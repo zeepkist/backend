@@ -91,10 +91,11 @@ describe('levelScoreCompetitivenessMultiplier', () => {
 				totalRecords: 10,
 			},
 			expected: {
+				difficultyFactor: 0,
+				informationScore: 0,
+				logTimeDispersion: 0,
 				modifier: 0.1,
-				spreadScore: 0,
-				tightnessScore: 0,
-				easinessFactor: 0,
+				tightness: 0,
 			},
 		},
 		{
@@ -118,10 +119,11 @@ describe('levelScoreCompetitivenessMultiplier', () => {
 				totalRecords: 200,
 			},
 			expected: {
-				modifier: 0.9457183,
-				spreadScore: 0.9903665,
-				tightnessScore: 0.9992213,
-				easinessFactor: 0,
+				difficultyFactor: 0.284264,
+				informationScore: 0.061232,
+				logTimeDispersion: 0.005126,
+				modifier: 1.024944,
+				tightness: 0.942056,
 			},
 		},
 		{
@@ -145,10 +147,11 @@ describe('levelScoreCompetitivenessMultiplier', () => {
 				totalRecords: 200,
 			},
 			expected: {
-				modifier: 1.7240984,
-				spreadScore: 0.8368292,
-				tightnessScore: 0.9806667,
-				easinessFactor: 1,
+				difficultyFactor: 1,
+				informationScore: 0.061232,
+				logTimeDispersion: 0.077951,
+				modifier: 1.031229,
+				tightness: 0.516685,
 			},
 		},
 		{
@@ -172,10 +175,11 @@ describe('levelScoreCompetitivenessMultiplier', () => {
 				totalRecords: 200,
 			},
 			expected: {
-				modifier: 1.5741631,
-				spreadScore: 0.5133244,
-				tightnessScore: 0.9433333,
-				easinessFactor: 1,
+				difficultyFactor: 1,
+				informationScore: 0.061232,
+				logTimeDispersion: 0.208509,
+				modifier: 1.022737,
+				tightness: 0.285542,
 			},
 		},
 		{
@@ -199,10 +203,11 @@ describe('levelScoreCompetitivenessMultiplier', () => {
 				totalRecords: 100,
 			},
 			expected: {
-				modifier: 1.7636703,
-				spreadScore: 0.9256757,
-				tightnessScore: 0.988,
-				easinessFactor: 1,
+				difficultyFactor: 1,
+				informationScore: 0.061232,
+				logTimeDispersion: 0.037665,
+				modifier: 1.03755,
+				tightness: 0.688717,
 			},
 		},
 		{
@@ -214,10 +219,11 @@ describe('levelScoreCompetitivenessMultiplier', () => {
 				totalRecords: 500,
 			},
 			expected: {
-				modifier: 0.948427,
-				spreadScore: 0.9997341,
-				tightnessScore: 0.9973333,
-				easinessFactor: 0,
+				difficultyFactor: 0.065359,
+				informationScore: 0.001259,
+				logTimeDispersion: 0.000461,
+				modifier: 1.000415,
+				tightness: 0.994494,
 			},
 		},
 		{
@@ -241,10 +247,11 @@ describe('levelScoreCompetitivenessMultiplier', () => {
 				totalRecords: 500,
 			},
 			expected: {
-				modifier: 1.5562,
-				spreadScore: 0.528,
-				tightnessScore: 0.9,
-				easinessFactor: 1,
+				difficultyFactor: 1,
+				informationScore: 0.061232,
+				logTimeDispersion: 0.2017,
+				modifier: 1.022988,
+				tightness: 0.292363,
 			},
 		},
 		{
@@ -268,10 +275,11 @@ describe('levelScoreCompetitivenessMultiplier', () => {
 				totalRecords: 200,
 			},
 			expected: {
-				modifier: 0.9487791,
-				spreadScore: 0.9969769,
-				tightnessScore: 0.9999788,
-				easinessFactor: 0,
+				difficultyFactor: 0.064852,
+				informationScore: 0.912203,
+				logTimeDispersion: 0.002334,
+				modifier: 1.28833,
+				tightness: 0.972758,
 			},
 		},
 		{
@@ -295,10 +303,11 @@ describe('levelScoreCompetitivenessMultiplier', () => {
 				totalRecords: 200,
 			},
 			expected: {
-				modifier: 0.9486792,
-				spreadScore: 0.9967113,
-				tightnessScore: 0.9999903,
-				easinessFactor: 0,
+				difficultyFactor: 0.070216,
+				informationScore: 0.912203,
+				logTimeDispersion: 0.002422,
+				modifier: 1.290228,
+				tightness: 0.971756,
 			},
 		},
 		{
@@ -310,10 +319,11 @@ describe('levelScoreCompetitivenessMultiplier', () => {
 				totalRecords: 200,
 			},
 			expected: {
-				modifier: 0.9488501,
-				spreadScore: 0.9973453,
-				tightnessScore: 0.99984,
-				easinessFactor: 0,
+				difficultyFactor: 0.064052,
+				informationScore: 0.912203,
+				logTimeDispersion: 0.001952,
+				modifier: 1.290348,
+				tightness: 0.977112,
 			},
 		},
 		{
@@ -328,10 +338,11 @@ describe('levelScoreCompetitivenessMultiplier', () => {
 				totalRecords: 26,
 			},
 			expected: {
-				modifier: 0.95,
-				spreadScore: 1,
-				tightnessScore: 1,
-				easinessFactor: 0,
+				difficultyFactor: 0,
+				informationScore: 0,
+				logTimeDispersion: 0,
+				modifier: 1,
+				tightness: 1,
 			},
 		},
 	];
@@ -433,7 +444,7 @@ describe('calculateLevelPoints', () => {
 			personalBestCountPercentile: 30,
 		});
 		expect(result).toEqual({
-			points: 226,
+			points: 230,
 			modifiers: {
 				lengthModifier: 1,
 				competitivenessModifier: 0.1,
@@ -452,10 +463,10 @@ describe('calculateLevelPoints', () => {
 			personalBestCountPercentile: 30,
 		});
 		expect(result).toEqual({
-			points: 3968,
+			points: 3212,
 			modifiers: {
 				lengthModifier: 1,
-				competitivenessModifier: 1.7633333,
+				competitivenessModifier: 1.394238,
 				ratingModifier: 1,
 				popularityModifier: 0.9,
 				cutPenalty: 1,
@@ -471,7 +482,7 @@ describe('calculateLevelPoints', () => {
 			personalBestCountPercentile: 30,
 		});
 		expect(result).toEqual({
-			points: 306,
+			points: 314,
 			modifiers: {
 				lengthModifier: 1,
 				competitivenessModifier: 0.1,
