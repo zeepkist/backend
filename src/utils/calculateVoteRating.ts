@@ -16,7 +16,7 @@ export function wilsonLowerBound(upVotes: number, totalVotes: number, z = 1.645)
 }
 
 /**
- * Calculates a vote rating based on the votes received.
+ * Calculates a vote rating based on the votes received, skewed towards positive votes.
  *
  * This function maps the votes to a scale of 0.0 to 1.0 and then calculates a
  * Wilson lower bound to provide a confidence interval.
@@ -34,11 +34,16 @@ export function calculateVoteRating(votes: number[]): number {
 	const mapped = votes.map((value) => (value + 2) / 4);
 	const average = mapped.reduce((sum, value) => sum + value, 0) / mapped.length;
 
-	const upvotes = average * votes.length;
-	const totalVotes = votes.length;
+	// Bayasian prior, gives a small optimistic boost to levels with few votes
+	const priorUpvotes = 1.2;
+	const priorTotal = 2;
 
-	const lowerBound = wilsonLowerBound(upvotes, totalVotes);
-	const clamped = lowerBound.toFixed(6);
+	const upvotes = (average * votes.length) + priorUpvotes;
+	const totalVotes = votes.length + priorTotal;
 
-	return clamped === 'NaN' ? DEFAULT_VOTE_RATING : Number.parseFloat(clamped);
+	const lowerBound = wilsonLowerBound(upvotes, totalVotes, 1);
+	const adjusted = (lowerBound * 0.9) + (0.5 * 0.1); // Slightly pull towards neutral
+	const clamped = Math.min(1, Math.max(0, adjusted));
+
+	return Number(clamped.toFixed(6));
 }

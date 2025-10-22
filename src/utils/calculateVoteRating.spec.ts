@@ -23,17 +23,17 @@ describe('calculateVoteRating', () => {
 
 	// all test case should have more than 10 votes with values as -2, -1, 0, 1 or 2
 	const testCases = [
-		{ case: 1, votes: [-2, -2, -2, -2, -2, -2, -2, -2, -2, -2], expected: 0 },
-		{ case: 2, votes: [-2, -2, -2, -2, -1, -1, -1, -1, -1, -1], expected: 0.043681 },
-		{ case: 3, votes: [-2, -2, -1, -1, -1, 0, 0, 0, 1, 1], expected: 0.176624 },
-		{ case: 4, votes: [-2, -1, -1, 0, 0, 1, 1, 1, 2, 2], expected: 0.330335 },
-		{ case: 5, votes: [-1, 0, 0, 1, 1, 2, 2, 2, 2, 2], expected: 0.51502 },
-		{ case: 6, votes: [0, 0, 1, 1, 2, 2, 2, 2, 2, 2], expected: 0.5946 },
-		{ case: 7, votes: [1, 1, 2, 2, 2, 2, 2, 2, 2, 2], expected: 0.715235 },
-		{ case: 8, votes: [2, 2, 2, 2, 2, 2, 2, 2, 2, 2], expected: 0.787028 },
-		{ case: 9, votes: Array.from({ length: 16 }, () => 2), expected: 0.855339 },
-		{ case: 9, votes: Array.from({ length: 32 }, () => 2), expected: 0.92203 },
-		{ case: 9, votes: Array.from({ length: 64 }, () => 2), expected: 0.959434 },
+		{ case: 1, votes: [-2, -2, -2, -2, -2, -2, -2, -2, -2, -2], expected: 0.087851 },
+		{ case: 2, votes: [-2, -2, -2, -2, -1, -1, -1, -1, -1, -1], expected: 0.165579 },
+		{ case: 3, votes: [-2, -2, -1, -1, -1, 0, 0, 0, 1, 1], expected: 0.304277 },
+		{ case: 4, votes: [-2, -1, -1, 0, 0, 1, 1, 1, 2, 2], expected: 0.442414 },
+		{ case: 5, votes: [-1, 0, 0, 1, 1, 2, 2, 2, 2, 2], expected: 0.594226 },
+		{ case: 6, votes: [0, 0, 1, 1, 2, 2, 2, 2, 2, 2], expected: 0.65561 },
+		{ case: 7, votes: [1, 1, 2, 2, 2, 2, 2, 2, 2, 2], expected: 0.743202 },
+		{ case: 8, votes: [2, 2, 2, 2, 2, 2, 2, 2, 2, 2], expected: 0.790885 },
+		{ case: 9, votes: Array.from({ length: 16 }, () => 2), expected: 0.840712 },
+		{ case: 9, votes: Array.from({ length: 32 }, () => 2), expected: 0.890459 },
+		{ case: 9, votes: Array.from({ length: 64 }, () => 2), expected: 0.918836 },
 	];
 
 	it.each(testCases)('should return $expected for case $case', ({ votes, expected }) => {

@@ -33,8 +33,8 @@ const MODIFIERS = {
 		MAX: 2.0,
 	},
 	RATING: {
-		MIN: 0.6,
-		MAX: 1.4,
+		MIN: 0.5,
+		MAX: 1.5,
 	},
 	POPULARITY: {
 		MIN: 0.7,
