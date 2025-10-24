@@ -27,11 +27,11 @@ const preset: GraphileConfig.Preset = {
 	extends: [WorkerPreset],
 	worker: {
 		connectionString: DATABASE_URL,
-		maxPoolSize: 20,
+		maxPoolSize: 10,
 		pollInterval: 2000,
 		preparedStatements: true,
 		schema: 'graphile_worker',
-		concurrentJobs: 20,
+		concurrentJobs: 5,
 		fileExtensions: ['.ts'],
 		events,
 	},
